@@ -56,7 +56,7 @@ Each instance under `targets/web/` contains:
 
 | Family | Description | Tiers |
 |---|---|---|
-| StayFlow Concierge | Travel itinerary and booking management | A, B, C |
+| StayFlow Concierge | Travel itinerary and booking management | A, B, C, D |
 | FreshCart Market | Grocery e-commerce with cart and checkout | A, B, C, D |
 | Clinic Shift Command | Clinical staff scheduling and handoff | A, B, C, D |
 | Campus Registrar Command | Academic course registration and enrollment | A, B, C, D |
