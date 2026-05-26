@@ -1,0 +1,333 @@
+dsl_version: "3.0.0"
+visibility: public
+tier_weights:
+  smoke: 1
+  core: 2
+  service: 4
+  upload: 4
+  supplier: 5
+  finance: 5
+  permission: 5
+  persistence: 5
+  journey: 7
+  stress: 9
+scenarios:
+  - id: public_01_filter_jeju_inventory
+    tier: smoke
+    difficulty: d1_smoke
+    steps:
+      - do: reset_button.click
+      - do: go_itinerary_button.click
+      - do: filter_jeju_button.click
+        expect:
+          - {op: equals, path: current_city_filter, value: Jeju}
+      - table: stay_grid
+        expect_order: [ST-JEJU-VILLA]
+        expect_row_count: 1
+        expect_rows:
+          - id: ST-JEJU-VILLA
+            cells: {city: Jeju, base: 760}
+
+  - id: public_02_four_city_route_pricing
+    tier: core
+    difficulty: d2_core
+    steps:
+      - do: reset_button.click
+      - do: go_itinerary_button.click
+      - do: add_busan_leg_button.click
+      - do: add_seoul_leg_button.click
+      - do: add_kyoto_leg_button.click
+      - do: add_ops_addons_button.click
+      - do: add_jeju_leg_button.click
+        expect:
+          - {op: equals, path: leg_count, value: 4}
+          - {op: equals, path: route_key, value: BUSAN_SEOUL_KYOTO_JEJU}
+          - {op: equals, path: trip_subtotal, value: 2180}
+          - {op: equals, path: addon_total, value: 167}
+          - {op: equals, path: service_fee, value: 188}
+          - {op: equals, path: total_due, value: 2535}
+          - {op: equals, path: approval_status, value: required}
+      - table: itinerary_grid
+        expect_order: [LEG-BUSAN, LEG-SEOUL, LEG-KYOTO, LEG-JEJU]
+        expect_rows:
+          - id: LEG-BUSAN
+            cells: {addon: 42, leg_total: 362}
+          - id: LEG-JEJU
+            cells: {city: Jeju, leg_total: 760}
+
+  - id: public_03_quote_and_command_promo
+    tier: service
+    difficulty: d3_integrated
+    steps:
+      - do: reset_button.click
+      - do: go_itinerary_button.click
+      - do: add_busan_leg_button.click
+      - do: add_seoul_leg_button.click
+      - do: add_kyoto_leg_button.click
+      - do: add_ops_addons_button.click
+      - do: add_jeju_leg_button.click
+      - do: go_finance_button.click
+      - do: request_quote_button.click
+        expect:
+          - {op: equals, path: quote_status, value: ready}
+          - {op: equals, path: quote_id, value: QC-BSKJ-518}
+          - {op: equals, path: quote_risk, value: elevated}
+          - {op: equals, path: quote_call_count, value: 1}
+      - do: promo_code_input.fill
+        input: {value: " command260 "}
+      - do: apply_promo_button.click
+        expect:
+          - {op: equals, path: promo_code, value: COMMAND260}
+          - {op: equals, path: promo_credit, value: 260}
+          - {op: equals, path: promo_status, value: applied}
+          - {op: equals, path: total_due, value: 2275}
+          - {op: equals, path: service_call_count, value: 2}
+
+  - id: public_04_manifest_and_document_join
+    tier: upload
+    difficulty: d3_integrated
+    steps:
+      - do: reset_button.click
+      - do: go_guests_button.click
+      - do: traveler_upload_input.upload
+        input:
+          file:
+            name: tier-c-travelers.csv
+            mime_type: text/csv
+            content: |
+              id,name,type,mobility
+              T-01,Mina Park,adult,no
+              T-02,Juno Park,child,no
+              T-03,Alex Kim,adult,yes
+          rows:
+            - {id: T-01, name: Mina Park, type: adult, mobility: "no"}
+            - {id: T-02, name: Juno Park, type: child, mobility: "no"}
+            - {id: T-03, name: Alex Kim, type: adult, mobility: "yes"}
+      - do: document_upload_input.upload
+        input:
+          file:
+            name: tier-c-docs.csv
+            mime_type: text/csv
+            content: |
+              traveler_id,document_status,ready
+              T-01,verified,yes
+              T-02,missing,no
+              T-03,verified,yes
+          rows:
+            - {traveler_id: T-01, document_status: verified, ready: "yes"}
+            - {traveler_id: T-02, document_status: missing, ready: "no"}
+            - {traveler_id: T-03, document_status: verified, ready: "yes"}
+      - do: build_readiness_button.click
+        expect:
+          - {op: equals, path: traveler_count, value: 3}
+          - {op: equals, path: child_count, value: 1}
+          - {op: equals, path: mobility_count, value: 1}
+          - {op: equals, path: document_count, value: 3}
+          - {op: equals, path: missing_document_count, value: 1}
+          - {op: equals, path: ready_count, value: 2}
+      - table: readiness_grid
+        expect_order: [T-01, T-02, T-03]
+        expect_rows:
+          - id: T-02
+            cells: {traveler: Juno Park, document_status: missing, ready: "no"}
+
+  - id: public_05_document_exception_resolution_requires_staff
+    tier: permission
+    difficulty: d4_adversarial
+    steps:
+      - do: reset_button.click
+      - do: go_guests_button.click
+      - do: traveler_upload_input.upload
+        input:
+          file:
+            name: docs-public-travelers.csv
+            mime_type: text/csv
+            content: |
+              id,name,type,mobility
+              G-01,Rin Cho,adult,no
+          rows:
+            - {id: G-01, name: Rin Cho, type: adult, mobility: "no"}
+      - do: document_upload_input.upload
+        input:
+          file:
+            name: docs-public-missing.csv
+            mime_type: text/csv
+            content: |
+              traveler_id,document_status,ready
+              G-01,missing,no
+          rows:
+            - {traveler_id: G-01, document_status: missing, ready: "no"}
+      - do: build_readiness_button.click
+      - do: open_document_exception_button.click
+        expect:
+          - {op: equals, path: open_exception_count, value: 1}
+          - {op: equals, path: booking_status, value: blocked}
+      - do: resolve_document_exception_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: denied_count, value: 1}
+          - {op: equals, path: open_exception_count, value: 1}
+      - do: role_agent_button.click
+      - do: resolve_document_exception_button.click
+        expect:
+          - {op: equals, path: open_exception_count, value: 0}
+
+  - id: public_06_supplier_conflict_repair_release
+    tier: supplier
+    difficulty: d4_adversarial
+    steps:
+      - do: reset_button.click
+      - do: go_itinerary_button.click
+      - do: add_busan_leg_button.click
+      - do: add_seoul_leg_button.click
+      - do: add_kyoto_leg_button.click
+      - do: add_jeju_leg_button.click
+      - do: go_suppliers_button.click
+      - do: request_supplier_holds_button.click
+        expect:
+          - {op: equals, path: supplier_status, value: confirmed}
+          - {op: equals, path: hold_count, value: 4}
+          - {op: equals, path: confirmed_hold_count, value: 4}
+          - {op: equals, path: hold_call_count, value: 1}
+      - do: external_supplier_change_button.click
+      - do: release_supplier_holds_button.click
+        mode: conflict
+        expect:
+          - {op: equals, path: supplier_status, value: conflict_stale_supplier}
+          - {op: equals, path: conflict_count, value: 1}
+      - do: refresh_supplier_draft_button.click
+      - do: release_supplier_holds_button.click
+        expect:
+          - {op: equals, path: supplier_status, value: released}
+          - {op: equals, path: confirmed_hold_count, value: 0}
+
+  - id: public_07_payment_shortfall_then_authorized
+    tier: finance
+    difficulty: d3_integrated
+    steps:
+      - do: reset_button.click
+      - do: go_finance_button.click
+      - do: payment_amount_input.fill
+        input: {value: "$1,000.00"}
+      - do: authorize_payment_button.click
+        expect:
+          - {op: equals, path: payment_amount_key, value: "1000"}
+          - {op: equals, path: payment_status, value: shortfall}
+          - {op: equals, path: payment_authorized, value: false}
+          - {op: equals, path: payment_count, value: 1}
+      - do: payment_amount_input.fill
+        input: {value: "USD 2,500"}
+      - do: authorize_payment_button.click
+        expect:
+          - {op: equals, path: payment_amount_key, value: "2500"}
+          - {op: equals, path: payment_status, value: authorized}
+          - {op: equals, path: payment_authorized, value: true}
+          - {op: equals, path: payment_call_count, value: 2}
+
+  - id: public_08_manager_approval_role_gate
+    tier: permission
+    difficulty: d4_adversarial
+    steps:
+      - do: reset_button.click
+      - do: go_itinerary_button.click
+      - do: add_busan_leg_button.click
+      - do: add_seoul_leg_button.click
+      - do: add_kyoto_leg_button.click
+        expect:
+          - {op: equals, path: approval_status, value: required}
+      - do: go_review_button.click
+      - do: manager_approve_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: denied_count, value: 1}
+          - {op: equals, path: approval_status, value: required}
+      - do: role_manager_button.click
+      - do: manager_approve_button.click
+        expect:
+          - {op: equals, path: approval_status, value: approved}
+          - {op: equals, path: audit_count, value: 1}
+
+  - id: public_09_reload_preserves_command_center_state
+    tier: persistence
+    difficulty: d4_adversarial
+    steps:
+      - do: reset_button.click
+      - do: go_itinerary_button.click
+      - do: add_busan_leg_button.click
+      - do: add_seoul_leg_button.click
+      - do: add_kyoto_leg_button.click
+      - do: add_jeju_leg_button.click
+      - do: go_finance_button.click
+      - do: request_quote_button.click
+      - do: payment_amount_input.fill
+        input: {value: "2500"}
+      - do: authorize_payment_button.click
+      - browser: reload
+        expect_page: finance
+        expect:
+          - {op: equals, path: current_page, value: finance}
+          - {op: equals, path: route_key, value: BUSAN_SEOUL_KYOTO_JEJU}
+          - {op: equals, path: quote_id, value: QC-BSKJ-518}
+          - {op: equals, path: payment_authorized, value: true}
+
+  - id: public_10_full_command_confirmation
+    tier: journey
+    difficulty: d5_stress
+    steps:
+      - do: reset_button.click
+      - do: go_itinerary_button.click
+      - do: add_busan_leg_button.click
+      - do: add_seoul_leg_button.click
+      - do: add_kyoto_leg_button.click
+      - do: add_ops_addons_button.click
+      - do: add_jeju_leg_button.click
+      - do: go_finance_button.click
+      - do: request_quote_button.click
+      - do: promo_code_input.fill
+        input: {value: COMMAND260}
+      - do: apply_promo_button.click
+      - do: payment_amount_input.fill
+        input: {value: "2500"}
+      - do: authorize_payment_button.click
+      - do: go_guests_button.click
+      - do: traveler_upload_input.upload
+        input:
+          file:
+            name: full-public-travelers.csv
+            mime_type: text/csv
+            content: |
+              id,name,type,mobility
+              F-01,Mina Park,adult,no
+              F-02,Alex Kim,adult,yes
+          rows:
+            - {id: F-01, name: Mina Park, type: adult, mobility: "no"}
+            - {id: F-02, name: Alex Kim, type: adult, mobility: "yes"}
+      - do: document_upload_input.upload
+        input:
+          file:
+            name: full-public-docs.csv
+            mime_type: text/csv
+            content: |
+              traveler_id,document_status,ready
+              F-01,verified,yes
+              F-02,verified,yes
+          rows:
+            - {traveler_id: F-01, document_status: verified, ready: "yes"}
+            - {traveler_id: F-02, document_status: verified, ready: "yes"}
+      - do: build_readiness_button.click
+      - do: go_suppliers_button.click
+      - do: request_supplier_holds_button.click
+      - do: release_supplier_holds_button.click
+      - do: go_review_button.click
+      - do: role_manager_button.click
+      - do: manager_approve_button.click
+      - do: role_agent_button.click
+      - do: check_supplier_button.click
+      - do: check_documents_button.click
+      - do: check_payment_button.click
+      - do: final_confirm_button.click
+        expect:
+          - {op: equals, path: booking_status, value: confirmed}
+          - {op: equals, path: checklist_completed_count, value: 3}
+          - {op: equals, path: audit_count, value: 2}
+          - {op: equals, path: denied_count, value: 0}

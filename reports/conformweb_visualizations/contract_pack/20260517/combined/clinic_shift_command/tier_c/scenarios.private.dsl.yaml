@@ -1,0 +1,1028 @@
+dsl_version: "3.0.0"
+visibility: private
+tier_weights:
+  smoke: 1
+  core: 2
+  validation: 3
+  service: 4
+  upload: 4
+  permission: 4
+  persistence: 5
+  journey: 6
+
+scenarios:
+  - id: private_01_all_queue_order
+    tier: smoke
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - table: patient_queue
+        expect_order: [CVC-206, CVC-205, CVC-202, CVC-204, CVC-201, CVC-203]
+        expect_row_count: 6
+        expect_rows:
+          - id: CVC-206
+            cells:
+              name: Ava Chen
+              lane: urgent
+              acuity: 1
+          - id: CVC-203
+            cells:
+              name: Nia Brooks
+              wait_mins: 47
+              risk: green
+
+  - id: private_02_filter_procedure_queue
+    tier: smoke
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: filter_procedure_button.click
+        expect:
+          - {op: equals, path: current_filter, value: procedure}
+      - table: patient_queue
+        expect_order: [CVC-202]
+        expect_row_count: 1
+        expect_rows:
+          - id: CVC-202
+            cells:
+              name: Omar Haddad
+              room_need: procedure
+
+  - id: private_03_filter_authorization_queue
+    tier: smoke
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: filter_authorization_button.click
+        expect:
+          - {op: equals, path: current_filter, value: authorization}
+      - table: patient_queue
+        expect_order: [CVC-206, CVC-202, CVC-204]
+        expect_row_count: 3
+
+  - id: private_04_select_paul_auth_snapshot
+    tier: core
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: select_paul_button.click
+        expect:
+          - {op: equals, path: selected_patient_id, value: CVC-204}
+          - {op: equals, path: selected_lane, value: imaging}
+          - {op: equals, path: insurance_code, value: BADPLAN}
+          - {op: equals, path: auth_required, value: true}
+          - {op: equals, path: auth_key, value: BAD-AUTH}
+
+  - id: private_05_assign_procedure_room
+    tier: core
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: select_omar_button.click
+      - do: assign_procedure_button.click
+        expect:
+          - {op: equals, path: assigned_room_id, value: R-PROC}
+          - {op: equals, path: assigned_room_name, value: "Procedure A"}
+          - {op: equals, path: selected_patient_status, value: roomed}
+      - do: go_capacity_button.click
+      - table: room_board
+        expect_rows:
+          - id: R-PROC
+            cells:
+              status: occupied
+              occupant: Omar Haddad
+
+  - id: private_06_cleaning_room_blocked
+    tier: validation
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: select_paul_button.click
+      - do: assign_imaging_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: room_block_count, value: 1}
+          - {op: equals, path: assigned_room_id, value: ""}
+          - {op: equals, path: last_action, value: room_cleaning_block}
+
+  - id: private_07_clinician_cannot_assign_isolation
+    tier: permission
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: select_ava_button.click
+      - do: role_clinician_button.click
+      - do: assign_isolation_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: assigned_room_id, value: ""}
+          - {op: equals, path: denied_count, value: 1}
+          - {op: equals, path: last_action, value: unauthorized_capacity}
+
+  - id: private_08_billing_cannot_save_assessment
+    tier: permission
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: select_june_button.click
+      - do: role_billing_button.click
+      - do: pain_score_input.fill
+        input: {value: "5"}
+      - do: disposition_input.fill
+        input: {value: "review after labs"}
+      - do: save_assessment_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: assessment_status, value: idle}
+          - {op: equals, path: denied_count, value: 1}
+          - {op: equals, path: last_action, value: unauthorized_clinical}
+
+  - id: private_09_coordinator_cannot_request_auth
+    tier: permission
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: select_omar_button.click
+      - do: request_auth_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: authorization_status, value: idle}
+          - {op: equals, path: denied_count, value: 1}
+          - {op: equals, path: last_action, value: unauthorized_billing}
+
+  - id: private_10_cash_insurance_self_pay
+    tier: service
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: select_nia_button.click
+      - do: verify_insurance_button.click
+        expect:
+          - {op: equals, path: insurance_code, value: CASH}
+          - {op: equals, path: insurance_status, value: self_pay}
+          - {op: equals, path: copay_due, value: 120}
+          - {op: equals, path: insurance_call_count, value: 1}
+
+  - id: private_11_badplan_needs_review
+    tier: service
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: select_paul_button.click
+      - do: verify_insurance_button.click
+        expect:
+          - {op: equals, path: insurance_status, value: needs_review}
+          - {op: equals, path: copay_due, value: 0}
+          - {op: equals, path: service_call_count, value: 1}
+
+  - id: private_12_prior_auth_denied
+    tier: service
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: select_paul_button.click
+      - do: role_billing_button.click
+      - do: request_auth_button.click
+        expect:
+          - {op: equals, path: authorization_status, value: denied}
+          - {op: equals, path: auth_call_count, value: 1}
+          - {op: equals, path: last_action, value: request_auth}
+
+  - id: private_13_missing_assessment_rejected
+    tier: validation
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: select_june_button.click
+      - do: role_clinician_button.click
+      - do: save_assessment_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: assessment_status, value: incomplete}
+          - {op: equals, path: last_action, value: reject_assessment}
+
+  - id: private_14_referral_upload_replaces_rows
+    tier: upload
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: go_chart_button.click
+      - do: referral_upload_input.upload
+        input:
+          file:
+            name: first-referrals.csv
+            mime_type: text/csv
+            content: |
+              id,document,priority,status
+              RF-OLD,Legacy packet,routine,pending
+          rows:
+            - {id: RF-OLD, document: Legacy packet, priority: routine, status: pending}
+      - do: referral_upload_input.upload
+        input:
+          file:
+            name: final-referrals.csv
+            mime_type: text/csv
+            content: |
+              id,document,priority,status
+              RF-FINAL,Cardiology clearance,stat,ready
+          rows:
+            - {id: RF-FINAL, document: Cardiology clearance, priority: stat, status: ready}
+        expect:
+          - {op: equals, path: referral_doc_count, value: 1}
+          - {op: equals, path: last_referral_file, value: final-referrals.csv}
+      - do: go_handoff_button.click
+      - table: referral_grid
+        expect_order: [RF-FINAL]
+        expect_row_count: 1
+        expect_rows:
+          - id: RF-FINAL
+            cells:
+              document: Cardiology clearance
+              status: ready
+
+  - id: private_15_order_requires_assessment
+    tier: validation
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: select_june_button.click
+      - do: role_clinician_button.click
+      - do: place_lab_order_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: diagnostic_order_count, value: 0}
+          - {op: equals, path: order_status, value: blocked}
+          - {op: equals, path: last_action, value: order_requires_assessment}
+
+  - id: private_16_close_escalation
+    tier: core
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: select_ava_button.click
+      - do: role_charge_nurse_button.click
+      - do: escalate_delay_button.click
+      - do: go_handoff_button.click
+      - do: close_escalation_button.click
+        expect:
+          - {op: equals, path: closed_escalation_count, value: 1}
+          - {op: equals, path: last_action, value: close_escalation}
+      - table: escalation_grid
+        expect_rows:
+          - id: E-1
+            cells:
+              patient: Ava Chen
+              status: closed
+
+  - id: private_17_reload_preserves_chart_workup
+    tier: persistence
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: select_omar_button.click
+      - do: assign_procedure_button.click
+      - do: role_billing_button.click
+      - do: request_auth_button.click
+      - browser: reload
+        expect_page: chart
+        expect:
+          - {op: unchanged, path: selected_patient_id}
+          - {op: unchanged, path: assigned_room_id}
+          - {op: unchanged, path: authorization_status}
+          - {op: unchanged, path: current_page}
+
+  - id: private_18_role_persists_across_reload
+    tier: persistence
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: role_charge_nurse_button.click
+        expect:
+          - {op: equals, path: active_role, value: charge_nurse}
+      - browser: reload
+        expect:
+          - {op: equals, path: active_role, value: charge_nurse}
+
+  - id: private_19_browser_back_chain
+    tier: persistence
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: go_chart_button.click
+      - do: go_capacity_button.click
+      - browser: back
+        expect_page: chart
+        expect:
+          - {op: equals, path: current_page, value: chart}
+      - browser: back
+        expect_page: command
+        expect:
+          - {op: equals, path: current_page, value: command}
+
+  - id: private_20_reset_clears_operational_state
+    tier: journey
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: select_ava_button.click
+      - do: role_charge_nurse_button.click
+      - do: assign_isolation_button.click
+      - do: escalate_delay_button.click
+      - do: reset_button.click
+        expect:
+          - {op: equals, path: selected_patient_id, value: ""}
+          - {op: equals, path: assigned_room_id, value: ""}
+          - {op: equals, path: escalation_count, value: 0}
+          - {op: equals, path: active_role, value: coordinator}
+          - {op: equals, path: current_page, value: command}
+
+  - id: private_21_full_multirole_critical_journey
+    tier: journey
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: filter_critical_button.click
+      - do: select_ava_button.click
+      - do: role_charge_nurse_button.click
+      - do: assign_isolation_button.click
+      - do: escalate_delay_button.click
+      - do: verify_insurance_button.click
+      - do: role_billing_button.click
+      - do: request_auth_button.click
+      - do: role_clinician_button.click
+      - do: pain_score_input.fill
+        input: {value: "8"}
+      - do: disposition_input.fill
+        input: {value: "STAT CBC and cardiac workup"}
+      - do: save_assessment_button.click
+      - do: place_lab_order_button.click
+        expect:
+          - {op: equals, path: selected_patient_status, value: assessed}
+          - {op: equals, path: insurance_status, value: approved}
+          - {op: equals, path: authorization_status, value: approved}
+          - {op: equals, path: diagnostic_order_count, value: 1}
+          - {op: equals, path: escalation_count, value: 1}
+          - {op: equals, path: service_call_count, value: 2}
+
+  - id: private_22_release_blocked_before_prior_auth
+    tier: validation
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: select_omar_button.click
+      - do: role_clinician_button.click
+      - do: pain_score_input.fill
+        input: {value: "4"}
+      - do: disposition_input.fill
+        input: {value: "cast check with CBC before procedure"}
+      - do: save_assessment_button.click
+      - do: place_lab_order_button.click
+      - do: release_diagnostics_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: order_status, value: ordered}
+          - {op: equals, path: released_order_count, value: 0}
+          - {op: equals, path: release_block_count, value: 1}
+          - {op: equals, path: last_action, value: release_blocked}
+
+  - id: private_23_handoff_blocked_until_escalation_closed
+    tier: journey
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: select_ava_button.click
+      - do: role_charge_nurse_button.click
+      - do: assign_isolation_button.click
+      - do: escalate_delay_button.click
+      - do: verify_insurance_button.click
+      - do: role_billing_button.click
+      - do: request_auth_button.click
+      - do: role_clinician_button.click
+      - do: pain_score_input.fill
+        input: {value: "8"}
+      - do: disposition_input.fill
+        input: {value: "STAT CBC and cardiac workup"}
+      - do: save_assessment_button.click
+      - do: place_lab_order_button.click
+      - do: release_diagnostics_button.click
+      - do: referral_upload_input.upload
+        input:
+          file:
+            name: release-packet.csv
+            mime_type: text/csv
+            content: |
+              id,document,priority,status
+              RF-HANDOFF,Cardiology release packet,stat,ready
+          rows:
+            - {id: RF-HANDOFF, document: Cardiology release packet, priority: stat, status: ready}
+      - do: go_handoff_button.click
+      - do: role_charge_nurse_button.click
+      - do: finalize_handoff_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: handoff_status, value: blocked}
+          - {op: equals, path: handoff_block_count, value: 1}
+          - {op: equals, path: handoff_packet_count, value: 0}
+          - {op: equals, path: last_action, value: handoff_blocked}
+
+  - id: private_24_finalize_handoff_packet_after_release
+    tier: persistence
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: select_ava_button.click
+      - do: role_charge_nurse_button.click
+      - do: assign_isolation_button.click
+      - do: escalate_delay_button.click
+      - do: verify_insurance_button.click
+      - do: role_billing_button.click
+      - do: request_auth_button.click
+      - do: role_clinician_button.click
+      - do: pain_score_input.fill
+        input: {value: "8"}
+      - do: disposition_input.fill
+        input: {value: "STAT CBC and cardiac workup"}
+      - do: save_assessment_button.click
+      - do: place_lab_order_button.click
+      - do: release_diagnostics_button.click
+      - do: referral_upload_input.upload
+        input:
+          file:
+            name: final-handoff.csv
+            mime_type: text/csv
+            content: |
+              id,document,priority,status
+              RF-FINAL,Cardiology release packet,stat,ready
+              RF-LABS,STAT lab bundle,stat,ready
+          rows:
+            - {id: RF-FINAL, document: Cardiology release packet, priority: stat, status: ready}
+            - {id: RF-LABS, document: STAT lab bundle, priority: stat, status: ready}
+      - do: go_handoff_button.click
+      - do: role_charge_nurse_button.click
+      - do: close_escalation_button.click
+      - do: finalize_handoff_button.click
+        expect:
+          - {op: equals, path: handoff_status, value: ready}
+          - {op: equals, path: handoff_packet_count, value: 1}
+          - {op: equals, path: closed_escalation_count, value: 1}
+          - {op: equals, path: last_action, value: finalize_handoff}
+      - table: handoff_packet_grid
+        expect_order: [H-1]
+        expect_row_count: 1
+        expect_rows:
+          - id: H-1
+            cells:
+              patient: Ava Chen
+              referral_file: final-handoff.csv
+              status: ready
+      - browser: reload
+        expect_page: handoff
+        expect:
+          - {op: unchanged, path: order_status}
+          - {op: unchanged, path: released_order_count}
+          - {op: unchanged, path: handoff_packet_count}
+          - {op: unchanged, path: handoff_status}
+
+  - id: private_25_operations_director_role_persists
+    tier: persistence
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: go_surge_button.click
+      - do: role_operations_director_button.click
+        expect:
+          - {op: equals, path: active_role, value: operations_director}
+          - {op: equals, path: current_page, value: surge}
+      - browser: reload
+        expect_page: surge
+        expect:
+          - {op: equals, path: active_role, value: operations_director}
+          - {op: equals, path: current_page, value: surge}
+
+  - id: private_26_billing_cannot_score_risk
+    tier: permission
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: select_ava_button.click
+      - do: role_billing_button.click
+      - do: score_risk_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: risk_score, value: 0}
+          - {op: equals, path: denied_count, value: 1}
+          - {op: equals, path: last_action, value: unauthorized_clinical}
+
+  - id: private_27_transport_blocked_before_release
+    tier: validation
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: select_ava_button.click
+      - do: role_charge_nurse_button.click
+      - do: score_risk_button.click
+      - do: request_transport_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: transport_status, value: blocked}
+          - {op: equals, path: transport_call_count, value: 0}
+          - {op: equals, path: last_action, value: transport_blocked}
+
+  - id: private_28_surge_activation_blocked_before_forecast
+    tier: validation
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: go_surge_button.click
+      - do: role_operations_director_button.click
+      - do: activate_surge_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: surge_status, value: blocked}
+          - {op: equals, path: surge_block_count, value: 1}
+          - {op: equals, path: surge_task_count, value: 0}
+          - {op: equals, path: last_action, value: surge_blocked}
+
+  - id: private_29_full_incident_command_clearance
+    tier: journey
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: filter_critical_button.click
+      - do: select_ava_button.click
+      - do: role_charge_nurse_button.click
+      - do: assign_isolation_button.click
+      - do: escalate_delay_button.click
+      - do: score_risk_button.click
+      - do: verify_insurance_button.click
+      - do: role_billing_button.click
+      - do: request_auth_button.click
+      - do: role_clinician_button.click
+      - do: pain_score_input.fill
+        input: {value: "8"}
+      - do: disposition_input.fill
+        input: {value: "STAT CBC, cardiac workup, isolation transport"}
+      - do: save_assessment_button.click
+      - do: place_lab_order_button.click
+      - do: release_diagnostics_button.click
+      - do: role_charge_nurse_button.click
+      - do: request_transport_button.click
+      - do: referral_upload_input.upload
+        input:
+          file:
+            name: command-clearance.csv
+            mime_type: text/csv
+            content: |
+              id,document,priority,status
+              RF-CARD,Cardiology clearance,stat,ready
+              RF-ISO,Isolation transport note,stat,ready
+          rows:
+            - {id: RF-CARD, document: Cardiology clearance, priority: stat, status: ready}
+            - {id: RF-ISO, document: Isolation transport note, priority: stat, status: ready}
+      - do: go_handoff_button.click
+      - do: close_escalation_button.click
+      - do: finalize_handoff_button.click
+      - do: go_surge_button.click
+      - do: role_charge_nurse_button.click
+      - do: acknowledge_transport_button.click
+        expect:
+          - {op: equals, path: transport_ack_status, value: acknowledged}
+          - {op: equals, path: transport_ack_count, value: 1}
+      - do: role_operations_director_button.click
+      - do: forecast_capacity_button.click
+      - do: staffing_upload_input.upload
+        input:
+          file:
+            name: staffing-command.csv
+            mime_type: text/csv
+            content: |
+              id,unit,nurse,gap,status
+              ST-1,west,Kim short,short,open
+              ST-2,diagnostics,Lee covered,covered,ready
+          rows:
+            - {id: ST-1, unit: west, nurse: Kim short, gap: short, status: open}
+            - {id: ST-2, unit: diagnostics, nurse: Lee covered, gap: covered, status: ready}
+      - do: activate_surge_button.click
+      - do: reconciliation_upload_input.upload
+        input:
+          file:
+            name: reconciliation-command.csv
+            mime_type: text/csv
+            content: |
+              id,patient,wristband,transport,status
+              RC-1,Ava Chen,matched,stat_eta,clear
+              RC-2,June Park,matched,routine,clear
+          rows:
+            - {id: RC-1, patient: Ava Chen, wristband: matched, transport: stat_eta, status: clear}
+            - {id: RC-2, patient: June Park, wristband: matched, transport: routine, status: clear}
+      - do: lock_reconciliation_button.click
+      - do: diversion_upload_input.upload
+        input:
+          file:
+            name: diversion-command.csv
+            mime_type: text/csv
+            content: |
+              id,site,service,status,eta
+              D-1,West ED,cardiology,open,18
+              D-2,North ASC,lab,monitoring,34
+          rows:
+            - {id: D-1, site: West ED, service: cardiology, status: open, eta: 18}
+            - {id: D-2, site: North ASC, service: lab, status: monitoring, eta: 34}
+      - do: resolve_diversion_button.click
+      - do: close_surge_button.click
+      - do: role_charge_nurse_button.click
+      - do: charge_signoff_button.click
+      - do: role_operations_director_button.click
+      - do: director_signoff_button.click
+      - do: finalize_clearance_button.click
+        expect:
+          - {op: equals, path: final_clearance_status, value: complete}
+          - {op: equals, path: final_clearance_count, value: 1}
+          - {op: equals, path: audit_count, value: 1}
+          - {op: equals, path: service_call_count, value: 5}
+          - {op: equals, path: reconciliation_status, value: locked}
+          - {op: equals, path: diversion_status, value: resolved}
+          - {op: equals, path: signoff_count, value: 2}
+          - {op: equals, path: surge_status, value: closed}
+          - {op: equals, path: transport_status, value: accepted}
+          - {op: equals, path: transport_ack_status, value: acknowledged}
+          - {op: equals, path: handoff_status, value: ready}
+          - {op: equals, path: clearance_readiness_score, value: 100}
+          - {op: equals, path: open_clearance_blockers, value: 0}
+          - {op: equals, path: last_action, value: finalize_clearance}
+      - table: audit_grid
+        expect_order: [A-1]
+        expect_row_count: 1
+        expect_rows:
+          - id: A-1
+            cells:
+              event: final_clearance
+              role: operations_director
+              patient: Ava Chen
+      - table: clearance_blocker_grid
+        expect_order: [B-HANDOFF, B-TRANSPORT, B-ACK, B-RECON, B-DIVERSION, B-SURGE, B-SIGNOFF-NURSE, B-SIGNOFF-DIRECTOR]
+        expect_row_count: 8
+        expect_rows:
+          - id: B-SIGNOFF-DIRECTOR
+            cells:
+              label: Operations director sign-off
+              status: cleared
+
+  - id: private_30_reload_preserves_incident_clearance
+    tier: persistence
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: select_ava_button.click
+      - do: role_charge_nurse_button.click
+      - do: assign_isolation_button.click
+      - do: escalate_delay_button.click
+      - do: score_risk_button.click
+      - do: verify_insurance_button.click
+      - do: role_billing_button.click
+      - do: request_auth_button.click
+      - do: role_clinician_button.click
+      - do: pain_score_input.fill
+        input: {value: "8"}
+      - do: disposition_input.fill
+        input: {value: "STAT CBC and cardiac workup"}
+      - do: save_assessment_button.click
+      - do: place_lab_order_button.click
+      - do: release_diagnostics_button.click
+      - do: role_charge_nurse_button.click
+      - do: request_transport_button.click
+      - do: referral_upload_input.upload
+        input:
+          file:
+            name: reload-clearance.csv
+            mime_type: text/csv
+            content: |
+              id,document,priority,status
+              RF-REL,Reload clearance packet,stat,ready
+          rows:
+            - {id: RF-REL, document: Reload clearance packet, priority: stat, status: ready}
+      - do: go_handoff_button.click
+      - do: close_escalation_button.click
+      - do: finalize_handoff_button.click
+      - do: go_surge_button.click
+      - do: role_charge_nurse_button.click
+      - do: acknowledge_transport_button.click
+      - do: role_operations_director_button.click
+      - do: forecast_capacity_button.click
+      - do: staffing_upload_input.upload
+        input:
+          file:
+            name: reload-staffing.csv
+            mime_type: text/csv
+            content: |
+              id,unit,nurse,gap,status
+              ST-1,west,Kim short,short,open
+          rows:
+            - {id: ST-1, unit: west, nurse: Kim short, gap: short, status: open}
+      - do: activate_surge_button.click
+      - do: reconciliation_upload_input.upload
+        input:
+          file:
+            name: reload-reconciliation.csv
+            mime_type: text/csv
+            content: |
+              id,patient,wristband,transport,status
+              RC-1,Ava Chen,matched,stat_eta,clear
+          rows:
+            - {id: RC-1, patient: Ava Chen, wristband: matched, transport: stat_eta, status: clear}
+      - do: lock_reconciliation_button.click
+      - do: diversion_upload_input.upload
+        input:
+          file:
+            name: reload-diversion.csv
+            mime_type: text/csv
+            content: |
+              id,site,service,status,eta
+              D-1,West ED,cardiology,open,18
+          rows:
+            - {id: D-1, site: West ED, service: cardiology, status: open, eta: 18}
+      - do: resolve_diversion_button.click
+      - do: close_surge_button.click
+      - do: role_charge_nurse_button.click
+      - do: charge_signoff_button.click
+      - do: role_operations_director_button.click
+      - do: director_signoff_button.click
+      - do: finalize_clearance_button.click
+      - browser: reload
+        expect_page: surge
+        expect:
+          - {op: unchanged, path: final_clearance_status}
+          - {op: unchanged, path: final_clearance_count}
+          - {op: unchanged, path: audit_count}
+          - {op: unchanged, path: transport_status}
+          - {op: unchanged, path: surge_status}
+          - {op: unchanged, path: reconciliation_status}
+          - {op: unchanged, path: diversion_status}
+          - {op: unchanged, path: signoff_count}
+          - {op: unchanged, path: clearance_readiness_score}
+          - {op: unchanged, path: open_clearance_blockers}
+
+  - id: private_31_transport_ack_requires_charge_role
+    tier: permission
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: select_ava_button.click
+      - do: role_charge_nurse_button.click
+      - do: score_risk_button.click
+      - do: verify_insurance_button.click
+      - do: role_billing_button.click
+      - do: request_auth_button.click
+      - do: role_clinician_button.click
+      - do: pain_score_input.fill
+        input: {value: "8"}
+      - do: disposition_input.fill
+        input: {value: "STAT CBC and cardiac workup"}
+      - do: save_assessment_button.click
+      - do: place_lab_order_button.click
+      - do: release_diagnostics_button.click
+      - do: role_charge_nurse_button.click
+      - do: request_transport_button.click
+      - do: go_surge_button.click
+      - do: role_billing_button.click
+      - do: acknowledge_transport_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: transport_ack_status, value: idle}
+          - {op: equals, path: denied_count, value: 1}
+          - {op: equals, path: last_action, value: unauthorized_capacity}
+
+  - id: private_32_reconciliation_upload_counts_mismatch
+    tier: upload
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: go_surge_button.click
+      - do: reconciliation_upload_input.upload
+        input:
+          file:
+            name: mismatch-reconciliation.csv
+            mime_type: text/csv
+            content: |
+              id,patient,wristband,transport,status
+              RC-1,Ava Chen,matched,stat_eta,clear
+              RC-2,June Park,missing,routine,mismatch
+          rows:
+            - {id: RC-1, patient: Ava Chen, wristband: matched, transport: stat_eta, status: clear}
+            - {id: RC-2, patient: June Park, wristband: missing, transport: routine, status: mismatch}
+        expect:
+          - {op: equals, path: reconciliation_count, value: 2}
+          - {op: equals, path: mismatch_count, value: 1}
+          - {op: equals, path: reconciliation_status, value: review}
+          - {op: equals, path: last_reconciliation_file, value: mismatch-reconciliation.csv}
+      - table: reconciliation_grid
+        expect_order: [RC-1, RC-2]
+        expect_row_count: 2
+        expect_rows:
+          - id: RC-2
+            cells:
+              patient: June Park
+              status: mismatch
+
+  - id: private_33_reconciliation_lock_blocked_with_mismatch
+    tier: validation
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: go_surge_button.click
+      - do: role_operations_director_button.click
+      - do: reconciliation_upload_input.upload
+        input:
+          file:
+            name: lock-blocked-reconciliation.csv
+            mime_type: text/csv
+            content: |
+              id,patient,wristband,transport,status
+              RC-1,Ava Chen,missing,stat_eta,mismatch
+          rows:
+            - {id: RC-1, patient: Ava Chen, wristband: missing, transport: stat_eta, status: mismatch}
+      - do: lock_reconciliation_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: reconciliation_status, value: blocked}
+          - {op: equals, path: reconciliation_lock_count, value: 0}
+          - {op: equals, path: reconciliation_block_count, value: 1}
+          - {op: equals, path: last_action, value: reconciliation_blocked}
+
+  - id: private_34_diversion_resolve_requires_director
+    tier: permission
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: go_surge_button.click
+      - do: diversion_upload_input.upload
+        input:
+          file:
+            name: director-diversion.csv
+            mime_type: text/csv
+            content: |
+              id,site,service,status,eta
+              D-1,West ED,cardiology,open,18
+          rows:
+            - {id: D-1, site: West ED, service: cardiology, status: open, eta: 18}
+      - do: role_charge_nurse_button.click
+      - do: resolve_diversion_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: diversion_status, value: review}
+          - {op: equals, path: open_diversion_count, value: 1}
+          - {op: equals, path: denied_count, value: 1}
+          - {op: equals, path: last_action, value: unauthorized_director}
+
+  - id: private_35_signoffs_require_locked_inputs
+    tier: validation
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: go_surge_button.click
+      - do: role_charge_nurse_button.click
+      - do: charge_signoff_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: nurse_signoff_status, value: idle}
+          - {op: equals, path: signoff_count, value: 0}
+      - do: role_operations_director_button.click
+      - do: director_signoff_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: director_signoff_status, value: idle}
+          - {op: equals, path: signoff_count, value: 0}
+
+  - id: private_36_final_clearance_blocked_without_signoffs
+    tier: validation
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: select_ava_button.click
+      - do: role_charge_nurse_button.click
+      - do: assign_isolation_button.click
+      - do: escalate_delay_button.click
+      - do: score_risk_button.click
+      - do: verify_insurance_button.click
+      - do: role_billing_button.click
+      - do: request_auth_button.click
+      - do: role_clinician_button.click
+      - do: pain_score_input.fill
+        input: {value: "8"}
+      - do: disposition_input.fill
+        input: {value: "STAT CBC and cardiac workup"}
+      - do: save_assessment_button.click
+      - do: place_lab_order_button.click
+      - do: release_diagnostics_button.click
+      - do: role_charge_nurse_button.click
+      - do: request_transport_button.click
+      - do: referral_upload_input.upload
+        input:
+          file:
+            name: blocked-clearance.csv
+            mime_type: text/csv
+            content: |
+              id,document,priority,status
+              RF-BLOCK,Blocked clearance packet,stat,ready
+          rows:
+            - {id: RF-BLOCK, document: Blocked clearance packet, priority: stat, status: ready}
+      - do: go_handoff_button.click
+      - do: close_escalation_button.click
+      - do: finalize_handoff_button.click
+      - do: go_surge_button.click
+      - do: acknowledge_transport_button.click
+      - do: role_operations_director_button.click
+      - do: forecast_capacity_button.click
+      - do: staffing_upload_input.upload
+        input:
+          file:
+            name: blocked-staffing.csv
+            mime_type: text/csv
+            content: |
+              id,unit,nurse,gap,status
+              ST-1,west,Kim short,short,open
+          rows:
+            - {id: ST-1, unit: west, nurse: Kim short, gap: short, status: open}
+      - do: activate_surge_button.click
+      - do: reconciliation_upload_input.upload
+        input:
+          file:
+            name: blocked-reconciliation.csv
+            mime_type: text/csv
+            content: |
+              id,patient,wristband,transport,status
+              RC-1,Ava Chen,matched,stat_eta,clear
+          rows:
+            - {id: RC-1, patient: Ava Chen, wristband: matched, transport: stat_eta, status: clear}
+      - do: lock_reconciliation_button.click
+      - do: diversion_upload_input.upload
+        input:
+          file:
+            name: blocked-diversion.csv
+            mime_type: text/csv
+            content: |
+              id,site,service,status,eta
+              D-1,West ED,cardiology,open,18
+          rows:
+            - {id: D-1, site: West ED, service: cardiology, status: open, eta: 18}
+      - do: resolve_diversion_button.click
+      - do: close_surge_button.click
+      - do: finalize_clearance_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: final_clearance_status, value: blocked}
+          - {op: equals, path: final_clearance_count, value: 0}
+          - {op: equals, path: signoff_count, value: 0}
+          - {op: equals, path: last_action, value: clearance_blocked}
+
+  - id: private_37_reconciliation_reupload_reopens_readiness_blocker
+    tier: validation
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: go_surge_button.click
+      - do: role_operations_director_button.click
+      - do: reconciliation_upload_input.upload
+        input:
+          file:
+            name: clean-reconciliation.csv
+            mime_type: text/csv
+            content: |
+              id,patient,wristband,transport,status
+              RC-1,Ava Chen,matched,stat_eta,clear
+          rows:
+            - {id: RC-1, patient: Ava Chen, wristband: matched, transport: stat_eta, status: clear}
+      - do: lock_reconciliation_button.click
+        expect:
+          - {op: equals, path: reconciliation_status, value: locked}
+          - {op: equals, path: clearance_readiness_score, value: 13}
+          - {op: equals, path: open_clearance_blockers, value: 7}
+      - do: reconciliation_upload_input.upload
+        input:
+          file:
+            name: reopened-reconciliation.csv
+            mime_type: text/csv
+            content: |
+              id,patient,wristband,transport,status
+              RC-1,Ava Chen,missing,stat_eta,mismatch
+          rows:
+            - {id: RC-1, patient: Ava Chen, wristband: missing, transport: stat_eta, status: mismatch}
+        expect:
+          - {op: equals, path: mismatch_count, value: 1}
+          - {op: equals, path: reconciliation_status, value: review}
+          - {op: equals, path: clearance_readiness_score, value: 0}
+          - {op: equals, path: open_clearance_blockers, value: 8}
+      - do: lock_reconciliation_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: reconciliation_status, value: blocked}
+          - {op: equals, path: reconciliation_lock_count, value: 1}
+          - {op: equals, path: reconciliation_block_count, value: 1}
+      - table: clearance_blocker_grid
+        expect_order: [B-HANDOFF, B-TRANSPORT, B-ACK, B-RECON, B-DIVERSION, B-SURGE, B-SIGNOFF-NURSE, B-SIGNOFF-DIRECTOR]
+        expect_row_count: 8
+        expect_rows:
+          - id: B-RECON
+            cells:
+              label: Reconciliation locked
+              status: open

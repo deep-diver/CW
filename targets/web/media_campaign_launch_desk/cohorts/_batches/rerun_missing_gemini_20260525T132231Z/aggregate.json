@@ -1,0 +1,283 @@
+{
+  "batch_root": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/media_campaign_launch_desk/cohorts/_batches/rerun_missing_gemini_20260525T132231Z",
+  "generated_at": "2026-05-25T23:19:24+00:00",
+  "total_tasks": 10,
+  "evaluated": 10,
+  "rows": [
+    {
+      "target_tier": "D",
+      "model_tier": "T",
+      "slug": "gemini_flash_latest",
+      "model": "gemini-flash-latest",
+      "rep": 1,
+      "subject": "repeat_tier_d_t_gemini_flash_latest_r01",
+      "candidate_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/media_campaign_launch_desk/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/candidates/gemini_flash_latest/r01",
+      "eval_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/media_campaign_launch_desk/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/runs/gemini_flash_latest/r01",
+      "run_id": "20260526-020351-43728c9a",
+      "passed": false,
+      "scenarios_passed": 0,
+      "scenarios_total": 48,
+      "formal_ratio": 0.0,
+      "stepwise_ratio": 0.08389906467464864,
+      "contract_ratio": 1.0,
+      "first_failure": "public_01_filter_embargo_risk_assets",
+      "failure_breakdown": {
+        "assertion_state_equals": 48
+      },
+      "summary_path": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/media_campaign_launch_desk/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/runs/gemini_flash_latest/r01/20260526-020351-43728c9a/summary.json",
+      "status": "ok"
+    },
+    {
+      "target_tier": "D",
+      "model_tier": "T",
+      "slug": "gemini_flash_latest",
+      "model": "gemini-flash-latest",
+      "rep": 2,
+      "subject": "repeat_tier_d_t_gemini_flash_latest_r02",
+      "candidate_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/media_campaign_launch_desk/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/candidates/gemini_flash_latest/r02",
+      "eval_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/media_campaign_launch_desk/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/runs/gemini_flash_latest/r02",
+      "run_id": "20260526-020630-ff8fdd7c",
+      "passed": false,
+      "scenarios_passed": 42,
+      "scenarios_total": 48,
+      "formal_ratio": 0.8359788359788359,
+      "stepwise_ratio": 0.9825155151984418,
+      "contract_ratio": 1.0,
+      "first_failure": "public_17_full_public_global_launch_seal",
+      "failure_breakdown": {
+        "assertion_state_delta": 4,
+        "assertion_table_cell_equals": 1,
+        "assertion_state_equals": 1
+      },
+      "summary_path": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/media_campaign_launch_desk/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/runs/gemini_flash_latest/r02/20260526-020630-ff8fdd7c/summary.json",
+      "status": "ok"
+    },
+    {
+      "target_tier": "D",
+      "model_tier": "T",
+      "slug": "gemini_flash_latest",
+      "model": "gemini-flash-latest",
+      "rep": 3,
+      "subject": "repeat_tier_d_t_gemini_flash_latest_r03",
+      "candidate_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/media_campaign_launch_desk/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/candidates/gemini_flash_latest/r03",
+      "eval_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/media_campaign_launch_desk/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/runs/gemini_flash_latest/r03",
+      "run_id": "20260526-081256-a2dff4cb",
+      "passed": false,
+      "scenarios_passed": 1,
+      "scenarios_total": 48,
+      "formal_ratio": 0.005291005291005291,
+      "stepwise_ratio": 0.22733768591266335,
+      "contract_ratio": 0.6041666666666666,
+      "first_failure": "public_01_filter_embargo_risk_assets",
+      "failure_breakdown": {
+        "assertion_browser_page_equals": 19,
+        "assertion_state_equals": 28
+      },
+      "summary_path": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/media_campaign_launch_desk/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/runs/gemini_flash_latest/r03/20260526-081256-a2dff4cb/summary.json",
+      "status": "ok"
+    },
+    {
+      "target_tier": "D",
+      "model_tier": "T",
+      "slug": "gemini_flash_latest",
+      "model": "gemini-flash-latest",
+      "rep": 4,
+      "subject": "repeat_tier_d_t_gemini_flash_latest_r04",
+      "candidate_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/media_campaign_launch_desk/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/candidates/gemini_flash_latest/r04",
+      "eval_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/media_campaign_launch_desk/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/runs/gemini_flash_latest/r04",
+      "run_id": "20260526-020655-e707b37c",
+      "passed": false,
+      "scenarios_passed": 0,
+      "scenarios_total": 48,
+      "formal_ratio": 0.0,
+      "stepwise_ratio": 0.08389906467464864,
+      "contract_ratio": 1.0,
+      "first_failure": "public_01_filter_embargo_risk_assets",
+      "failure_breakdown": {
+        "assertion_state_equals": 48
+      },
+      "summary_path": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/media_campaign_launch_desk/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/runs/gemini_flash_latest/r04/20260526-020655-e707b37c/summary.json",
+      "status": "ok"
+    },
+    {
+      "target_tier": "D",
+      "model_tier": "T",
+      "slug": "gemini_flash_latest",
+      "model": "gemini-flash-latest",
+      "rep": 5,
+      "subject": "repeat_tier_d_t_gemini_flash_latest_r05",
+      "candidate_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/media_campaign_launch_desk/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/candidates/gemini_flash_latest/r05",
+      "eval_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/media_campaign_launch_desk/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/runs/gemini_flash_latest/r05",
+      "run_id": "20260526-020845-8cfe5c37",
+      "passed": false,
+      "scenarios_passed": 0,
+      "scenarios_total": 48,
+      "formal_ratio": 0.0,
+      "stepwise_ratio": 0.08389906467464864,
+      "contract_ratio": 1.0,
+      "first_failure": "public_01_filter_embargo_risk_assets",
+      "failure_breakdown": {
+        "assertion_state_equals": 48
+      },
+      "summary_path": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/media_campaign_launch_desk/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/runs/gemini_flash_latest/r05/20260526-020845-8cfe5c37/summary.json",
+      "status": "ok"
+    },
+    {
+      "target_tier": "D",
+      "model_tier": "T",
+      "slug": "gemini_flash_latest",
+      "model": "gemini-flash-latest",
+      "rep": 6,
+      "subject": "repeat_tier_d_t_gemini_flash_latest_r06",
+      "candidate_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/media_campaign_launch_desk/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/candidates/gemini_flash_latest/r06",
+      "eval_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/media_campaign_launch_desk/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/runs/gemini_flash_latest/r06",
+      "run_id": "20260526-020904-e7891332",
+      "passed": false,
+      "scenarios_passed": 44,
+      "scenarios_total": 48,
+      "formal_ratio": 0.8994708994708994,
+      "stepwise_ratio": 0.9934985452668379,
+      "contract_ratio": 1.0,
+      "first_failure": "private_20_post_seal_window_reupload_reopens_launch",
+      "failure_breakdown": {
+        "assertion_state_equals": 2,
+        "assertion_state_delta": 1,
+        "assertion_table_cell_equals": 1
+      },
+      "summary_path": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/media_campaign_launch_desk/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/runs/gemini_flash_latest/r06/20260526-020904-e7891332/summary.json",
+      "status": "ok"
+    },
+    {
+      "target_tier": "D",
+      "model_tier": "T",
+      "slug": "gemini_flash_latest",
+      "model": "gemini-flash-latest",
+      "rep": 7,
+      "subject": "repeat_tier_d_t_gemini_flash_latest_r07",
+      "candidate_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/media_campaign_launch_desk/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/candidates/gemini_flash_latest/r07",
+      "eval_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/media_campaign_launch_desk/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/runs/gemini_flash_latest/r07",
+      "run_id": "20260526-081257-db331fd8",
+      "passed": false,
+      "scenarios_passed": 0,
+      "scenarios_total": 48,
+      "formal_ratio": 0.0,
+      "stepwise_ratio": 0.08389906467464864,
+      "contract_ratio": 1.0,
+      "first_failure": "public_01_filter_embargo_risk_assets",
+      "failure_breakdown": {
+        "assertion_state_equals": 48
+      },
+      "summary_path": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/media_campaign_launch_desk/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/runs/gemini_flash_latest/r07/20260526-081257-db331fd8/summary.json",
+      "status": "ok"
+    },
+    {
+      "target_tier": "D",
+      "model_tier": "T",
+      "slug": "gemini_flash_latest",
+      "model": "gemini-flash-latest",
+      "rep": 8,
+      "subject": "repeat_tier_d_t_gemini_flash_latest_r08",
+      "candidate_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/media_campaign_launch_desk/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/candidates/gemini_flash_latest/r08",
+      "eval_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/media_campaign_launch_desk/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/runs/gemini_flash_latest/r08",
+      "run_id": "20260526-081642-73197944",
+      "passed": false,
+      "scenarios_passed": 42,
+      "scenarios_total": 48,
+      "formal_ratio": 0.8518518518518519,
+      "stepwise_ratio": 0.9926020855085895,
+      "contract_ratio": 1.0,
+      "first_failure": "public_16_readiness_ledger_initial_state",
+      "failure_breakdown": {
+        "assertion_table_cell_equals": 3,
+        "assertion_state_equals": 2,
+        "assertion_state_appended_object": 1
+      },
+      "summary_path": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/media_campaign_launch_desk/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/runs/gemini_flash_latest/r08/20260526-081642-73197944/summary.json",
+      "status": "ok"
+    },
+    {
+      "target_tier": "D",
+      "model_tier": "T",
+      "slug": "gemini_flash_latest",
+      "model": "gemini-flash-latest",
+      "rep": 9,
+      "subject": "repeat_tier_d_t_gemini_flash_latest_r09",
+      "candidate_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/media_campaign_launch_desk/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/candidates/gemini_flash_latest/r09",
+      "eval_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/media_campaign_launch_desk/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/runs/gemini_flash_latest/r09",
+      "run_id": "20260526-021109-efa0f96d",
+      "passed": false,
+      "scenarios_passed": 0,
+      "scenarios_total": 48,
+      "formal_ratio": 0.0,
+      "stepwise_ratio": 0.08389906467464864,
+      "contract_ratio": 1.0,
+      "first_failure": "public_01_filter_embargo_risk_assets",
+      "failure_breakdown": {
+        "assertion_state_equals": 48
+      },
+      "summary_path": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/media_campaign_launch_desk/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/runs/gemini_flash_latest/r09/20260526-021109-efa0f96d/summary.json",
+      "status": "ok"
+    },
+    {
+      "target_tier": "D",
+      "model_tier": "T",
+      "slug": "gemini_flash_latest",
+      "model": "gemini-flash-latest",
+      "rep": 10,
+      "subject": "repeat_tier_d_t_gemini_flash_latest_r10",
+      "candidate_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/media_campaign_launch_desk/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/candidates/gemini_flash_latest/r10",
+      "eval_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/media_campaign_launch_desk/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/runs/gemini_flash_latest/r10",
+      "run_id": "20260526-021127-d963de48",
+      "passed": false,
+      "scenarios_passed": 0,
+      "scenarios_total": 48,
+      "formal_ratio": 0.0,
+      "stepwise_ratio": 0.08389906467464864,
+      "contract_ratio": 1.0,
+      "first_failure": "public_01_filter_embargo_risk_assets",
+      "failure_breakdown": {
+        "assertion_state_equals": 48
+      },
+      "summary_path": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/media_campaign_launch_desk/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/runs/gemini_flash_latest/r10/20260526-021127-d963de48/summary.json",
+      "status": "ok"
+    }
+  ],
+  "model_stats": [
+    {
+      "group": "tier_D/model_tier_T/gemini_flash_latest",
+      "target_tier": "D",
+      "model_tier": "T",
+      "slug": "gemini_flash_latest",
+      "model": "gemini-flash-latest",
+      "runs": 10,
+      "evaluated": 10,
+      "generation_or_eval_missing": 0,
+      "scenario_pass_mean": 12.9,
+      "scenario_pass_sd": 20.55047985381904,
+      "formal_mean": 0.25925925925925924,
+      "formal_sd": 0.4165245691463989,
+      "stepwise_mean": 0.36993482199344246,
+      "stepwise_sd": 0.42986225361304786,
+      "contract_mean": 0.9604166666666666,
+      "contract_sd": 0.12517349071499836,
+      "first_failures": {
+        "public_01_filter_embargo_risk_assets": 7,
+        "private_20_post_seal_window_reupload_reopens_launch": 1,
+        "public_16_readiness_ledger_initial_state": 1
+      }
+    }
+  ],
+  "tier_group_stats": [
+    {
+      "target_tier": "D",
+      "model_tier": "T",
+      "evaluated": 10,
+      "formal_mean": 0.25925925925925924,
+      "formal_sd": 0.4165245691463989,
+      "stepwise_mean": 0.36993482199344246,
+      "stepwise_sd": 0.42986225361304786,
+      "contract_mean": 0.9604166666666666,
+      "contract_sd": 0.12517349071499836
+    }
+  ]
+}

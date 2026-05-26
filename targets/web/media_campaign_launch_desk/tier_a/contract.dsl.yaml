@@ -1,0 +1,461 @@
+dsl_version: "3.0.0"
+
+app:
+  id: media_campaign_launch_desk_tier_a
+  name: Media Campaign Launch Desk Tier A
+  capability: campaign_launch_operations
+  ui_ux_brief: |
+    Media Campaign Launch Desk Tier A should look like a real brand campaign
+    operations product, not a generic analytics dashboard. A desktop screenshot
+    should immediately show creative asset tiles, channel filters, a weekly
+    media calendar, campaign budget packet, rights clearance lane, legal review
+    control, and launch ledger. Use an editorial operations visual language:
+    white studio surfaces, ink-black typography, saturated teal controls,
+    coral campaign highlights, amber legal warning states, thumbnail-like asset
+    blocks, and calendar strips. Avoid travel booking cards, grocery checkout,
+    home repair dispatch maps, clinical command colors, or a bare state
+    debugger.
+
+runtime:
+  target: web
+  start_url: /#/assets
+  state_probe:
+    kind: javascript
+    expression: window.__DETOX_STATE__
+  pages:
+    assets:
+      path: /#/assets
+      purpose: Creative asset catalog, filters, and asset selection.
+    calendar:
+      path: /#/calendar
+      purpose: Channel schedule and campaign metadata workspace.
+    launch:
+      path: /#/launch
+      purpose: Rights clearance, budget commit, legal approval, and launch ledger.
+  session:
+    role_path: active_role
+    roles: [marketer, legal]
+  persistence:
+    reload:
+      scope: local_storage
+      paths:
+        - current_page
+        - active_role
+        - assets
+        - visible_assets
+        - selected_channel
+        - selected_asset_id
+        - selected_asset_name
+        - selected_asset_type
+        - selected_asset_channel
+        - selected_asset_budget
+        - campaign_name
+        - budget_key
+        - budget_status
+        - schedule_rows
+        - schedule_count
+        - rights_status
+        - review_status
+        - approval_status
+        - launch_status
+        - launch_rows
+        - launch_count
+        - legal_note
+        - denied_count
+        - service_call_count
+        - validation_errors
+        - last_action
+  services:
+    rights_check:
+      endpoint: /api/rights
+      method: GET
+      responses:
+        - id: launch_film_clear
+          match: {query: {asset: AD-VID-01}}
+          status: 200
+          json: {status: cleared, region: global}
+        - id: banner_clear
+          match: {query: {asset: AD-BAN-02}}
+          status: 200
+          json: {status: cleared, region: us}
+        - id: creator_review
+          match: {query: {asset: AD-INF-03}}
+          status: 200
+          json: {status: legal_required, region: social}
+        - id: email_clear
+          match: {query: {asset: AD-EML-04}}
+          status: 200
+          json: {status: cleared, region: owned}
+  tables:
+    asset_grid:
+      selector: '[data-testid="asset-grid"]'
+      row_selector: '[data-testid="asset-row"]'
+      row_id_attribute: data-asset-id
+      source_path: visible_assets
+      row_id_field: id
+      columns:
+        name: {selector: '[data-col="name"]', state_field: name}
+        type: {selector: '[data-col="type"]', state_field: type}
+        channel: {selector: '[data-col="channel"]', state_field: channel}
+        budget: {selector: '[data-col="budget"]', state_field: budget}
+        rights: {selector: '[data-col="rights"]', state_field: rights}
+    schedule_grid:
+      selector: '[data-testid="schedule-grid"]'
+      row_selector: '[data-testid="schedule-row"]'
+      row_id_attribute: data-schedule-id
+      source_path: schedule_rows
+      row_id_field: id
+      columns:
+        asset: {selector: '[data-col="asset"]', state_field: asset}
+        channel: {selector: '[data-col="channel"]', state_field: channel}
+        slot: {selector: '[data-col="slot"]', state_field: slot}
+        status: {selector: '[data-col="status"]', state_field: status}
+    launch_grid:
+      selector: '[data-testid="launch-grid"]'
+      row_selector: '[data-testid="launch-row"]'
+      row_id_attribute: data-launch-id
+      source_path: launch_rows
+      row_id_field: id
+      columns:
+        campaign: {selector: '[data-col="campaign"]', state_field: campaign}
+        asset: {selector: '[data-col="asset"]', state_field: asset}
+        channel: {selector: '[data-col="channel"]', state_field: channel}
+        status: {selector: '[data-col="status"]', state_field: status}
+
+state:
+  initial:
+    current_page: assets
+    active_role: marketer
+    assets:
+      - {id: AD-VID-01, name: Aurora Launch Film, type: video, channel: social, budget: 4200, rights: cleared}
+      - {id: AD-BAN-02, name: Metro Banner Set, type: display, channel: display, budget: 1800, rights: cleared}
+      - {id: AD-INF-03, name: Creator Cutdown, type: influencer, channel: social, budget: 2600, rights: review}
+      - {id: AD-EML-04, name: Alumni Email Hero, type: email, channel: email, budget: 900, rights: cleared}
+    visible_assets:
+      - {id: AD-VID-01, name: Aurora Launch Film, type: video, channel: social, budget: 4200, rights: cleared}
+      - {id: AD-BAN-02, name: Metro Banner Set, type: display, channel: display, budget: 1800, rights: cleared}
+      - {id: AD-INF-03, name: Creator Cutdown, type: influencer, channel: social, budget: 2600, rights: review}
+      - {id: AD-EML-04, name: Alumni Email Hero, type: email, channel: email, budget: 900, rights: cleared}
+    selected_channel: all
+    selected_asset_id: ""
+    selected_asset_name: ""
+    selected_asset_type: ""
+    selected_asset_channel: ""
+    selected_asset_budget: 0
+    campaign_name: ""
+    budget_key: ""
+    budget_status: idle
+    schedule_rows: []
+    schedule_count: 0
+    rights_status: unchecked
+    review_status: idle
+    approval_status: none
+    launch_status: idle
+    launch_rows: []
+    launch_count: 0
+    legal_note: ""
+    denied_count: 0
+    service_call_count: 0
+    validation_errors: {}
+    last_action: ready
+    __services.calls: []
+  schema:
+    current_page: {type: string, purpose: Active browser-visible route.}
+    active_role: {type: string, purpose: Current role, marketer or legal.}
+    assets: {type: array, purpose: Creative asset catalog.}
+    visible_assets: {type: array, purpose: Filtered creative asset rows.}
+    selected_channel: {type: string, purpose: Current channel filter.}
+    selected_asset_id: {type: string, purpose: Selected asset id.}
+    selected_asset_name: {type: string, purpose: Selected asset name.}
+    selected_asset_type: {type: string, purpose: Selected asset type.}
+    selected_asset_channel: {type: string, purpose: Selected asset channel.}
+    selected_asset_budget: {type: number, purpose: Selected asset budget.}
+    campaign_name: {type: string, purpose: Normalized campaign name.}
+    budget_key: {type: string, purpose: Currency-normalized budget key.}
+    budget_status: {type: string, purpose: idle or committed.}
+    schedule_rows: {type: array, purpose: Channel schedule rows.}
+    schedule_count: {type: number, purpose: Number of scheduled placements.}
+    rights_status: {type: string, purpose: unchecked, cleared, legal_required, or blocked.}
+    review_status: {type: string, purpose: idle, legal_required, or approved.}
+    approval_status: {type: string, purpose: Legal approval status.}
+    launch_status: {type: string, purpose: idle, ready, launched, or blocked.}
+    launch_rows: {type: array, purpose: Campaign launch ledger rows.}
+    launch_count: {type: number, purpose: Number of launch ledger rows.}
+    legal_note: {type: string, purpose: Legal reviewer note.}
+    denied_count: {type: number, purpose: Unauthorized legal action count.}
+    service_call_count: {type: number, purpose: Rights service call count.}
+    validation_errors: {type: object, purpose: Public validation error map.}
+    last_action: {type: string, purpose: Last public action marker.}
+    __services.calls: {type: array, purpose: Evaluator service call ledger.}
+
+components:
+  reset_button:
+    kind: button
+    selector: '[data-testid="reset"]'
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_page, value: assets}
+          - {op: equals, path: active_role, value: marketer}
+          - {op: equals, path: selected_channel, value: all}
+          - {op: equals, path: visible_assets, value: [{id: AD-VID-01, name: Aurora Launch Film, type: video, channel: social, budget: 4200, rights: cleared}, {id: AD-BAN-02, name: Metro Banner Set, type: display, channel: display, budget: 1800, rights: cleared}, {id: AD-INF-03, name: Creator Cutdown, type: influencer, channel: social, budget: 2600, rights: review}, {id: AD-EML-04, name: Alumni Email Hero, type: email, channel: email, budget: 900, rights: cleared}]}
+          - {op: equals, path: selected_asset_id, value: ""}
+          - {op: equals, path: selected_asset_name, value: ""}
+          - {op: equals, path: selected_asset_type, value: ""}
+          - {op: equals, path: selected_asset_channel, value: ""}
+          - {op: equals, path: selected_asset_budget, value: 0}
+          - {op: equals, path: campaign_name, value: ""}
+          - {op: equals, path: budget_key, value: ""}
+          - {op: equals, path: budget_status, value: idle}
+          - {op: equals, path: schedule_rows, value: []}
+          - {op: equals, path: schedule_count, value: 0}
+          - {op: equals, path: rights_status, value: unchecked}
+          - {op: equals, path: review_status, value: idle}
+          - {op: equals, path: approval_status, value: none}
+          - {op: equals, path: launch_status, value: idle}
+          - {op: equals, path: launch_rows, value: []}
+          - {op: equals, path: launch_count, value: 0}
+          - {op: equals, path: legal_note, value: ""}
+          - {op: equals, path: denied_count, value: 0}
+          - {op: equals, path: service_call_count, value: 0}
+          - {op: equals, path: validation_errors, value: {}}
+          - {op: equals, path: last_action, value: reset}
+
+  go_assets_button:
+    kind: button
+    selector: '[data-testid="go-assets"]'
+    actions: {click: {navigate_to: assets}}
+  go_calendar_button:
+    kind: button
+    selector: '[data-testid="go-calendar"]'
+    actions: {click: {navigate_to: calendar}}
+  go_launch_button:
+    kind: button
+    selector: '[data-testid="go-launch"]'
+    actions: {click: {navigate_to: launch}}
+  role_marketer_button:
+    kind: button
+    selector: '[data-testid="role-marketer"]'
+    actions:
+      click:
+        effects:
+          - {op: equals, path: active_role, value: marketer}
+          - {op: equals, path: last_action, value: role_marketer}
+  role_legal_button:
+    kind: button
+    selector: '[data-testid="role-legal"]'
+    actions:
+      click:
+        effects:
+          - {op: equals, path: active_role, value: legal}
+          - {op: equals, path: last_action, value: role_legal}
+
+  filter_all_button:
+    kind: button
+    selector: '[data-testid="filter-all"]'
+    page: assets
+    actions:
+      click:
+        effects:
+          - {op: equals, path: selected_channel, value: all}
+          - {op: equals, path: visible_assets, value: [{id: AD-VID-01, name: Aurora Launch Film, type: video, channel: social, budget: 4200, rights: cleared}, {id: AD-BAN-02, name: Metro Banner Set, type: display, channel: display, budget: 1800, rights: cleared}, {id: AD-INF-03, name: Creator Cutdown, type: influencer, channel: social, budget: 2600, rights: review}, {id: AD-EML-04, name: Alumni Email Hero, type: email, channel: email, budget: 900, rights: cleared}]}
+  filter_social_button:
+    kind: button
+    selector: '[data-testid="filter-social"]'
+    page: assets
+    actions:
+      click:
+        effects:
+          - {op: equals, path: selected_channel, value: social}
+          - {op: equals_filter, path: visible_assets, source_path: assets, where: [{op: equals, field: channel, value: social}], order_by: [{field: budget, direction: desc}]}
+  filter_video_button:
+    kind: button
+    selector: '[data-testid="filter-video"]'
+    page: assets
+    actions:
+      click:
+        effects:
+          - {op: equals, path: selected_channel, value: video}
+          - {op: equals_filter, path: visible_assets, source_path: assets, where: [{op: equals, field: type, value: video}], order_by: [{field: budget, direction: desc}]}
+
+  select_video_button:
+    kind: button
+    selector: '[data-testid="select-AD-VID-01"]'
+    page: assets
+    actions:
+      click:
+        effects:
+          - {op: equals, path: selected_asset_id, value: AD-VID-01}
+          - {op: equals, path: selected_asset_name, value: Aurora Launch Film}
+          - {op: equals, path: selected_asset_type, value: video}
+          - {op: equals, path: selected_asset_channel, value: social}
+          - {op: equals, path: selected_asset_budget, value: 4200}
+          - {op: equals, path: rights_status, value: unchecked}
+          - {op: equals, path: last_action, value: select_asset}
+  select_banner_button:
+    kind: button
+    selector: '[data-testid="select-AD-BAN-02"]'
+    page: assets
+    actions:
+      click:
+        effects:
+          - {op: equals, path: selected_asset_id, value: AD-BAN-02}
+          - {op: equals, path: selected_asset_name, value: Metro Banner Set}
+          - {op: equals, path: selected_asset_type, value: display}
+          - {op: equals, path: selected_asset_channel, value: display}
+          - {op: equals, path: selected_asset_budget, value: 1800}
+          - {op: equals, path: rights_status, value: unchecked}
+          - {op: equals, path: last_action, value: select_asset}
+  select_creator_button:
+    kind: button
+    selector: '[data-testid="select-AD-INF-03"]'
+    page: assets
+    actions:
+      click:
+        effects:
+          - {op: equals, path: selected_asset_id, value: AD-INF-03}
+          - {op: equals, path: selected_asset_name, value: Creator Cutdown}
+          - {op: equals, path: selected_asset_type, value: influencer}
+          - {op: equals, path: selected_asset_channel, value: social}
+          - {op: equals, path: selected_asset_budget, value: 2600}
+          - {op: equals, path: rights_status, value: unchecked}
+          - {op: equals, path: last_action, value: select_asset}
+  select_email_button:
+    kind: button
+    selector: '[data-testid="select-AD-EML-04"]'
+    page: assets
+    actions:
+      click:
+        effects:
+          - {op: equals, path: selected_asset_id, value: AD-EML-04}
+          - {op: equals, path: selected_asset_name, value: Alumni Email Hero}
+          - {op: equals, path: selected_asset_type, value: email}
+          - {op: equals, path: selected_asset_channel, value: email}
+          - {op: equals, path: selected_asset_budget, value: 900}
+          - {op: equals, path: rights_status, value: unchecked}
+          - {op: equals, path: last_action, value: select_asset}
+
+  campaign_name_input:
+    kind: input
+    selector: '[data-testid="campaign-name"]'
+    page: calendar
+    actions:
+      fill:
+        effects:
+          - {op: equals_normalized, path: campaign_name, value_from: input.value, normalizers: [trim, collapse_whitespace]}
+  budget_input:
+    kind: input
+    selector: '[data-testid="budget"]'
+    page: calendar
+    actions:
+      fill:
+        effects:
+          - {op: equals_normalized, path: budget_key, value_from: input.value, normalizers: [currency_number]}
+  legal_note_input:
+    kind: input
+    selector: '[data-testid="legal-note"]'
+    page: launch
+    actions:
+      fill:
+        effects:
+          - {op: equals_normalized, path: legal_note, value_from: input.value, normalizers: [trim, collapse_whitespace]}
+
+  schedule_morning_button:
+    kind: button
+    selector: '[data-testid="schedule-morning"]'
+    page: calendar
+    actions:
+      click:
+        preconditions:
+          - {op: one_of, path: selected_asset_id, values: [AD-VID-01, AD-BAN-02, AD-INF-03, AD-EML-04]}
+        effects:
+          - {op: changed_by, path: schedule_count, by: 1}
+          - {op: appended_object, path: schedule_rows, value: {id: SCH-001, asset: {from_path: selected_asset_name}, channel: {from_path: selected_asset_channel}, slot: monday_0900, status: scheduled}}
+          - {op: equals, path: last_action, value: schedule_morning}
+  schedule_evening_button:
+    kind: button
+    selector: '[data-testid="schedule-evening"]'
+    page: calendar
+    actions:
+      click:
+        preconditions:
+          - {op: one_of, path: selected_asset_id, values: [AD-VID-01, AD-BAN-02, AD-INF-03, AD-EML-04]}
+        effects:
+          - {op: changed_by, path: schedule_count, by: 1}
+          - {op: appended_object, path: schedule_rows, value: {id: SCH-001, asset: {from_path: selected_asset_name}, channel: {from_path: selected_asset_channel}, slot: thursday_1800, status: scheduled}}
+          - {op: equals, path: last_action, value: schedule_evening}
+  commit_budget_button:
+    kind: button
+    selector: '[data-testid="commit-budget"]'
+    page: calendar
+    actions:
+      click:
+        preconditions:
+          - {op: relation, path: budget_key, operator: "!=", value: ""}
+        effects:
+          - {op: equals, path: budget_status, value: committed}
+          - {op: equals, path: last_action, value: commit_budget}
+
+  check_rights_button:
+    kind: button
+    selector: '[data-testid="check-rights"]'
+    page: launch
+    actions:
+      click:
+        preconditions:
+          - {op: one_of, path: selected_asset_id, values: [AD-VID-01, AD-BAN-02, AD-EML-04]}
+        effects:
+          - {op: changed_by, path: service_call_count, by: 1}
+          - {op: equals, path: rights_status, value: cleared}
+          - {op: equals, path: review_status, value: approved}
+          - {op: equals, path: last_action, value: check_rights}
+  request_legal_review_button:
+    kind: button
+    selector: '[data-testid="request-legal-review"]'
+    page: launch
+    actions:
+      click:
+        preconditions:
+          - {op: one_of, path: selected_asset_id, values: [AD-INF-03]}
+        effects:
+          - {op: changed_by, path: service_call_count, by: 1}
+          - {op: equals, path: rights_status, value: legal_required}
+          - {op: equals, path: review_status, value: legal_required}
+          - {op: equals, path: last_action, value: request_legal_review}
+  legal_approve_button:
+    kind: button
+    selector: '[data-testid="legal-approve"]'
+    page: launch
+    actions:
+      click:
+        allowed_roles: [legal]
+        preconditions:
+          - {op: one_of, path: review_status, values: [legal_required]}
+        effects:
+          - {op: equals, path: rights_status, value: cleared}
+          - {op: equals, path: review_status, value: approved}
+          - {op: equals, path: approval_status, value: legal_approved}
+          - {op: equals, path: last_action, value: legal_approve}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_legal}
+  launch_campaign_button:
+    kind: button
+    selector: '[data-testid="launch-campaign"]'
+    page: launch
+    actions:
+      click:
+        preconditions:
+          - {op: one_of, path: rights_status, values: [cleared]}
+          - {op: one_of, path: budget_status, values: [committed]}
+          - {op: relation, path: schedule_count, operator: ">", value: 0}
+        rejected_when:
+          - {op: not_one_of, path: rights_status, values: [cleared]}
+        rejected_effects:
+          - {op: equals, path: launch_status, value: blocked}
+          - {op: equals, path: last_action, value: launch_blocked}
+        effects:
+          - {op: equals, path: launch_status, value: launched}
+          - {op: changed_by, path: launch_count, by: 1}
+          - {op: appended_object, path: launch_rows, value: {id: LAUNCH-001, campaign: {from_path: campaign_name}, asset: {from_path: selected_asset_name}, channel: {from_path: selected_asset_channel}, status: launched}}
+          - {op: equals, path: last_action, value: launch_campaign}

@@ -1,0 +1,217 @@
+suite,family,tier,tier_name,model_tier,model_group,model_id,model,runs,full_pass,formal_mean,stepwise_mean,source
+stayflow_concierge,Travel,A,Consumer,M,Mini,gpt54_nano,GPT-5.4 nano,10,0,0.16265060240963852,0.36240294511378845,raw_current
+stayflow_concierge,Travel,A,Consumer,M,Mini,claude_haiku45,Claude Haiku 4.5,10,0,0.10361445783132531,0.25894578313253014,raw_current
+stayflow_concierge,Travel,A,Consumer,M,Mini,gemini31_flash_lite,Gemini 3.1 Flash Lite,10,0,0.0,0.1765896921017403,raw_current
+stayflow_concierge,Travel,A,Consumer,T,Turbo,gpt54_mini,GPT-5.4 mini,10,0,0.012048192771084331,0.1370716198125837,raw_current
+stayflow_concierge,Travel,A,Consumer,T,Turbo,claude_sonnet46,Claude Sonnet 4.6,10,0,0.5060240963855421,0.6180354752342704,raw_current
+stayflow_concierge,Travel,A,Consumer,T,Turbo,gemini_flash_latest,Gemini 3.1 Flash,10,0,0.17349397590361446,0.37204962707974754,raw_current
+stayflow_concierge,Travel,A,Consumer,F,Frontier,gpt54,GPT-5.4,10,0,0.7602409638554217,0.904277108433735,raw_current
+stayflow_concierge,Travel,A,Consumer,F,Frontier,claude_opus46,Claude Opus 4.6,10,0,0.6289156626506024,0.7830918913750239,raw_current
+stayflow_concierge,Travel,A,Consumer,F,Frontier,gemini31_pro_preview,Gemini 3.1 Pro Preview,10,2,0.7963855421686746,0.9021342512908778,raw_current
+stayflow_concierge,Travel,B,Operational,M,Mini,gpt54_nano,GPT-5.4 nano,10,0,0.16545454545454544,0.3693065957699929,raw_current
+stayflow_concierge,Travel,B,Operational,M,Mini,claude_haiku45,Claude Haiku 4.5,10,0,0.28727272727272724,0.5877268992304878,raw_current
+stayflow_concierge,Travel,B,Operational,M,Mini,gemini31_flash_lite,Gemini 3.1 Flash Lite,10,0,0.0,0.0733259202519968,raw_current
+stayflow_concierge,Travel,B,Operational,T,Turbo,gpt54_mini,GPT-5.4 mini,10,0,0.08363636363636363,0.1973233336307499,raw_current
+stayflow_concierge,Travel,B,Operational,T,Turbo,claude_sonnet46,Claude Sonnet 4.6,10,1,0.66,0.8076134028650774,raw_current
+stayflow_concierge,Travel,B,Operational,T,Turbo,gemini_flash_latest,Gemini 3.1 Flash,10,0,0.17545454545454545,0.37990817197156906,raw_current
+stayflow_concierge,Travel,B,Operational,F,Frontier,gpt54,GPT-5.4,10,0,0.8118181818181819,0.9641123394149711,raw_current
+stayflow_concierge,Travel,B,Operational,F,Frontier,claude_opus46,Claude Opus 4.6,10,0,0.22636363636363638,0.4300928732352178,raw_current
+stayflow_concierge,Travel,B,Operational,F,Frontier,gemini31_pro_preview,Gemini 3.1 Pro Preview,10,1,0.8145454545454547,0.9444335829508079,raw_current
+stayflow_concierge,Travel,C,Regulated,M,Mini,gpt54_nano,GPT-5.4 nano,10,0,0.0,0.058745273510473685,raw_current
+stayflow_concierge,Travel,C,Regulated,M,Mini,claude_haiku45,Claude Haiku 4.5,10,0,0.08235294117647059,0.2826108562854731,raw_current
+stayflow_concierge,Travel,C,Regulated,M,Mini,gemini31_flash_lite,Gemini 3.1 Flash Lite,10,0,0.0,0.0629273902074198,raw_current
+stayflow_concierge,Travel,C,Regulated,T,Turbo,gpt54_mini,GPT-5.4 mini,10,0,0.01512605042016806,0.12204425709677806,raw_current
+stayflow_concierge,Travel,C,Regulated,T,Turbo,claude_sonnet46,Claude Sonnet 4.6,10,1,0.3739495798319328,0.5480928271486848,raw_current
+stayflow_concierge,Travel,C,Regulated,T,Turbo,gemini_flash_latest,Gemini 3.1 Flash,10,0,0.20504201680672268,0.5359476098817423,raw_current
+stayflow_concierge,Travel,C,Regulated,F,Frontier,gpt54,GPT-5.4,10,0,0.39327731092436974,0.6890054925713601,raw_current
+stayflow_concierge,Travel,C,Regulated,F,Frontier,claude_opus46,Claude Opus 4.6,10,0,0.4184873949579832,0.6751537709557975,raw_current
+stayflow_concierge,Travel,C,Regulated,F,Frontier,gemini31_pro_preview,Gemini 3.1 Pro Preview,10,0,0.35882352941176465,0.6488362296790374,raw_current
+stayflow_concierge,Travel,D,Release-stage,M,Mini,gpt54_nano,GPT-5.4 nano,10,0,0.08333333333333334,0.18772911825131722,raw_current
+stayflow_concierge,Travel,D,Release-stage,M,Mini,claude_haiku45,Claude Haiku 4.5,10,0,0.09469696969696967,0.3248831818414145,raw_current
+stayflow_concierge,Travel,D,Release-stage,M,Mini,gemini31_flash_lite,Gemini 3.1 Flash Lite,10,0,0.0,0.07629935751960074,raw_current
+stayflow_concierge,Travel,D,Release-stage,T,Turbo,gpt54_mini,GPT-5.4 mini,10,0,0.0,0.04450795855310043,raw_current
+stayflow_concierge,Travel,D,Release-stage,T,Turbo,claude_sonnet46,Claude Sonnet 4.6,10,2,0.5598484848484848,0.7286706661914744,raw_current
+stayflow_concierge,Travel,D,Release-stage,T,Turbo,gemini_flash_latest,Gemini 3.1 Flash,10,0,0.03636363636363636,0.13128436761194004,raw_current
+stayflow_concierge,Travel,D,Release-stage,F,Frontier,gpt54,GPT-5.4,10,0,0.42878787878787883,0.6696203970309649,raw_current
+stayflow_concierge,Travel,D,Release-stage,F,Frontier,claude_opus46,Claude Opus 4.6,10,0,0.3795454545454545,0.5980431384652857,raw_current
+stayflow_concierge,Travel,D,Release-stage,F,Frontier,gemini31_pro_preview,Gemini 3.1 Pro Preview,10,2,0.3765151515151515,0.5324566300423424,raw_current
+freshcart_market,Grocery,A,Consumer,M,Mini,gpt54_nano,GPT-5.4 nano,10,0,0.02209302325581394,0.12410832726325197,raw_current
+freshcart_market,Grocery,A,Consumer,M,Mini,claude_haiku45,Claude Haiku 4.5,10,0,0.1686046511627907,0.38209000425399187,raw_current
+freshcart_market,Grocery,A,Consumer,M,Mini,gemini31_flash_lite,Gemini 3.1 Flash Lite,10,0,0.0,0.1285173036797523,raw_current
+freshcart_market,Grocery,A,Consumer,T,Turbo,gpt54_mini,GPT-5.4 mini,10,0,0.00813953488372093,0.09681118395208677,raw_current
+freshcart_market,Grocery,A,Consumer,T,Turbo,claude_sonnet46,Claude Sonnet 4.6,10,4,0.6965116279069767,0.7269580268682525,raw_current
+freshcart_market,Grocery,A,Consumer,T,Turbo,gemini_flash_latest,Gemini 3.1 Flash,10,0,0.6581395348837209,0.7342589220325199,raw_current
+freshcart_market,Grocery,A,Consumer,F,Frontier,gpt54,GPT-5.4,10,5,0.6953488372093023,0.7268126780310433,raw_current
+freshcart_market,Grocery,A,Consumer,F,Frontier,claude_opus46,Claude Opus 4.6,10,3,0.7930232558139535,0.8171968241137189,raw_current
+freshcart_market,Grocery,A,Consumer,F,Frontier,gemini31_pro_preview,Gemini 3.1 Pro Preview,10,0,0.7151162790697675,0.7801849918966881,raw_current
+freshcart_market,Grocery,B,Operational,M,Mini,gpt54_nano,GPT-5.4 nano,10,0,0.0936936936936937,0.21400047775047773,raw_current
+freshcart_market,Grocery,B,Operational,M,Mini,claude_haiku45,Claude Haiku 4.5,10,0,0.07837837837837838,0.24138523263523265,raw_current
+freshcart_market,Grocery,B,Operational,M,Mini,gemini31_flash_lite,Gemini 3.1 Flash Lite,10,0,0.0,0.0870982995982996,raw_current
+freshcart_market,Grocery,B,Operational,T,Turbo,gpt54_mini,GPT-5.4 mini,10,0,0.0,0.0870982995982996,raw_current
+freshcart_market,Grocery,B,Operational,T,Turbo,claude_sonnet46,Claude Sonnet 4.6,10,0,0.16756756756756755,0.4005211380211381,raw_current
+freshcart_market,Grocery,B,Operational,T,Turbo,gemini_flash_latest,Gemini 3.1 Flash,10,0,0.06846846846846845,0.23831324831324832,raw_current
+freshcart_market,Grocery,B,Operational,F,Frontier,gpt54,GPT-5.4,10,1,0.4477477477477477,0.6603351565851565,raw_current
+freshcart_market,Grocery,B,Operational,F,Frontier,claude_opus46,Claude Opus 4.6,10,1,0.6963963963963964,0.9295130357630356,raw_current
+freshcart_market,Grocery,B,Operational,F,Frontier,gemini31_pro_preview,Gemini 3.1 Pro Preview,10,1,0.18378378378378377,0.2688801138801139,raw_current
+freshcart_market,Grocery,C,Regulated,M,Mini,gpt54_nano,GPT-5.4 nano,10,0,0.08317757009345793,0.16691856886265521,raw_current
+freshcart_market,Grocery,C,Regulated,M,Mini,claude_haiku45,Claude Haiku 4.5,10,0,0.08691588785046726,0.27229504230148766,raw_current
+freshcart_market,Grocery,C,Regulated,M,Mini,gemini31_flash_lite,Gemini 3.1 Flash Lite,10,0,0.0,0.11356391451138466,raw_current
+freshcart_market,Grocery,C,Regulated,T,Turbo,gpt54_mini,GPT-5.4 mini,10,0,0.030841121495327094,0.2270244143366927,raw_current
+freshcart_market,Grocery,C,Regulated,T,Turbo,claude_sonnet46,Claude Sonnet 4.6,10,0,0.1644859813084112,0.40033283721327545,raw_current
+freshcart_market,Grocery,C,Regulated,T,Turbo,gemini_flash_latest,Gemini 3.1 Flash,10,0,0.12523364485981306,0.35342490180711256,raw_current
+freshcart_market,Grocery,C,Regulated,F,Frontier,gpt54,GPT-5.4,10,0,0.3953271028037383,0.6338722267098031,raw_current
+freshcart_market,Grocery,C,Regulated,F,Frontier,claude_opus46,Claude Opus 4.6,10,0,0.5177570093457943,0.7860796397357789,raw_current
+freshcart_market,Grocery,C,Regulated,F,Frontier,gemini31_pro_preview,Gemini 3.1 Pro Preview,10,4,0.5700934579439252,0.7042312253221051,raw_current
+freshcart_market,Grocery,D,Release-stage,M,Mini,gpt54_nano,GPT-5.4 nano,10,0,0.06386554621848738,0.20078703572408058,raw_current
+freshcart_market,Grocery,D,Release-stage,M,Mini,claude_haiku45,Claude Haiku 4.5,10,0,0.026050420168067228,0.13067338101493695,raw_current
+freshcart_market,Grocery,D,Release-stage,M,Mini,gemini31_flash_lite,Gemini 3.1 Flash Lite,10,0,0.0,0.0773352037569515,raw_current
+freshcart_market,Grocery,D,Release-stage,T,Turbo,gpt54_mini,GPT-5.4 mini,10,0,0.014285714285714271,0.12168219594596708,raw_current
+freshcart_market,Grocery,D,Release-stage,T,Turbo,claude_sonnet46,Claude Sonnet 4.6,10,0,0.2168067226890756,0.5031050759639715,raw_current
+freshcart_market,Grocery,D,Release-stage,T,Turbo,gemini_flash_latest,Gemini 3.1 Flash,10,0,0.11344537815126048,0.3422254273023101,raw_current
+freshcart_market,Grocery,D,Release-stage,F,Frontier,gpt54,GPT-5.4,10,0,0.4310924369747899,0.7213023321631626,raw_current
+freshcart_market,Grocery,D,Release-stage,F,Frontier,claude_opus46,Claude Opus 4.6,10,0,0.5462184873949579,0.8381546151290312,raw_current
+freshcart_market,Grocery,D,Release-stage,F,Frontier,gemini31_pro_preview,Gemini 3.1 Pro Preview,10,1,0.2495798319327731,0.377910340807631,raw_current
+clinic_shift_command,Clinical Command,A,Consumer,M,Mini,gpt54_nano,GPT-5.4 nano,10,0,0.4236842105263158,0.6345951526543632,raw_current
+clinic_shift_command,Clinical Command,A,Consumer,M,Mini,claude_haiku45,Claude Haiku 4.5,10,0,0.06710526315789471,0.24638414217361584,raw_current
+clinic_shift_command,Clinical Command,A,Consumer,M,Mini,gemini31_flash_lite,Gemini 3.1 Flash Lite,10,0,0.0026315789473684197,0.14068153337890174,raw_current
+clinic_shift_command,Clinical Command,A,Consumer,T,Turbo,gpt54_mini,GPT-5.4 mini,10,2,0.45789473684210524,0.5721189336978811,raw_current
+clinic_shift_command,Clinical Command,A,Consumer,T,Turbo,claude_sonnet46,Claude Sonnet 4.6,10,3,0.6236842105263157,0.6844306789701526,raw_current
+clinic_shift_command,Clinical Command,A,Consumer,T,Turbo,gemini_flash_latest,Gemini 3.1 Flash,10,2,0.6921052631578947,0.7588039701526543,raw_current
+clinic_shift_command,Clinical Command,A,Consumer,F,Frontier,gpt54,GPT-5.4,10,3,0.7802631578947368,0.8189695830485304,raw_current
+clinic_shift_command,Clinical Command,A,Consumer,F,Frontier,claude_opus46,Claude Opus 4.6,10,8,0.8,0.8228073023467759,raw_current
+clinic_shift_command,Clinical Command,A,Consumer,F,Frontier,gemini31_pro_preview,Gemini 3.1 Pro Preview,10,5,0.5605263157894737,0.6531707108680792,raw_current
+clinic_shift_command,Clinical Command,B,Operational,M,Mini,gpt54_nano,GPT-5.4 nano,10,0,0.1322314049586777,0.27202430145611967,raw_current
+clinic_shift_command,Clinical Command,B,Operational,M,Mini,claude_haiku45,Claude Haiku 4.5,10,0,0.09504132231404959,0.25719303423848877,raw_current
+clinic_shift_command,Clinical Command,B,Operational,M,Mini,gemini31_flash_lite,Gemini 3.1 Flash Lite,10,0,0.0,0.1002164502164502,raw_current
+clinic_shift_command,Clinical Command,B,Operational,T,Turbo,gpt54_mini,GPT-5.4 mini,10,0,0.00495867768595041,0.11362258953168043,raw_current
+clinic_shift_command,Clinical Command,B,Operational,T,Turbo,claude_sonnet46,Claude Sonnet 4.6,10,3,0.7355371900826446,0.7868678669815033,raw_current
+clinic_shift_command,Clinical Command,B,Operational,T,Turbo,gemini_flash_latest,Gemini 3.1 Flash,10,1,0.4016528925619835,0.4801480716253444,raw_current
+clinic_shift_command,Clinical Command,B,Operational,F,Frontier,gpt54,GPT-5.4,10,6,0.9776859504132231,0.9954545454545455,raw_current
+clinic_shift_command,Clinical Command,B,Operational,F,Frontier,claude_opus46,Claude Opus 4.6,10,0,0.9611570247933885,0.9973189689098779,raw_current
+clinic_shift_command,Clinical Command,B,Operational,F,Frontier,gemini31_pro_preview,Gemini 3.1 Pro Preview,10,3,0.7181818181818181,0.8300836284927193,raw_current
+clinic_shift_command,Clinical Command,C,Regulated,M,Mini,gpt54_nano,GPT-5.4 nano,10,0,0.1046153846153846,0.22024799781553997,raw_current
+clinic_shift_command,Clinical Command,C,Regulated,M,Mini,claude_haiku45,Claude Haiku 4.5,10,0,0.06358974358974356,0.27136114562943825,raw_current
+clinic_shift_command,Clinical Command,C,Regulated,M,Mini,gemini31_flash_lite,Gemini 3.1 Flash Lite,10,0,0.0,0.0910428859584581,raw_current
+clinic_shift_command,Clinical Command,C,Regulated,T,Turbo,gpt54_mini,GPT-5.4 mini,10,0,0.0,0.06373002017092066,raw_current
+clinic_shift_command,Clinical Command,C,Regulated,T,Turbo,claude_sonnet46,Claude Sonnet 4.6,10,0,0.6974358974358974,0.7989171821854749,raw_current
+clinic_shift_command,Clinical Command,C,Regulated,T,Turbo,gemini_flash_latest,Gemini 3.1 Flash,10,0,0.27692307692307694,0.4318660955992101,raw_current
+clinic_shift_command,Clinical Command,C,Regulated,F,Frontier,gpt54,GPT-5.4,10,0,0.9564102564102563,0.9950689273203345,raw_current
+clinic_shift_command,Clinical Command,C,Regulated,F,Frontier,claude_opus46,Claude Opus 4.6,10,5,0.8856410256410256,0.8995934959349594,raw_current
+clinic_shift_command,Clinical Command,C,Regulated,F,Frontier,gemini31_pro_preview,Gemini 3.1 Pro Preview,10,0,0.4969230769230769,0.620373421294153,raw_current
+clinic_shift_command,Clinical Command,D,Release-stage,M,Mini,gpt54_nano,GPT-5.4 nano,10,0,0.00676328502415458,0.16666891601219733,raw_current
+clinic_shift_command,Clinical Command,D,Release-stage,M,Mini,claude_haiku45,Claude Haiku 4.5,10,0,0.05362318840579709,0.17780846981574144,raw_current
+clinic_shift_command,Clinical Command,D,Release-stage,M,Mini,gemini31_flash_lite,Gemini 3.1 Flash Lite,10,0,0.0,0.0900865728745343,raw_current
+clinic_shift_command,Clinical Command,D,Release-stage,T,Turbo,gpt54_mini,GPT-5.4 mini,10,0,0.0,0.08107791558708086,raw_current
+clinic_shift_command,Clinical Command,D,Release-stage,T,Turbo,claude_sonnet46,Claude Sonnet 4.6,10,0,0.44685990338164244,0.6568908832521669,raw_current
+clinic_shift_command,Clinical Command,D,Release-stage,T,Turbo,gemini_flash_latest,Gemini 3.1 Flash,10,0,0.3985507246376811,0.5172817163030767,raw_current
+clinic_shift_command,Clinical Command,D,Release-stage,F,Frontier,gpt54,GPT-5.4,10,3,0.9676328502415459,0.9934398530823316,raw_current
+clinic_shift_command,Clinical Command,D,Release-stage,F,Frontier,claude_opus46,Claude Opus 4.6,10,0,0.8927536231884059,0.9587376642043864,raw_current
+clinic_shift_command,Clinical Command,D,Release-stage,F,Frontier,gemini31_pro_preview,Gemini 3.1 Pro Preview,10,0,0.593719806763285,0.6864718526693354,raw_current
+campus_registrar_command,Campus Registrar,A,Consumer,M,Mini,gpt54_nano,GPT-5.4 nano,10,0,0.21,0.408,report_per_model
+campus_registrar_command,Campus Registrar,A,Consumer,M,Mini,claude_haiku45,Claude Haiku 4.5,10,1,0.375,0.579,report_per_model
+campus_registrar_command,Campus Registrar,A,Consumer,M,Mini,gemini31_flash_lite,Gemini 3.1 Flash Lite,10,0,0.055,0.228,report_per_model
+campus_registrar_command,Campus Registrar,A,Consumer,T,Turbo,gpt54_mini,GPT-5.4 mini,10,1,0.2319999999999999,0.367,report_per_model
+campus_registrar_command,Campus Registrar,A,Consumer,T,Turbo,claude_sonnet46,Claude Sonnet 4.6,10,6,0.758,0.848,report_per_model
+campus_registrar_command,Campus Registrar,A,Consumer,T,Turbo,gemini_flash_latest,Gemini 3.1 Flash,10,2,0.34,0.481,report_per_model
+campus_registrar_command,Campus Registrar,A,Consumer,F,Frontier,gpt54,GPT-5.4,10,6,0.711,0.768,report_per_model
+campus_registrar_command,Campus Registrar,A,Consumer,F,Frontier,claude_opus46,Claude Opus 4.6,10,8,0.8,0.8220000000000001,report_per_model
+campus_registrar_command,Campus Registrar,A,Consumer,F,Frontier,gemini31_pro_preview,Gemini 3.1 Pro Preview,10,7,0.915,0.955,report_per_model
+campus_registrar_command,Campus Registrar,B,Operational,M,Mini,gpt54_nano,GPT-5.4 nano,10,2,0.261,0.379,report_per_model
+campus_registrar_command,Campus Registrar,B,Operational,M,Mini,claude_haiku45,Claude Haiku 4.5,10,0,0.109,0.251,report_per_model
+campus_registrar_command,Campus Registrar,B,Operational,M,Mini,gemini31_flash_lite,Gemini 3.1 Flash Lite,10,0,0.0,0.062,report_per_model
+campus_registrar_command,Campus Registrar,B,Operational,T,Turbo,gpt54_mini,GPT-5.4 mini,10,0,0.039,0.206,report_per_model
+campus_registrar_command,Campus Registrar,B,Operational,T,Turbo,claude_sonnet46,Claude Sonnet 4.6,10,1,0.6659999999999999,0.782,report_per_model
+campus_registrar_command,Campus Registrar,B,Operational,T,Turbo,gemini_flash_latest,Gemini 3.1 Flash,10,4,0.716,0.8490000000000001,report_per_model
+campus_registrar_command,Campus Registrar,B,Operational,F,Frontier,gpt54,GPT-5.4,10,7,0.82,0.863,report_per_model
+campus_registrar_command,Campus Registrar,B,Operational,F,Frontier,claude_opus46,Claude Opus 4.6,10,9,0.9,0.908,report_per_model
+campus_registrar_command,Campus Registrar,B,Operational,F,Frontier,gemini31_pro_preview,Gemini 3.1 Pro Preview,10,7,0.789,0.8140000000000001,report_per_model
+campus_registrar_command,Campus Registrar,C,Regulated,M,Mini,gpt54_nano,GPT-5.4 nano,10,0,0.19491525423728814,0.303839490230855,raw_current
+campus_registrar_command,Campus Registrar,C,Regulated,M,Mini,claude_haiku45,Claude Haiku 4.5,10,0,0.1847457627118644,0.32247927899264833,raw_current
+campus_registrar_command,Campus Registrar,C,Regulated,M,Mini,gemini31_flash_lite,Gemini 3.1 Flash Lite,10,0,0.0,0.06308600638597715,raw_current
+campus_registrar_command,Campus Registrar,C,Regulated,T,Turbo,gpt54_mini,GPT-5.4 mini,10,0,0.0,0.031543003192988577,raw_current
+campus_registrar_command,Campus Registrar,C,Regulated,T,Turbo,claude_sonnet46,Claude Sonnet 4.6,10,8,0.9906779661016948,0.9991308744221878,raw_current
+campus_registrar_command,Campus Registrar,C,Regulated,T,Turbo,gemini_flash_latest,Gemini 3.1 Flash,10,0,0.28220338983050847,0.3965455522706399,raw_current
+campus_registrar_command,Campus Registrar,C,Regulated,F,Frontier,gpt54,GPT-5.4,10,2,0.7559999999999999,0.802,report_per_model
+campus_registrar_command,Campus Registrar,C,Regulated,F,Frontier,claude_opus46,Claude Opus 4.6,10,1,0.7340000000000001,0.895,report_per_model
+campus_registrar_command,Campus Registrar,C,Regulated,F,Frontier,gemini31_pro_preview,Gemini 3.1 Pro Preview,10,1,0.6409999999999999,0.8190000000000001,report_per_model
+campus_registrar_command,Campus Registrar,D,Release-stage,M,Mini,gpt54_nano,GPT-5.4 nano,10,0,0.1494047619047619,0.2334904100787559,raw_current
+campus_registrar_command,Campus Registrar,D,Release-stage,M,Mini,claude_haiku45,Claude Haiku 4.5,10,0,0.20892857142857144,0.31412537767330995,raw_current
+campus_registrar_command,Campus Registrar,D,Release-stage,M,Mini,gemini31_flash_lite,Gemini 3.1 Flash Lite,10,0,0.0,0.0570632490392828,raw_current
+campus_registrar_command,Campus Registrar,D,Release-stage,T,Turbo,gpt54_mini,GPT-5.4 mini,10,0,0.0,0.04565059923142624,raw_current
+campus_registrar_command,Campus Registrar,D,Release-stage,T,Turbo,claude_sonnet46,Claude Sonnet 4.6,10,1,0.581547619047619,0.6778010352751894,raw_current
+campus_registrar_command,Campus Registrar,D,Release-stage,T,Turbo,gemini_flash_latest,Gemini 3.1 Flash,10,0,0.2702380952380952,0.4214762387130807,raw_current
+campus_registrar_command,Campus Registrar,D,Release-stage,F,Frontier,gpt54,GPT-5.4,10,1,0.705,0.8270000000000001,report_per_model
+campus_registrar_command,Campus Registrar,D,Release-stage,F,Frontier,claude_opus46,Claude Opus 4.6,10,0,0.914,0.989,report_per_model
+campus_registrar_command,Campus Registrar,D,Release-stage,F,Frontier,gemini31_pro_preview,Gemini 3.1 Pro Preview,10,0,0.7020000000000001,0.856,report_per_model
+media_campaign_launch_desk,Media Campaign,A,Consumer,M,Mini,gpt54_nano,GPT-5.4 nano,10,0,0.268,0.386,report_per_model
+media_campaign_launch_desk,Media Campaign,A,Consumer,M,Mini,claude_haiku45,Claude Haiku 4.5,10,0,0.217,0.423,report_per_model
+media_campaign_launch_desk,Media Campaign,A,Consumer,M,Mini,gemini31_flash_lite,Gemini 3.1 Flash Lite,10,0,0.033,0.172,report_per_model
+media_campaign_launch_desk,Media Campaign,A,Consumer,T,Turbo,gpt54_mini,GPT-5.4 mini,10,0,0.098,0.162,report_per_model
+media_campaign_launch_desk,Media Campaign,A,Consumer,T,Turbo,claude_sonnet46,Claude Sonnet 4.6,10,5,0.679,0.752,report_per_model
+media_campaign_launch_desk,Media Campaign,A,Consumer,T,Turbo,gemini_flash_latest,Gemini 3.1 Flash,10,6,0.6990000000000001,0.731,report_per_model
+media_campaign_launch_desk,Media Campaign,A,Consumer,F,Frontier,gpt54,GPT-5.4,10,9,0.998,1.0,report_per_model
+media_campaign_launch_desk,Media Campaign,A,Consumer,F,Frontier,claude_opus46,Claude Opus 4.6,10,10,1.0,1.0,report_per_model
+media_campaign_launch_desk,Media Campaign,A,Consumer,F,Frontier,gemini31_pro_preview,Gemini 3.1 Pro Preview,10,7,0.875,0.94,report_per_model
+media_campaign_launch_desk,Media Campaign,B,Operational,M,Mini,gpt54_nano,GPT-5.4 nano,10,0,0.172,0.341,report_per_model
+media_campaign_launch_desk,Media Campaign,B,Operational,M,Mini,claude_haiku45,Claude Haiku 4.5,10,0,0.043,0.181,report_per_model
+media_campaign_launch_desk,Media Campaign,B,Operational,M,Mini,gemini31_flash_lite,Gemini 3.1 Flash Lite,10,0,0.0,0.1169999999999999,report_per_model
+media_campaign_launch_desk,Media Campaign,B,Operational,T,Turbo,gpt54_mini,GPT-5.4 mini,10,0,0.0,0.079,report_per_model
+media_campaign_launch_desk,Media Campaign,B,Operational,T,Turbo,claude_sonnet46,Claude Sonnet 4.6,10,8,0.898,0.921,report_per_model
+media_campaign_launch_desk,Media Campaign,B,Operational,T,Turbo,gemini_flash_latest,Gemini 3.1 Flash,10,2,0.376,0.501,report_per_model
+media_campaign_launch_desk,Media Campaign,B,Operational,F,Frontier,gpt54,GPT-5.4,10,2,0.85,0.938,report_per_model
+media_campaign_launch_desk,Media Campaign,B,Operational,F,Frontier,claude_opus46,Claude Opus 4.6,10,9,0.991,0.999,report_per_model
+media_campaign_launch_desk,Media Campaign,B,Operational,F,Frontier,gemini31_pro_preview,Gemini 3.1 Pro Preview,10,7,0.759,0.807,report_per_model
+media_campaign_launch_desk,Media Campaign,C,Regulated,M,Mini,gpt54_nano,GPT-5.4 nano,10,3,0.5845714285714286,0.6658663331999466,raw_current
+media_campaign_launch_desk,Media Campaign,C,Regulated,M,Mini,claude_haiku45,Claude Haiku 4.5,10,0,0.2337142857142857,0.4217647058823529,raw_current
+media_campaign_launch_desk,Media Campaign,C,Regulated,M,Mini,gemini31_flash_lite,Gemini 3.1 Flash Lite,10,0,0.0,0.10591381886087761,raw_current
+media_campaign_launch_desk,Media Campaign,C,Regulated,T,Turbo,gpt54_mini,GPT-5.4 mini,10,0,0.0,0.07777653728157924,raw_current
+media_campaign_launch_desk,Media Campaign,C,Regulated,T,Turbo,claude_sonnet46,Claude Sonnet 4.6,10,0,0.6748571428571429,0.7828378951580632,raw_current
+media_campaign_launch_desk,Media Campaign,C,Regulated,T,Turbo,gemini_flash_latest,Gemini 3.1 Flash,10,2,0.4622857142857143,0.594572935841003,raw_current
+media_campaign_launch_desk,Media Campaign,C,Regulated,F,Frontier,gpt54,GPT-5.4,10,1,0.9057142857142857,0.9934136054421769,raw_current
+media_campaign_launch_desk,Media Campaign,C,Regulated,F,Frontier,claude_opus46,Claude Opus 4.6,10,8,0.8902857142857142,0.9070020074696545,raw_current
+media_campaign_launch_desk,Media Campaign,C,Regulated,F,Frontier,gemini31_pro_preview,Gemini 3.1 Pro Preview,10,6,0.8874285714285713,0.9226835734293717,raw_current
+media_campaign_launch_desk,Media Campaign,D,Release-stage,M,Mini,gpt54_nano,GPT-5.4 nano,10,0,0.20423280423280424,0.3797505828792124,raw_current
+media_campaign_launch_desk,Media Campaign,D,Release-stage,M,Mini,claude_haiku45,Claude Haiku 4.5,10,0,0.1656084656084656,0.3271272532523339,raw_current
+media_campaign_launch_desk,Media Campaign,D,Release-stage,M,Mini,gemini31_flash_lite,Gemini 3.1 Flash Lite,10,0,0.0,0.07550915820718374,raw_current
+media_campaign_launch_desk,Media Campaign,D,Release-stage,T,Turbo,gpt54_mini,GPT-5.4 mini,10,0,0.02486772486772486,0.103813516987733,raw_current
+media_campaign_launch_desk,Media Campaign,D,Release-stage,T,Turbo,claude_sonnet46,Claude Sonnet 4.6,10,0,0.5185185185185185,0.6114907113309165,raw_current
+media_campaign_launch_desk,Media Campaign,D,Release-stage,T,Turbo,gemini_flash_latest,Gemini 3.1 Flash,10,0,0.25925925925925924,0.36993482199344246,raw_current
+media_campaign_launch_desk,Media Campaign,D,Release-stage,F,Frontier,gpt54,GPT-5.4,10,0,0.6989417989417989,0.7943398797239938,raw_current
+media_campaign_launch_desk,Media Campaign,D,Release-stage,F,Frontier,claude_opus46,Claude Opus 4.6,10,0,0.5439153439153439,0.6311844865556957,raw_current
+media_campaign_launch_desk,Media Campaign,D,Release-stage,F,Frontier,gemini31_pro_preview,Gemini 3.1 Pro Preview,10,0,0.45396825396825397,0.6076128244139276,raw_current
+homefix_hub,Home Services,A,Consumer,M,Mini,gpt54_nano,GPT-5.4 nano,10,0,0.4337209302325581,0.6539462523910198,raw_current
+homefix_hub,Home Services,A,Consumer,M,Mini,claude_haiku45,Claude Haiku 4.5,10,0,0.34069767441860466,0.5287022844726332,raw_current
+homefix_hub,Home Services,A,Consumer,M,Mini,gemini31_flash_lite,Gemini 3.1 Flash Lite,10,0,0.03953488372093022,0.1775937531460787,raw_current
+homefix_hub,Home Services,A,Consumer,T,Turbo,gpt54_mini,GPT-5.4 mini,10,0,0.0,0.08986276804590757,raw_current
+homefix_hub,Home Services,A,Consumer,T,Turbo,claude_sonnet46,Claude Sonnet 4.6,10,1,0.3895348837209302,0.6182102377596564,raw_current
+homefix_hub,Home Services,A,Consumer,T,Turbo,gemini_flash_latest,Gemini 3.1 Flash,10,3,0.4220930232558139,0.5165109777173731,raw_current
+homefix_hub,Home Services,A,Consumer,F,Frontier,gpt54,GPT-5.4,10,0,0.5011627906976744,0.7453257240175845,raw_current
+homefix_hub,Home Services,A,Consumer,F,Frontier,claude_opus46,Claude Opus 4.6,10,3,0.6465116279069767,0.8410066822712171,raw_current
+homefix_hub,Home Services,A,Consumer,F,Frontier,gemini31_pro_preview,Gemini 3.1 Pro Preview,10,4,0.6627906976744186,0.7916765034061546,raw_current
+homefix_hub,Home Services,B,Operational,M,Mini,gpt54_nano,GPT-5.4 nano,10,0,0.18482142857142855,0.36013880836425477,raw_current
+homefix_hub,Home Services,B,Operational,M,Mini,claude_haiku45,Claude Haiku 4.5,10,0,0.10357142857142856,0.24167144982993194,raw_current
+homefix_hub,Home Services,B,Operational,M,Mini,gemini31_flash_lite,Gemini 3.1 Flash Lite,10,0,0.09285714285714286,0.18382290700371054,raw_current
+homefix_hub,Home Services,B,Operational,T,Turbo,gpt54_mini,GPT-5.4 mini,10,0,0.0,0.0936551419810348,raw_current
+homefix_hub,Home Services,B,Operational,T,Turbo,claude_sonnet46,Claude Sonnet 4.6,10,1,0.3008928571428572,0.39843572845804986,raw_current
+homefix_hub,Home Services,B,Operational,T,Turbo,gemini_flash_latest,Gemini 3.1 Flash,10,1,0.6214285714285714,0.7323293683003504,raw_current
+homefix_hub,Home Services,B,Operational,F,Frontier,gpt54,GPT-5.4,10,1,0.6116071428571429,0.7276494698258091,raw_current
+homefix_hub,Home Services,B,Operational,F,Frontier,claude_opus46,Claude Opus 4.6,10,3,0.7276785714285714,0.8553385416666668,raw_current
+homefix_hub,Home Services,B,Operational,F,Frontier,gemini31_pro_preview,Gemini 3.1 Pro Preview,10,0,0.6848214285714287,0.853625831014224,raw_current
+homefix_hub,Home Services,C,Regulated,M,Mini,gpt54_nano,GPT-5.4 nano,10,0,0.11207729468599033,0.2729625107098521,raw_current
+homefix_hub,Home Services,C,Regulated,M,Mini,claude_haiku45,Claude Haiku 4.5,10,0,0.19855072463768114,0.37588563906019135,raw_current
+homefix_hub,Home Services,C,Regulated,M,Mini,gemini31_flash_lite,Gemini 3.1 Flash Lite,10,0,0.0,0.08403124248875127,raw_current
+homefix_hub,Home Services,C,Regulated,T,Turbo,gpt54_mini,GPT-5.4 mini,10,0,0.0,0.04648126355612774,raw_current
+homefix_hub,Home Services,C,Regulated,T,Turbo,claude_sonnet46,Claude Sonnet 4.6,10,1,0.6024154589371981,0.6763577335486969,raw_current
+homefix_hub,Home Services,C,Regulated,T,Turbo,gemini_flash_latest,Gemini 3.1 Flash,10,0,0.6676328502415458,0.7343563804799054,raw_current
+homefix_hub,Home Services,C,Regulated,F,Frontier,gpt54,GPT-5.4,10,0,0.4400966183574879,0.5861768610625567,raw_current
+homefix_hub,Home Services,C,Regulated,F,Frontier,claude_opus46,Claude Opus 4.6,10,1,0.6961352657004831,0.7832058050242419,raw_current
+homefix_hub,Home Services,C,Regulated,F,Frontier,gemini31_pro_preview,Gemini 3.1 Pro Preview,10,0,0.6864734299516908,0.8249057757189739,raw_current
+homefix_hub,Home Services,D,Release-stage,M,Mini,gpt54_nano,GPT-5.4 nano,10,0,0.09151291512915129,0.3187587245854201,raw_current
+homefix_hub,Home Services,D,Release-stage,M,Mini,claude_haiku45,Claude Haiku 4.5,10,0,0.05018450184501845,0.1658691051242432,raw_current
+homefix_hub,Home Services,D,Release-stage,M,Mini,gemini31_flash_lite,Gemini 3.1 Flash Lite,10,0,0.0,0.07730235221349253,raw_current
+homefix_hub,Home Services,D,Release-stage,T,Turbo,gpt54_mini,GPT-5.4 mini,10,0,0.00036900369003690003,0.07104499137405326,raw_current
+homefix_hub,Home Services,D,Release-stage,T,Turbo,claude_sonnet46,Claude Sonnet 4.6,10,0,0.2859778597785978,0.45283576274488924,raw_current
+homefix_hub,Home Services,D,Release-stage,T,Turbo,gemini_flash_latest,Gemini 3.1 Flash,10,0,0.3284132841328413,0.6016604909522376,raw_current
+homefix_hub,Home Services,D,Release-stage,F,Frontier,gpt54,GPT-5.4,10,0,0.3678966789667896,0.6330464465690694,raw_current
+homefix_hub,Home Services,D,Release-stage,F,Frontier,claude_opus46,Claude Opus 4.6,10,0,0.4114391143911439,0.5864753890354559,raw_current
+homefix_hub,Home Services,D,Release-stage,F,Frontier,gemini31_pro_preview,Gemini 3.1 Pro Preview,10,0,0.4671586715867158,0.7769955445172475,raw_current

@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Campus Registrar Command Tier B</title>
+  <style>
+    :root{--bg:#eef3ee;--ink:#14231f;--muted:#63736e;--line:#c9d6cf;--paper:#fffdf6;--panel:#fff;--green:#115b46;--navy:#183b67;--amber:#b97a13;--red:#b64135;--blue:#27698f;--soft:#e7f0ea}
+    *{box-sizing:border-box}body{margin:0;background:#eef3ee;color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:0}button,input{font:inherit}button{border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink);padding:8px 11px;cursor:pointer}button.primary{background:var(--green);border-color:var(--green);color:#fff}button.navy{background:var(--navy);border-color:var(--navy);color:#fff}button.warn{background:#fff3dc;border-color:#e1b45f;color:#704a09}input{width:100%;border:1px solid var(--line);border-radius:7px;padding:9px;background:#fff;color:var(--ink)}input[type=file]{padding:8px;background:#fbf8ee}h1,h2,h3,p{margin-top:0}h1{font-size:22px;margin-bottom:2px}h2{font-size:22px}h3{font-size:15px}small,label{color:var(--muted)}label{display:grid;gap:6px;font-size:12px;font-weight:800;text-transform:uppercase}
+    .shell{min-height:100vh;display:grid;grid-template-rows:auto 1fr}header{height:86px;display:grid;grid-template-columns:360px 1fr auto;gap:14px;align-items:center;padding:0 26px;border-bottom:1px solid var(--line);background:rgba(255,253,246,.94);backdrop-filter:blur(14px)}nav,.toolbar,.rolebar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.rolebar span{font-size:12px;text-transform:uppercase;color:var(--muted);font-weight:800}
+    main{display:grid;grid-template-columns:minmax(720px,1.45fr) minmax(420px,.75fr);gap:16px;padding:18px 24px}.page{display:none}.page.active{display:block}.stack{display:grid;gap:12px}.metrics{grid-column:1/-1;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}.metric,.panel,.matrix-card,.side-card{border:1px solid var(--line);border-radius:8px;background:var(--panel);padding:12px}.metric span{display:block;font-size:10px;text-transform:uppercase;color:var(--muted);font-weight:900}.metric b{font-size:23px}.metric.red{background:#fff0ec}.metric.green{background:#e7f3ed}.metric.navy{background:#eaf0f7}.metric.amber{background:#fff5df}
+    .workspace{display:grid;grid-template-columns:1fr 1fr;gap:12px}.matrix-layout{display:grid;grid-template-columns:1.05fr .95fr;gap:12px}.schedule-map{min-height:250px;border:1px solid var(--line);border-radius:8px;background:linear-gradient(90deg,#d7e2da 1px,transparent 1px),linear-gradient(#d7e2da 1px,transparent 1px),#fbfdf9;background-size:88px 42px;position:relative}.slot{position:absolute;border-radius:7px;padding:8px;color:#fff;font-size:12px;box-shadow:0 10px 24px rgba(20,35,31,.15)}.slot.cs{left:92px;top:54px;width:160px;height:70px;background:var(--green)}.slot.math{left:92px;top:132px;width:160px;height:70px;background:var(--red)}.slot.des{left:300px;top:88px;width:146px;height:70px;background:var(--navy)}.slot.int{left:320px;top:178px;width:130px;height:54px;background:var(--amber)}
+    table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;border-bottom:1px solid var(--line);padding:8px;vertical-align:top}th{font-size:10px;text-transform:uppercase;color:var(--muted);letter-spacing:.02em}.queue-table tbody tr{background:#fff}.queue-table tbody tr:nth-child(odd){background:#fbfdf9}.pill{display:inline-flex;align-items:center;border-radius:999px;padding:3px 8px;background:var(--soft);color:var(--green);font-size:12px;font-weight:800}.pill.red{background:#fff0ec;color:var(--red)}.pill.amber{background:#fff5df;color:#744b05}.pill.green{background:#e7f3ed;color:var(--green)}.pill.navy{background:#eaf0f7;color:var(--navy)}
+    .side{display:grid;align-content:start;gap:12px}.dossier{border-left:5px solid var(--green)}.gate-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.gate{border:1px solid var(--line);border-radius:7px;background:var(--paper);padding:10px;min-height:74px}.gate span{display:block;font-size:10px;text-transform:uppercase;color:var(--muted);font-weight:900}.gate b{display:block;margin-top:4px}.page-title{display:flex;justify-content:space-between;gap:12px;align-items:start}.summary-line{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)}.ledger-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media(max-width:1050px){header{height:auto;grid-template-columns:1fr;padding:16px}main{grid-template-columns:1fr;padding:16px}.metrics,.workspace,.matrix-layout,.ledger-grid{grid-template-columns:1fr}.metrics{grid-column:auto}}
+  </style>
+</head>
+<body>
+<div class="shell">
+  <header>
+    <div>
+      <h1>Registrar Clearance Command</h1>
+      <small>Degree release, holds, petitions, transfers, and section conflicts</small>
+    </div>
+    <nav>
+      <button data-testid="go-command">Command</button>
+      <button data-testid="go-matrix">Matrix</button>
+      <button data-testid="go-petitions">Petitions</button>
+      <button data-testid="go-clearance">Clearance</button>
+      <button data-testid="reset" class="warn">Reset</button>
+    </nav>
+    <div class="rolebar">
+      <span id="roleBadge"></span>
+      <button data-testid="role-student">Student</button>
+      <button data-testid="role-advisor">Advisor</button>
+      <button data-testid="role-bursar">Bursar</button>
+      <button data-testid="role-registrar">Registrar</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="metrics">
+      <div class="metric red"><span>Student Risk</span><b id="metricRisk">none</b></div>
+      <div class="metric navy"><span>Planned Credits</span><b id="metricCredits">0</b></div>
+      <div class="metric amber"><span>Conflict</span><b id="metricConflict">none</b></div>
+      <div class="metric green"><span>Clearance</span><b id="metricClearance">idle</b></div>
+      <div class="metric"><span>Denied</span><b id="metricDenied">0</b></div>
+    </section>
+
+    <section class="stack">
+      <div id="command" class="page">
+        <div class="page-title">
+          <div><h2>At-Risk Student Queue</h2><small>Sorted registrar queue with holds and graduation pressure.</small></div>
+          <div class="toolbar">
+            <button data-testid="filter-all-students">All</button>
+            <button data-testid="filter-at-risk" class="navy">At Risk</button>
+          </div>
+        </div>
+        <div class="panel">
+          <table class="queue-table" data-testid="student-queue">
+            <thead><tr><th>Name</th><th>Year</th><th>Status</th><th>Risk</th><th>Hold</th><th>Credits</th><th></th></tr></thead>
+            <tbody id="studentRows"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="matrix" class="page">
+        <div class="page-title">
+          <div><h2>Section Matrix</h2><small>Plan construction, credit load, and visible conflict grid.</small></div>
+          <div class="toolbar">
+            <button data-testid="filter-capstone-sections">Capstone</button>
+            <button data-testid="add-selected-section" class="primary">Add Selected</button>
+            <button data-testid="detect-conflict" class="warn">Detect Conflict</button>
+            <button data-testid="remove-math-conflict">Remove MATH Conflict</button>
+          </div>
+        </div>
+        <div class="matrix-layout">
+          <div class="panel">
+            <table data-testid="section-matrix">
+              <thead><tr><th>Code</th><th>Title</th><th>Group</th><th>Credits</th><th>Slot</th><th>Seats</th><th></th></tr></thead>
+              <tbody id="sectionRows"></tbody>
+            </table>
+          </div>
+          <div class="schedule-map">
+            <div class="slot cs">CS 401<br>MW 09:00</div>
+            <div class="slot math">MATH 342<br>MW 09:00 conflict</div>
+            <div class="slot des">DES 310<br>TR 14:00 waitlist</div>
+            <div class="slot int">INT 450<br>W 16:00</div>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>Plan Ledger</h3>
+          <table data-testid="plan-grid">
+            <thead><tr><th>Code</th><th>Title</th><th>Slot</th><th>Credits</th><th>Status</th></tr></thead>
+            <tbody id="planRows"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="petitions" class="page">
+        <div class="page-title">
+          <div><h2>Petitions and Holds</h2><small>Financial clearance, advisor review, waitlist handling, and transfer intake.</small></div>
+          <div class="toolbar">
+            <button data-testid="finance-clear" class="navy">Clear Financial Hold</button>
+            <button data-testid="advisor-approve" class="primary">Advisor Approve</button>
+            <button data-testid="join-studio-waitlist" class="warn">Join Studio Waitlist</button>
+          </div>
+        </div>
+        <div class="workspace">
+          <div class="panel">
+            <h3>Petition Note</h3>
+            <label>Advisor note<input data-testid="petition-note" id="petitionNote"></label>
+            <div id="petitionSummary"></div>
+          </div>
+          <div class="panel">
+            <h3>Transfer Credit Upload</h3>
+            <label>Transfer CSV<input data-testid="transfer-upload" id="transferUpload" type="file" accept=".csv,text/csv"></label>
+            <table data-testid="transfer-grid">
+              <thead><tr><th>Source</th><th>Course</th><th>Credits</th><th>Status</th></tr></thead>
+              <tbody id="transferRows"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>Studio Waitlist</h3>
+          <table data-testid="waitlist-grid">
+            <thead><tr><th>Student</th><th>Section</th><th>Position</th><th>Status</th></tr></thead>
+            <tbody id="waitlistRows"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="clearance" class="page">
+        <div class="page-title">
+          <div><h2>Registrar Release Ledger</h2><small>Final clearance release and immutable audit trail.</small></div>
+          <button data-testid="registrar-release" class="primary">Registrar Release</button>
+        </div>
+        <div class="ledger-grid">
+          <div class="panel">
+            <h3>Release Rows</h3>
+            <table data-testid="clearance-grid">
+              <thead><tr><th>Student</th><th>Section</th><th>Role</th><th>Status</th></tr></thead>
+              <tbody id="releaseRows"></tbody>
+            </table>
+          </div>
+          <div class="panel">
+            <h3>Audit Trail</h3>
+            <table data-testid="audit-grid">
+              <thead><tr><th>Event</th><th>Actor</th><th>Status</th></tr></thead>
+              <tbody id="auditRows"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="side">
+      <div class="side-card dossier">
+        <h2>Selected Dossier</h2>
+        <div id="dossier"></div>
+      </div>
+      <div class="side-card">
+        <h3>Clearance Gates</h3>
+        <div class="gate-grid" id="gates"></div>
+      </div>
+      <div class="side-card">
+        <h3>Selected Section</h3>
+        <div id="sectionDossier"></div>
+      </div>
+    </aside>
+  </main>
+</div>
+
+<script>
+const KEY='campus-registrar-command-tier-b-state';
+const students=[
+  {id:'REG-410',name:'Nora Singh',year:'senior',status:'clearance',risk:'red',hold:'financial',credits_completed:104},
+  {id:'REG-318',name:'Mateo Lee',year:'junior',status:'studio_waitlist',risk:'amber',hold:'none',credits_completed:76},
+  {id:'REG-225',name:'Imani Brooks',year:'sophomore',status:'prerequisite_review',risk:'amber',hold:'prerequisite',credits_completed:52},
+  {id:'REG-119',name:'Theo Park',year:'first_year',status:'ready',risk:'green',hold:'none',credits_completed:18}
+];
+const sections=[
+  {id:'SEC-CS-401',code:'CS 401',title:'Advanced Systems',group:'capstone',credits:4,slot:'MW 09:00',seat_state:'open'},
+  {id:'SEC-MATH-342',code:'MATH 342',title:'Probability Lab',group:'quantitative',credits:4,slot:'MW 09:00',seat_state:'open'},
+  {id:'SEC-DES-310',code:'DES 310',title:'Studio Intensive',group:'studio',credits:3,slot:'TR 14:00',seat_state:'waitlist'},
+  {id:'SEC-HIST-220',code:'HIST 220',title:'Archive Practicum',group:'humanities',credits:3,slot:'F 10:00',seat_state:'open'},
+  {id:'SEC-INT-450',code:'INT 450',title:'Senior Seminar',group:'capstone',credits:2,slot:'W 16:00',seat_state:'open'}
+];
+const initial={current_page:'command',active_role:'student',students,visible_students:students,current_filter:'all',sections,visible_sections:sections,selected_section_group:'all',selected_student_id:'',selected_student_name:'',selected_student_status:'',selected_student_risk:'',selected_student_hold:'',selected_student_credits_completed:0,selected_section_id:'',selected_section_code:'',selected_section_title:'',selected_section_slot:'',selected_section_credits:0,plan_rows:[],plan_count:0,planned_credit_total:0,conflict_status:'none',conflict_count:0,prereq_status:'unchecked',financial_hold_status:'uncleared',billing_status:'idle',transfer_rows:[],transfer_count:0,last_transfer_file:'',waitlist_rows:[],waitlist_count:0,petition_status:'idle',petition_note:'',advisor_status:'idle',registrar_status:'idle',clearance_status:'idle',release_rows:[],release_count:0,audit_log:[],audit_count:0,denied_count:0,validation_errors:{},last_action:'ready'};
+let S;
+function clone(value){return JSON.parse(JSON.stringify(value))}
+function loadState(){try{S={...clone(initial),...JSON.parse(localStorage.getItem(KEY)||'{}')}}catch{S=clone(initial)}}
+function saveState(){localStorage.setItem(KEY,JSON.stringify(S))}
+function resetState(){localStorage.removeItem(KEY);S=clone(initial);S.last_action='reset';location.hash='#/command';render();saveState()}
+function setPage(page){if(!['command','matrix','petitions','clearance'].includes(page))return;S.current_page=page;S.last_action='nav_'+page;location.hash='#/'+page;render();saveState()}
+function syncPage(){const page=location.hash.replace('#/','')||'command';if(['command','matrix','petitions','clearance'].includes(page)){S.current_page=page;render();saveState()}}
+function setRole(role){S.active_role=role;S.last_action='role_'+role;render();saveState()}
+function deny(action){S.denied_count+=1;S.last_action=action;render();saveState()}
+function norm(value){return String(value||'').trim().replace(/\s+/g,' ')}
+function recalc(){S.plan_count=S.plan_rows.length;S.planned_credit_total=S.plan_rows.reduce((sum,row)=>sum+Number(row.credits||0),0);S.transfer_count=S.transfer_rows.length;S.waitlist_count=S.waitlist_rows.length;S.release_count=S.release_rows.length;S.audit_count=S.audit_log.length}
+function filterAtRisk(){S.current_filter='at_risk';S.visible_students=students.filter(s=>s.risk!=='green');S.last_action='filter_at_risk';render();saveState()}
+function filterAllStudents(){S.current_filter='all';S.visible_students=clone(students);S.last_action='filter_all_students';render();saveState()}
+function filterCapstone(){S.selected_section_group='capstone';S.visible_sections=sections.filter(s=>s.group==='capstone');S.last_action='filter_capstone_sections';render();saveState()}
+function selectStudent(id){const st=students.find(s=>s.id===id);if(!st)return;S.current_page='matrix';S.selected_student_id=st.id;S.selected_student_name=st.name;S.selected_student_status=st.status;S.selected_student_risk=st.risk;S.selected_student_hold=st.hold;S.selected_student_credits_completed=st.credits_completed;S.financial_hold_status=st.hold==='financial'?'uncleared':'cleared';S.prereq_status=st.hold==='prerequisite'?'review_required':'eligible';S.last_action='select_student';location.hash='#/matrix';render();saveState()}
+function selectSection(id){const sec=sections.find(s=>s.id===id);if(!sec)return;S.selected_section_id=sec.id;S.selected_section_code=sec.code;S.selected_section_title=sec.title;S.selected_section_slot=sec.slot;S.selected_section_credits=sec.credits;S.last_action='select_section';render();saveState()}
+function addSelectedSection(){if(!S.selected_section_id)return;S.plan_rows=[...S.plan_rows,{id:S.selected_section_id,code:S.selected_section_code,title:S.selected_section_title,slot:S.selected_section_slot,credits:S.selected_section_credits,status:'planned'}];S.petition_status='open';S.last_action='add_selected_section';recalc();render();saveState()}
+function detectConflict(){S.conflict_status='conflict';S.conflict_count=1;S.last_action='detect_conflict';render();saveState()}
+function removeMathConflict(){S.plan_rows=S.plan_rows.filter(row=>row.id!=='SEC-MATH-342');S.conflict_status='resolved';S.conflict_count=0;S.last_action='remove_math_conflict';recalc();render();saveState()}
+function editPetitionNote(value){S.petition_note=norm(value);S.last_action='edit_petition_note';render();saveState()}
+function parseCsv(text){const lines=text.trim().split(/\r?\n/).filter(Boolean);if(lines.length<2)return[];const headers=lines[0].split(',').map(h=>h.trim());return lines.slice(1).map(line=>{const values=line.split(',').map(v=>v.trim());const row={};headers.forEach((h,i)=>row[h]=values[i]||'');return row})}
+async function uploadTransfer(event){const file=event.target.files&&event.target.files[0];if(!file)return;const text=await file.text();S.transfer_rows=parseCsv(text);S.last_transfer_file=file.name;S.last_action='upload_transfer';recalc();render();saveState()}
+function financeClear(){if(S.active_role!=='bursar'){deny('unauthorized_bursar');return}S.financial_hold_status='cleared';S.billing_status='cleared';S.last_action='finance_clear';render();saveState()}
+function advisorApprove(){if(S.active_role!=='advisor'){deny('unauthorized_advisor');return}if(S.plan_count<1)return;S.advisor_status='approved';S.petition_status='advisor_approved';S.audit_log=[...S.audit_log,{id:'AUD-ADVISOR',event:'advisor_approval',actor:'advisor',status:'approved'}];S.last_action='advisor_approve';recalc();render();saveState()}
+function joinStudioWaitlist(){if(S.selected_section_id!=='SEC-DES-310')return;S.waitlist_rows=[...S.waitlist_rows,{id:'WAIT-DES-310',student:S.selected_student_name,section:'DES 310',position:4,status:'active'}];S.petition_status='waitlisted';S.last_action='join_studio_waitlist';recalc();render();saveState()}
+function registrarRelease(){if(S.active_role!=='registrar'){deny('unauthorized_registrar');return}const ready=S.advisor_status==='approved'&&S.financial_hold_status==='cleared'&&['none','resolved'].includes(S.conflict_status);if(!ready){S.clearance_status='blocked';S.last_action='release_blocked';render();saveState();return}S.clearance_status='released';S.registrar_status='released';S.petition_status='released';S.release_rows=[...S.release_rows,{id:'REL-001',student:S.selected_student_name,section:S.selected_section_code,role:'registrar',status:'released'}];S.audit_log=[...S.audit_log,{id:'AUD-REGISTRAR',event:'registrar_release',actor:'registrar',status:'released'}];S.last_action='registrar_release';recalc();render();saveState()}
+function pill(value){const cls=value==='red'||value==='financial'?'red':value==='amber'||value==='waitlist'||value==='uncleared'||value==='conflict'?'amber':value==='green'||value==='cleared'||value==='released'||value==='approved'?'green':'navy';return '<span class="pill '+cls+'">'+value+'</span>'}
+function renderStudents(){document.getElementById('studentRows').innerHTML=S.visible_students.map(st=>`<tr data-testid="student-row" data-student-id="${st.id}"><td data-col="name"><b>${st.name}</b></td><td data-col="year">${st.year}</td><td data-col="status">${st.status}</td><td data-col="risk">${st.risk}</td><td data-col="hold">${st.hold}</td><td data-col="credits_completed">${st.credits_completed}</td><td><button data-testid="select-${st.id}" class="primary">Open</button></td></tr>`).join('')}
+function renderSections(){document.getElementById('sectionRows').innerHTML=S.visible_sections.map(sec=>`<tr data-testid="section-row" data-section-id="${sec.id}"><td data-col="code"><b>${sec.code}</b></td><td data-col="title">${sec.title}</td><td data-col="group">${sec.group}</td><td data-col="credits">${sec.credits}</td><td data-col="slot">${sec.slot}</td><td data-col="seat_state">${sec.seat_state}</td><td><button data-testid="select-${sec.id}" class="navy">Select</button></td></tr>`).join('')}
+function rows(id, data, rowTest, attr, cols, empty){document.getElementById(id).innerHTML=data.length?data.map(row=>`<tr data-testid="${rowTest}" ${attr}="${row.id}">${cols.map(col=>`<td data-col="${col}">${row[col]??''}</td>`).join('')}</tr>`).join(''):`<tr><td colspan="${cols.length}"><small>${empty}</small></td></tr>`}
+function renderSide(){document.getElementById('dossier').innerHTML=S.selected_student_id?[
+  ['Student',S.selected_student_name],['Status',S.selected_student_status],['Risk',pill(S.selected_student_risk)],['Hold',pill(S.selected_student_hold)],['Completed',S.selected_student_credits_completed]
+].map(([a,b])=>`<div class="summary-line"><span>${a}</span><b>${b}</b></div>`).join(''):'<small>No student selected.</small>';
+document.getElementById('sectionDossier').innerHTML=S.selected_section_id?[
+  ['Section',S.selected_section_code],['Title',S.selected_section_title],['Slot',S.selected_section_slot],['Credits',S.selected_section_credits]
+].map(([a,b])=>`<div class="summary-line"><span>${a}</span><b>${b}</b></div>`).join(''):'<small>No section selected.</small>';
+const gates=[['Financial',S.financial_hold_status],['Advisor',S.advisor_status],['Conflict',S.conflict_status],['Petition',S.petition_status],['Transfers',S.transfer_count],['Release',S.clearance_status]];
+document.getElementById('gates').innerHTML=gates.map(([a,b])=>`<div class="gate"><span>${a}</span><b>${pill(String(b))}</b></div>`).join('');
+}
+function renderMetrics(){document.getElementById('roleBadge').textContent='Role '+S.active_role;document.getElementById('metricRisk').textContent=S.selected_student_risk||'none';document.getElementById('metricCredits').textContent=String(S.planned_credit_total);document.getElementById('metricConflict').textContent=S.conflict_status;document.getElementById('metricClearance').textContent=S.clearance_status;document.getElementById('metricDenied').textContent=String(S.denied_count);document.getElementById('petitionSummary').innerHTML=[['Financial',S.financial_hold_status],['Billing',S.billing_status],['Advisor',S.advisor_status],['Petition',S.petition_status],['Note',S.petition_note||'none']].map(([a,b])=>`<div class="summary-line"><span>${a}</span><b>${b}</b></div>`).join('');document.getElementById('petitionNote').value=S.petition_note}
+function render(){document.querySelectorAll('.page').forEach(page=>page.classList.toggle('active',page.id===S.current_page));renderStudents();renderSections();rows('planRows',S.plan_rows,'plan-row','data-plan-id',['code','title','slot','credits','status'],'No planned sections.');rows('transferRows',S.transfer_rows,'transfer-row','data-transfer-id',['source','course','credits','status'],'No transfer credits.');rows('waitlistRows',S.waitlist_rows,'waitlist-row','data-waitlist-id',['student','section','position','status'],'No waitlist rows.');rows('releaseRows',S.release_rows,'clearance-row','data-release-id',['student','section','role','status'],'No release rows.');rows('auditRows',S.audit_log,'audit-row','data-audit-id',['event','actor','status'],'No audit events.');renderMetrics();renderSide();window.__DETOX_STATE__=clone(S);saveState()}
+document.addEventListener('click',event=>{const id=event.target.dataset.testid;if(!id)return;if(id==='reset')return resetState();if(id==='go-command')return setPage('command');if(id==='go-matrix')return setPage('matrix');if(id==='go-petitions')return setPage('petitions');if(id==='go-clearance')return setPage('clearance');if(id==='role-student')return setRole('student');if(id==='role-advisor')return setRole('advisor');if(id==='role-bursar')return setRole('bursar');if(id==='role-registrar')return setRole('registrar');if(id==='filter-all-students')return filterAllStudents();if(id==='filter-at-risk')return filterAtRisk();if(id==='filter-capstone-sections')return filterCapstone();if(id.startsWith('select-REG-'))return selectStudent(id.replace('select-',''));if(id.startsWith('select-SEC-'))return selectSection(id.replace('select-',''));if(id==='add-selected-section')return addSelectedSection();if(id==='detect-conflict')return detectConflict();if(id==='remove-math-conflict')return removeMathConflict();if(id==='finance-clear')return financeClear();if(id==='advisor-approve')return advisorApprove();if(id==='join-studio-waitlist')return joinStudioWaitlist();if(id==='registrar-release')return registrarRelease()});
+document.getElementById('petitionNote').addEventListener('input',event=>editPetitionNote(event.target.value));
+document.getElementById('transferUpload').addEventListener('change',uploadTransfer);
+window.addEventListener('hashchange',syncPage);
+loadState();
+if(!location.hash||!location.hash.match(/^#\/(command|matrix|petitions|clearance)$/))location.hash='#/'+(S.current_page||'command');
+syncPage();
+</script>
+</body>
+</html>

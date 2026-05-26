@@ -1,0 +1,276 @@
+{
+  "batch_root": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/stayflow_concierge/cohorts/_batches/rerun_missing_gemini_20260525T132231Z",
+  "generated_at": "2026-05-25T23:16:25+00:00",
+  "total_tasks": 10,
+  "evaluated": 10,
+  "rows": [
+    {
+      "target_tier": "D",
+      "model_tier": "T",
+      "slug": "gemini_flash_latest",
+      "model": "gemini-flash-latest",
+      "rep": 1,
+      "subject": "repeat_tier_d_t_gemini_flash_latest_r01",
+      "candidate_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/stayflow_concierge/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/candidates/gemini_flash_latest/r01",
+      "eval_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/stayflow_concierge/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/runs/gemini_flash_latest/r01",
+      "run_id": "20260526-032509-038a3169",
+      "passed": false,
+      "scenarios_passed": 13,
+      "scenarios_total": 28,
+      "formal_ratio": 0.36363636363636365,
+      "stepwise_ratio": 0.7405984947223949,
+      "contract_ratio": 1.0,
+      "first_failure": "public_03_quote_and_command_promo",
+      "failure_breakdown": {
+        "assertion_state_length_equals": 14,
+        "assertion_state_appended_object": 1
+      },
+      "summary_path": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/stayflow_concierge/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/runs/gemini_flash_latest/r01/20260526-032509-038a3169/summary.json",
+      "status": "ok"
+    },
+    {
+      "target_tier": "D",
+      "model_tier": "T",
+      "slug": "gemini_flash_latest",
+      "model": "gemini-flash-latest",
+      "rep": 2,
+      "subject": "repeat_tier_d_t_gemini_flash_latest_r02",
+      "candidate_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/stayflow_concierge/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/candidates/gemini_flash_latest/r02",
+      "eval_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/stayflow_concierge/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/runs/gemini_flash_latest/r02",
+      "run_id": "20260526-081259-164b362a",
+      "passed": false,
+      "scenarios_passed": 0,
+      "scenarios_total": 28,
+      "formal_ratio": 0.0,
+      "stepwise_ratio": 0.06358279793300062,
+      "contract_ratio": 1.0,
+      "first_failure": "public_01_filter_jeju_inventory",
+      "failure_breakdown": {
+        "assertion_state_equals": 28
+      },
+      "summary_path": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/stayflow_concierge/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/runs/gemini_flash_latest/r02/20260526-081259-164b362a/summary.json",
+      "status": "ok"
+    },
+    {
+      "target_tier": "D",
+      "model_tier": "T",
+      "slug": "gemini_flash_latest",
+      "model": "gemini-flash-latest",
+      "rep": 3,
+      "subject": "repeat_tier_d_t_gemini_flash_latest_r03",
+      "candidate_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/stayflow_concierge/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/candidates/gemini_flash_latest/r03",
+      "eval_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/stayflow_concierge/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/runs/gemini_flash_latest/r03",
+      "run_id": "20260526-032525-fde69707",
+      "passed": false,
+      "scenarios_passed": 0,
+      "scenarios_total": 28,
+      "formal_ratio": 0.0,
+      "stepwise_ratio": 0.06358279793300062,
+      "contract_ratio": 1.0,
+      "first_failure": "public_01_filter_jeju_inventory",
+      "failure_breakdown": {
+        "assertion_state_equals": 28
+      },
+      "summary_path": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/stayflow_concierge/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/runs/gemini_flash_latest/r03/20260526-032525-fde69707/summary.json",
+      "status": "ok"
+    },
+    {
+      "target_tier": "D",
+      "model_tier": "T",
+      "slug": "gemini_flash_latest",
+      "model": "gemini-flash-latest",
+      "rep": 4,
+      "subject": "repeat_tier_d_t_gemini_flash_latest_r04",
+      "candidate_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/stayflow_concierge/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/candidates/gemini_flash_latest/r04",
+      "eval_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/stayflow_concierge/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/runs/gemini_flash_latest/r04",
+      "run_id": "20260526-032642-a2620e08",
+      "passed": false,
+      "scenarios_passed": 0,
+      "scenarios_total": 28,
+      "formal_ratio": 0.0,
+      "stepwise_ratio": 0.06358279793300062,
+      "contract_ratio": 1.0,
+      "first_failure": "public_01_filter_jeju_inventory",
+      "failure_breakdown": {
+        "assertion_state_equals": 28
+      },
+      "summary_path": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/stayflow_concierge/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/runs/gemini_flash_latest/r04/20260526-032642-a2620e08/summary.json",
+      "status": "ok"
+    },
+    {
+      "target_tier": "D",
+      "model_tier": "T",
+      "slug": "gemini_flash_latest",
+      "model": "gemini-flash-latest",
+      "rep": 5,
+      "subject": "repeat_tier_d_t_gemini_flash_latest_r05",
+      "candidate_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/stayflow_concierge/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/candidates/gemini_flash_latest/r05",
+      "eval_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/stayflow_concierge/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/runs/gemini_flash_latest/r05",
+      "run_id": "20260526-032650-6f1f5dc7",
+      "passed": false,
+      "scenarios_passed": 0,
+      "scenarios_total": 28,
+      "formal_ratio": 0.0,
+      "stepwise_ratio": 0.06358279793300062,
+      "contract_ratio": 1.0,
+      "first_failure": "public_01_filter_jeju_inventory",
+      "failure_breakdown": {
+        "assertion_state_equals": 28
+      },
+      "summary_path": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/stayflow_concierge/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/runs/gemini_flash_latest/r05/20260526-032650-6f1f5dc7/summary.json",
+      "status": "ok"
+    },
+    {
+      "target_tier": "D",
+      "model_tier": "T",
+      "slug": "gemini_flash_latest",
+      "model": "gemini-flash-latest",
+      "rep": 6,
+      "subject": "repeat_tier_d_t_gemini_flash_latest_r06",
+      "candidate_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/stayflow_concierge/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/candidates/gemini_flash_latest/r06",
+      "eval_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/stayflow_concierge/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/runs/gemini_flash_latest/r06",
+      "run_id": "20260526-081300-d3b522b5",
+      "passed": false,
+      "scenarios_passed": 0,
+      "scenarios_total": 28,
+      "formal_ratio": 0.0,
+      "stepwise_ratio": 0.06358279793300062,
+      "contract_ratio": 1.0,
+      "first_failure": "public_01_filter_jeju_inventory",
+      "failure_breakdown": {
+        "assertion_state_equals": 28
+      },
+      "summary_path": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/stayflow_concierge/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/runs/gemini_flash_latest/r06/20260526-081300-d3b522b5/summary.json",
+      "status": "ok"
+    },
+    {
+      "target_tier": "D",
+      "model_tier": "T",
+      "slug": "gemini_flash_latest",
+      "model": "gemini-flash-latest",
+      "rep": 7,
+      "subject": "repeat_tier_d_t_gemini_flash_latest_r07",
+      "candidate_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/stayflow_concierge/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/candidates/gemini_flash_latest/r07",
+      "eval_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/stayflow_concierge/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/runs/gemini_flash_latest/r07",
+      "run_id": "20260526-032834-5517c605",
+      "passed": false,
+      "scenarios_passed": 0,
+      "scenarios_total": 28,
+      "formal_ratio": 0.0,
+      "stepwise_ratio": 0.06358279793300062,
+      "contract_ratio": 1.0,
+      "first_failure": "public_01_filter_jeju_inventory",
+      "failure_breakdown": {
+        "assertion_state_equals": 28
+      },
+      "summary_path": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/stayflow_concierge/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/runs/gemini_flash_latest/r07/20260526-032834-5517c605/summary.json",
+      "status": "ok"
+    },
+    {
+      "target_tier": "D",
+      "model_tier": "T",
+      "slug": "gemini_flash_latest",
+      "model": "gemini-flash-latest",
+      "rep": 8,
+      "subject": "repeat_tier_d_t_gemini_flash_latest_r08",
+      "candidate_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/stayflow_concierge/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/candidates/gemini_flash_latest/r08",
+      "eval_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/stayflow_concierge/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/runs/gemini_flash_latest/r08",
+      "run_id": "20260526-032840-76de9d35",
+      "passed": false,
+      "scenarios_passed": 0,
+      "scenarios_total": 28,
+      "formal_ratio": 0.0,
+      "stepwise_ratio": 0.06358279793300062,
+      "contract_ratio": 1.0,
+      "first_failure": "public_01_filter_jeju_inventory",
+      "failure_breakdown": {
+        "assertion_state_equals": 28
+      },
+      "summary_path": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/stayflow_concierge/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/runs/gemini_flash_latest/r08/20260526-032840-76de9d35/summary.json",
+      "status": "ok"
+    },
+    {
+      "target_tier": "D",
+      "model_tier": "T",
+      "slug": "gemini_flash_latest",
+      "model": "gemini-flash-latest",
+      "rep": 9,
+      "subject": "repeat_tier_d_t_gemini_flash_latest_r09",
+      "candidate_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/stayflow_concierge/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/candidates/gemini_flash_latest/r09",
+      "eval_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/stayflow_concierge/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/runs/gemini_flash_latest/r09",
+      "run_id": "20260526-032955-400266d9",
+      "passed": false,
+      "scenarios_passed": 0,
+      "scenarios_total": 28,
+      "formal_ratio": 0.0,
+      "stepwise_ratio": 0.06358279793300062,
+      "contract_ratio": 1.0,
+      "first_failure": "public_01_filter_jeju_inventory",
+      "failure_breakdown": {
+        "assertion_state_equals": 28
+      },
+      "summary_path": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/stayflow_concierge/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/runs/gemini_flash_latest/r09/20260526-032955-400266d9/summary.json",
+      "status": "ok"
+    },
+    {
+      "target_tier": "D",
+      "model_tier": "T",
+      "slug": "gemini_flash_latest",
+      "model": "gemini-flash-latest",
+      "rep": 10,
+      "subject": "repeat_tier_d_t_gemini_flash_latest_r10",
+      "candidate_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/stayflow_concierge/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/candidates/gemini_flash_latest/r10",
+      "eval_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/stayflow_concierge/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/runs/gemini_flash_latest/r10",
+      "run_id": "20260526-033155-ec757e67",
+      "passed": false,
+      "scenarios_passed": 0,
+      "scenarios_total": 28,
+      "formal_ratio": 0.0,
+      "stepwise_ratio": 0.06358279793300062,
+      "contract_ratio": 1.0,
+      "first_failure": "public_01_filter_jeju_inventory",
+      "failure_breakdown": {
+        "assertion_state_equals": 28
+      },
+      "summary_path": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/stayflow_concierge/tier_d/cohorts/T/rerun_missing_gemini_20260525T132231Z/runs/gemini_flash_latest/r10/20260526-033155-ec757e67/summary.json",
+      "status": "ok"
+    }
+  ],
+  "model_stats": [
+    {
+      "group": "tier_D/model_tier_T/gemini_flash_latest",
+      "target_tier": "D",
+      "model_tier": "T",
+      "slug": "gemini_flash_latest",
+      "model": "gemini-flash-latest",
+      "runs": 10,
+      "evaluated": 10,
+      "generation_or_eval_missing": 0,
+      "scenario_pass_mean": 1.3,
+      "scenario_pass_sd": 4.110960958218893,
+      "formal_mean": 0.03636363636363636,
+      "formal_sd": 0.1149919149152138,
+      "stepwise_mean": 0.13128436761194004,
+      "stepwise_sd": 0.21409116135404307,
+      "contract_mean": 1.0,
+      "contract_sd": 0.0,
+      "first_failures": {
+        "public_01_filter_jeju_inventory": 9,
+        "public_03_quote_and_command_promo": 1
+      }
+    }
+  ],
+  "tier_group_stats": [
+    {
+      "target_tier": "D",
+      "model_tier": "T",
+      "evaluated": 10,
+      "formal_mean": 0.03636363636363636,
+      "formal_sd": 0.1149919149152138,
+      "stepwise_mean": 0.13128436761194004,
+      "stepwise_sd": 0.21409116135404307,
+      "contract_mean": 1.0,
+      "contract_sd": 0.0
+    }
+  ]
+}

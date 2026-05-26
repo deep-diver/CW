@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Media Campaign Launch Desk Tier A</title>
+  <style>
+    :root{--bg:#f7f4ee;--ink:#171717;--muted:#6b6861;--line:#ddd2c3;--paper:#fffdf8;--panel:#fff;--teal:#08766f;--coral:#e35d4f;--amber:#c88917;--violet:#6554b8;--soft:#eef5f4}
+    *{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#fbf8f1,#f1ede4);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:0}
+    button,input{font:inherit}button{border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink);padding:9px 12px;cursor:pointer}button.primary{background:var(--teal);border-color:var(--teal);color:#fff}button.coral{background:var(--coral);border-color:var(--coral);color:#fff}button.warn{background:#fff4dc;border-color:#e0b75e;color:#744b05}
+    input{width:100%;border:1px solid var(--line);border-radius:7px;padding:10px;background:#fff;color:var(--ink)}h1,h2,h3,p{margin-top:0}h1{font-size:22px;margin-bottom:2px}h2{font-size:24px}h3{font-size:16px}small,label{color:var(--muted)}label{display:grid;gap:6px;font-size:12px;font-weight:800;text-transform:uppercase}
+    header{height:82px;display:grid;grid-template-columns:340px 1fr auto;align-items:center;padding:0 28px;border-bottom:1px solid var(--line);background:rgba(255,253,248,.92);backdrop-filter:blur(14px)}
+    nav,.toolbar,.rolebar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.rolebar span{font-size:12px;text-transform:uppercase;color:var(--muted)}
+    main{display:grid;grid-template-columns:minmax(650px,1fr) 400px;gap:18px;padding:22px 28px}.page{display:none}.page.active{display:block}.stack{display:grid;gap:12px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .hero{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}.metric,.panel,.asset-card,.packet,.calendar-board,.legal-card{border:1px solid var(--line);border-radius:8px;background:var(--panel);padding:14px}.metric span{display:block;text-transform:uppercase;font-size:11px;font-weight:800;color:var(--muted)}.metric b{font-size:25px}.metric.teal{background:#e8f5f3}.metric.coral{background:#fff0ed}.metric.amber{background:#fff4dc}
+    .asset-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.asset-card{display:grid;gap:9px}.thumb{height:92px;border-radius:7px;background:linear-gradient(135deg,var(--teal),#9ad3ca);position:relative;overflow:hidden}.thumb:before{content:"";position:absolute;inset:16px 32px;border:3px solid rgba(255,255,255,.75)}.thumb.video{background:linear-gradient(135deg,#08766f,#1fb7a6)}.thumb.display{background:linear-gradient(135deg,#6554b8,#d9c8ff)}.thumb.influencer{background:linear-gradient(135deg,#e35d4f,#ffc0a8)}.thumb.email{background:linear-gradient(135deg,#171717,#77756f)}.badge{display:inline-flex;border-radius:999px;padding:3px 8px;background:var(--soft);color:var(--teal);font-size:12px}.badge.review{background:#fff4dc;color:#744b05}.asset-card header{display:flex;justify-content:space-between;gap:10px}
+    .calendar-board{min-height:285px;background:linear-gradient(90deg,#e6ddd0 1px,transparent 1px),linear-gradient(#e6ddd0 1px,transparent 1px),#fffdf8;background-size:110px 46px;position:relative}.slot{position:absolute;border-radius:7px;padding:9px;color:#fff;font-size:12px;box-shadow:0 10px 24px rgba(0,0,0,.12)}.slot.one{left:112px;top:64px;width:160px;height:74px;background:var(--teal)}.slot.two{left:342px;top:154px;width:152px;height:74px;background:var(--coral)}.slot.three{left:220px;top:204px;width:145px;height:58px;background:var(--violet)}
+    .calendar-layout,.launch-layout{display:grid;grid-template-columns:1fr 1fr;gap:12px}.summary-line{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}.meter{height:14px;border-radius:999px;background:#e1ddd5;overflow:hidden}.meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--teal),var(--coral))}
+    table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;border-bottom:1px solid var(--line);padding:9px}th{font-size:11px;text-transform:uppercase;color:var(--muted)}.right-rail{display:grid;align-content:start;gap:12px}.launch-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.launch-strip div{min-height:72px;border:1px solid var(--line);border-radius:7px;padding:9px;background:var(--paper)}.launch-strip b{display:block}.legal-card{border-left:5px solid var(--amber)}
+    @media(max-width:980px){header{height:auto;grid-template-columns:1fr;padding:16px;gap:12px}main{grid-template-columns:1fr;padding:16px}.hero,.calendar-layout,.launch-layout{grid-template-columns:1fr}.asset-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <header>
+    <div><h1>Media Launch Desk</h1><small>Creative calendar and rights clearance</small></div>
+    <nav>
+      <button data-testid="go-assets">Assets</button>
+      <button data-testid="go-calendar">Calendar</button>
+      <button data-testid="go-launch">Launch</button>
+      <button data-testid="reset" class="warn">Reset</button>
+    </nav>
+    <div class="rolebar">
+      <span id="roleLabel"></span>
+      <button data-testid="role-marketer">Marketer</button>
+      <button data-testid="role-legal">Legal</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="metric teal"><span>Selected Asset</span><b id="assetMetric">None</b></div>
+      <div class="metric coral"><span>Schedule Count</span><b id="scheduleMetric">0</b></div>
+      <div class="metric amber"><span>Rights</span><b id="rightsMetric">unchecked</b></div>
+    </section>
+
+    <section class="stack">
+      <div id="assets" class="page">
+        <h2>Creative Assets</h2>
+        <div class="toolbar">
+          <button data-testid="filter-all">All</button>
+          <button data-testid="filter-social">Social</button>
+          <button data-testid="filter-video">Video</button>
+        </div>
+        <div data-testid="asset-grid" class="asset-grid"></div>
+      </div>
+
+      <div id="calendar" class="page">
+        <h2>Media Calendar</h2>
+        <div class="calendar-layout">
+          <div class="panel">
+            <h3>Campaign Packet</h3>
+            <div class="grid">
+              <label>Campaign<input data-testid="campaign-name"></label>
+              <label>Budget<input data-testid="budget"></label>
+            </div>
+            <div class="toolbar" style="margin-top:12px">
+              <button data-testid="schedule-morning">Mon 09:00</button>
+              <button data-testid="schedule-evening">Thu 18:00</button>
+              <button data-testid="commit-budget" class="primary">Commit Budget</button>
+            </div>
+            <div id="calendarSummary"></div>
+          </div>
+          <div class="calendar-board" aria-label="weekly media calendar">
+            <div class="slot one">Social Reel<br>Monday 09:00</div>
+            <div class="slot two">Display Flight<br>Thursday 18:00</div>
+            <div class="slot three">Email Hero<br>Friday 11:00</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="launch" class="page">
+        <h2>Launch Clearance</h2>
+        <div class="launch-layout">
+          <div class="legal-card">
+            <h3>Rights and Legal</h3>
+            <label>Legal Note<input data-testid="legal-note"></label>
+            <div class="toolbar" style="margin-top:12px">
+              <button data-testid="check-rights" class="primary">Check Rights</button>
+              <button data-testid="request-legal-review">Request Legal Review</button>
+              <button data-testid="legal-approve">Legal Approve</button>
+              <button data-testid="launch-campaign" class="coral">Launch</button>
+            </div>
+          </div>
+          <div class="packet">
+            <h3>Launch Gates</h3>
+            <div class="launch-strip" id="launchStrip"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Schedule Grid</h3>
+        <table data-testid="schedule-grid"></table>
+      </div>
+      <div class="panel">
+        <h3>Launch Ledger</h3>
+        <table data-testid="launch-grid"></table>
+      </div>
+    </section>
+
+    <aside class="right-rail">
+      <div class="packet">
+        <h2>Campaign Brief</h2>
+        <div id="packetRows"></div>
+      </div>
+      <div class="packet">
+        <h3>Budget Meter</h3>
+        <div class="meter"><i id="budgetBar"></i></div>
+      </div>
+      <div class="packet">
+        <h3>Legal Note</h3>
+        <p id="notePreview">No legal note recorded.</p>
+      </div>
+    </aside>
+  </main>
+
+  <script>
+    const KEY='media-campaign-tier-a-state';
+    const baseAssets=[
+      {id:'AD-VID-01',name:'Aurora Launch Film',type:'video',channel:'social',budget:4200,rights:'cleared'},
+      {id:'AD-BAN-02',name:'Metro Banner Set',type:'display',channel:'display',budget:1800,rights:'cleared'},
+      {id:'AD-INF-03',name:'Creator Cutdown',type:'influencer',channel:'social',budget:2600,rights:'review'},
+      {id:'AD-EML-04',name:'Alumni Email Hero',type:'email',channel:'email',budget:900,rights:'cleared'}
+    ];
+    const initial={current_page:'assets',active_role:'marketer',assets:baseAssets,visible_assets:baseAssets,selected_channel:'all',selected_asset_id:'',selected_asset_name:'',selected_asset_type:'',selected_asset_channel:'',selected_asset_budget:0,campaign_name:'',budget_key:'',budget_status:'idle',schedule_rows:[],schedule_count:0,rights_status:'unchecked',review_status:'idle',approval_status:'none',launch_status:'idle',launch_rows:[],launch_count:0,legal_note:'',denied_count:0,service_call_count:0,validation_errors:{},last_action:'ready','__services.calls':[]};
+    let S=load();
+    function clone(x){return JSON.parse(JSON.stringify(x))}
+    function load(){try{return {...clone(initial),...JSON.parse(localStorage.getItem(KEY)||'{}')}}catch{return clone(initial)}}
+    function save(){localStorage.setItem(KEY,JSON.stringify(S))}
+    function norm(v){return String(v||'').trim().replace(/\s+/g,' ')}
+    function currency(v){return String(v||'').replace(/[^0-9.]/g,'').replace(/\.0+$/,'')}
+    function reset(){localStorage.removeItem(KEY);S=clone(initial);S.last_action='reset';location.hash='#/assets';render()}
+    function setPage(page){if(!['assets','calendar','launch'].includes(page))return;S.current_page=page;location.hash='#/'+page;save();render()}
+    function filter(kind){S.selected_channel=kind;if(kind==='all'){S.visible_assets=clone(baseAssets)}else if(kind==='social'){S.visible_assets=S.assets.filter(a=>a.channel==='social').sort((a,b)=>b.budget-a.budget)}else if(kind==='video'){S.visible_assets=S.assets.filter(a=>a.type==='video').sort((a,b)=>b.budget-a.budget)}render()}
+    function selectAsset(id){const a=S.assets.find(x=>x.id===id);if(!a)return;S.selected_asset_id=a.id;S.selected_asset_name=a.name;S.selected_asset_type=a.type;S.selected_asset_channel=a.channel;S.selected_asset_budget=a.budget;S.rights_status='unchecked';S.last_action='select_asset';render()}
+    function schedule(slot){if(!S.selected_asset_id)return;S.schedule_count++;S.schedule_rows.push({id:'SCH-001',asset:S.selected_asset_name,channel:S.selected_asset_channel,slot,status:'scheduled'});S.last_action=slot==='monday_0900'?'schedule_morning':'schedule_evening';render()}
+    function commitBudget(){if(!S.budget_key)return;S.budget_status='committed';S.last_action='commit_budget';render()}
+    function checkRights(){if(!['AD-VID-01','AD-BAN-02','AD-EML-04'].includes(S.selected_asset_id))return;S.service_call_count++;S.rights_status='cleared';S.review_status='approved';S.last_action='check_rights';render()}
+    function requestLegal(){if(S.selected_asset_id!=='AD-INF-03')return;S.service_call_count++;S.rights_status='legal_required';S.review_status='legal_required';S.last_action='request_legal_review';render()}
+    function legalApprove(){if(S.active_role!=='legal'){S.denied_count++;S.last_action='unauthorized_legal';return render()}if(S.review_status==='legal_required'){S.rights_status='cleared';S.review_status='approved';S.approval_status='legal_approved';S.last_action='legal_approve'}render()}
+    function launch(){if(S.rights_status!=='cleared'){S.launch_status='blocked';S.last_action='launch_blocked';return render()}if(S.budget_status!=='committed'||S.schedule_count<1)return;S.launch_status='launched';S.launch_count++;S.launch_rows.push({id:'LAUNCH-001',campaign:S.campaign_name,asset:S.selected_asset_name,channel:S.selected_asset_channel,status:'launched'});S.last_action='launch_campaign';render()}
+    function table(root, rows, rowTest, attr, cols){const el=document.querySelector('[data-testid="'+root+'"]');el.innerHTML='<thead><tr>'+cols.map(c=>'<th>'+c+'</th>').join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr data-testid="'+rowTest+'" '+attr+'="'+r.id+'">'+cols.map(c=>'<td data-col="'+c+'">'+(r[c]??'')+'</td>').join('')+'</tr>').join('')+'</tbody>'}
+    function renderAssets(){const root=document.querySelector('[data-testid="asset-grid"]');root.innerHTML=S.visible_assets.map(a=>'<div class="asset-card" data-testid="asset-row" data-asset-id="'+a.id+'"><div class="thumb '+a.type+'"></div><header><b data-col="name">'+a.name+'</b><span class="badge '+(a.rights==='review'?'review':'')+'" data-col="rights">'+a.rights+'</span></header><div><span data-col="type">'+a.type+'</span> · <span data-col="channel">'+a.channel+'</span> · $<span data-col="budget">'+a.budget+'</span></div><button data-testid="select-'+a.id+'" class="primary">Select Asset</button></div>').join('')}
+    function renderSummary(){document.getElementById('assetMetric').textContent=S.selected_asset_name||'None';document.getElementById('scheduleMetric').textContent=String(S.schedule_count);document.getElementById('rightsMetric').textContent=S.rights_status;document.getElementById('roleLabel').textContent='Role '+S.active_role;document.getElementById('budgetBar').style.width=Math.min(100,(Number(S.budget_key)||0)/8000*100)+'%';document.getElementById('notePreview').textContent=S.legal_note||'No legal note recorded.';document.getElementById('calendarSummary').innerHTML=[['Asset',S.selected_asset_name||'none'],['Campaign',S.campaign_name||'untitled'],['Budget',S.budget_key||'none'],['Schedule',S.schedule_count]].map(([a,b])=>'<div class="summary-line"><span>'+a+'</span><b>'+b+'</b></div>').join('');document.getElementById('packetRows').innerHTML=[['Launch',S.launch_status],['Rights',S.rights_status],['Budget',S.budget_status],['Legal',S.approval_status],['Calls',S.service_call_count],['Denied',S.denied_count]].map(([a,b])=>'<div class="summary-line"><span>'+a+'</span><b>'+b+'</b></div>').join('');document.getElementById('launchStrip').innerHTML=[['Asset',S.selected_asset_id?'ready':'open'],['Calendar',S.schedule_count>0?'scheduled':'open'],['Budget',S.budget_status],['Rights',S.rights_status]].map(([a,b])=>'<div><span>'+a+'</span><b>'+b+'</b></div>').join('')}
+    function render(){document.querySelectorAll('.page').forEach(el=>el.classList.toggle('active',el.id===S.current_page));renderAssets();table('schedule-grid',S.schedule_rows,'schedule-row','data-schedule-id',['asset','channel','slot','status']);table('launch-grid',S.launch_rows,'launch-row','data-launch-id',['campaign','asset','channel','status']);renderSummary();window.__DETOX_STATE__=S;save()}
+    document.addEventListener('click',e=>{const id=e.target.dataset.testid;if(!id)return;if(id==='reset')return reset();if(id==='go-assets')return setPage('assets');if(id==='go-calendar')return setPage('calendar');if(id==='go-launch')return setPage('launch');if(id==='role-marketer'){S.active_role='marketer';S.last_action='role_marketer';return render()}if(id==='role-legal'){S.active_role='legal';S.last_action='role_legal';return render()}if(id==='filter-all')return filter('all');if(id==='filter-social')return filter('social');if(id==='filter-video')return filter('video');if(id.startsWith('select-'))return selectAsset(id.replace('select-',''));if(id==='schedule-morning')return schedule('monday_0900');if(id==='schedule-evening')return schedule('thursday_1800');if(id==='commit-budget')return commitBudget();if(id==='check-rights')return checkRights();if(id==='request-legal-review')return requestLegal();if(id==='legal-approve')return legalApprove();if(id==='launch-campaign')return launch()});
+    document.addEventListener('input',e=>{const id=e.target.dataset.testid;if(id==='campaign-name'){S.campaign_name=norm(e.target.value);render()}if(id==='budget'){S.budget_key=currency(e.target.value);render()}if(id==='legal-note'){S.legal_note=norm(e.target.value);render()}});
+    window.addEventListener('hashchange',()=>{const page=(location.hash.replace('#/','')||'assets');if(['assets','calendar','launch'].includes(page)){S.current_page=page;render()}});
+    const start=(location.hash.replace('#/','')||S.current_page||'assets');if(['assets','calendar','launch'].includes(start))S.current_page=start;location.hash='#/'+S.current_page;render();
+  </script>
+</body>
+</html>

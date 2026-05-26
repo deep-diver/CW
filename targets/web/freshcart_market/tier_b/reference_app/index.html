@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GreenCart Premium — Gourmet Marketplace</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --teal:#0d6e5b;--teal-dark:#094d3f;--cream:#faf6ef;--gold:#c8982e;
+  --gold-light:#f0dca0;--card:#fff;--text:#1a1a1a;--muted:#6b7280;
+  --danger:#dc2626;--success:#16a34a;--border:#e5e1d8;
+  --radius:10px;--shadow:0 2px 8px rgba(0,0,0,.08);
+}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--cream);color:var(--text);line-height:1.5;min-height:100vh}
+header{background:var(--teal);color:#fff;padding:12px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+header h1{font-size:1.25rem;font-weight:700;letter-spacing:-.02em}
+header h1 span{color:var(--gold-light)}
+.header-actions{display:flex;gap:8px;align-items:center}
+nav{background:var(--teal-dark);display:flex;gap:0;padding:0 24px}
+nav button{background:none;border:none;color:rgba(255,255,255,.7);padding:10px 20px;font-size:.85rem;cursor:pointer;border-bottom:3px solid transparent;transition:.2s}
+nav button:hover,nav button.active{color:#fff;border-bottom-color:var(--gold)}
+.page{display:none;padding:24px;max-width:1200px;margin:0 auto}
+.page.active{display:block}
+.vendor-filters{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.vendor-filters button{padding:8px 16px;border:2px solid var(--teal);background:#fff;color:var(--teal);border-radius:20px;font-size:.8rem;cursor:pointer;transition:.2s;font-weight:600}
+.vendor-filters button.active{background:var(--teal);color:#fff}
+.product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+.product-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;transition:.2s;position:relative}
+.product-card:hover{box-shadow:var(--shadow);transform:translateY(-2px)}
+.product-emoji{font-size:2.2rem;margin-bottom:8px;display:block}
+.product-name{font-weight:700;font-size:.95rem;margin-bottom:2px}
+.product-vendor{font-size:.75rem;color:var(--muted);margin-bottom:6px}
+.product-meta{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
+.product-price{font-weight:700;color:var(--teal);font-size:1.05rem}
+.product-unit{font-size:.75rem;color:var(--muted)}
+.add-btn{background:var(--teal);color:#fff;border:none;border-radius:6px;padding:8px 14px;font-size:.8rem;cursor:pointer;transition:.2s}
+.add-btn:hover{background:var(--teal-dark)}
+.cart-sidebar{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-top:20px}
+.cart-sidebar h3{font-size:.9rem;margin-bottom:10px;color:var(--teal)}
+.cart-item{display:flex;justify-content:space-between;padding:6px 0;font-size:.85rem;border-bottom:1px solid var(--border)}
+.cart-total{font-weight:700;margin-top:8px;padding-top:8px;border-top:2px solid var(--teal);display:flex;justify-content:space-between}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--teal);color:#fff;padding:10px 12px;text-align:left;font-weight:600}
+td{padding:10px 12px;border-bottom:1px solid var(--border)}
+tr:hover td{background:rgba(13,110,91,.04)}
+.prep-btns{display:flex;gap:4px;margin-top:4px}
+.prep-btn{padding:3px 8px;font-size:.7rem;border:1px solid var(--gold);background:transparent;color:var(--gold);border-radius:4px;cursor:pointer}
+.prep-btn:hover{background:var(--gold);color:#fff}
+.remove-btn{padding:3px 8px;font-size:.7rem;border:1px solid var(--danger);background:transparent;color:var(--danger);border-radius:4px;cursor:pointer}
+.remove-btn:hover{background:var(--danger);color:#fff}
+.checkout-grid{display:grid;grid-template-columns:1fr 340px;gap:24px}
+.checkout-panel{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
+.checkout-panel h3{font-size:1rem;margin-bottom:16px;color:var(--teal);padding-bottom:8px;border-bottom:2px solid var(--gold)}
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:.8rem;font-weight:600;margin-bottom:4px;color:var(--muted)}
+.form-group input{width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:.9rem}
+.form-group input:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(13,110,91,.1)}
+.slot-btns{display:flex;gap:8px}
+.slot-btn{flex:1;padding:10px;border:2px solid var(--border);background:#fff;border-radius:8px;cursor:pointer;text-align:center;font-size:.8rem;transition:.2s}
+.slot-btn.active{border-color:var(--teal);background:rgba(13,110,91,.06);color:var(--teal);font-weight:700}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)}
+.toggle-row label{font-size:.85rem}
+.toggle-btn{padding:6px 12px;font-size:.75rem;border-radius:6px;cursor:pointer;border:1px solid var(--border);background:#fff}
+.toggle-btn.on{background:var(--teal);color:#fff;border-color:var(--teal)}
+.summary-row{display:flex;justify-content:space-between;font-size:.85rem;padding:4px 0}
+.summary-row.total{font-weight:700;font-size:1rem;padding-top:8px;margin-top:8px;border-top:2px solid var(--teal)}
+.place-order-btn{width:100%;padding:14px;background:var(--teal);color:#fff;border:none;border-radius:8px;font-size:1rem;font-weight:700;cursor:pointer;margin-top:16px;transition:.2s}
+.place-order-btn:hover{background:var(--teal-dark)}
+.order-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px}
+.order-card h4{font-size:.95rem;color:var(--teal)}
+.order-timeline{display:flex;gap:0;margin:12px 0}
+.timeline-step{flex:1;text-align:center;position:relative}
+.timeline-step .dot{width:24px;height:24px;border-radius:50%;background:var(--border);margin:0 auto 4px;display:flex;align-items:center;justify-content:center;font-size:.7rem;color:#fff}
+.timeline-step .dot.done{background:var(--success)}
+.timeline-step .label{font-size:.7rem;color:var(--muted)}
+.agent-section{background:rgba(13,110,91,.04);border:1px dashed var(--teal);border-radius:var(--radius);padding:16px;margin-top:16px}
+.agent-section h4{font-size:.9rem;color:var(--teal);margin-bottom:10px}
+.agent-section button{margin-right:8px;margin-bottom:6px}
+.audit-trail{margin-top:12px;font-size:.75rem;color:var(--muted)}
+.audit-trail div{padding:2px 0;border-bottom:1px dotted var(--border)}
+.role-badge{padding:4px 10px;border-radius:12px;font-size:.7rem;font-weight:700;text-transform:uppercase}
+.role-badge.customer{background:#dbeafe;color:#1d4ed8}
+.role-badge.staff{background:#fef3c7;color:#92400e}
+.error-msg{color:var(--danger);font-size:.8rem;margin-top:4px}
+.reset-btn{background:var(--danger);color:#fff;border:none;padding:6px 14px;border-radius:6px;font-size:.8rem;cursor:pointer}
+</style>
+</head>
+<body>
+
+<header>
+  <h1><span>&#x1f33f;</span> GreenCart <span>Premium</span></h1>
+  <div class="header-actions">
+    <button class="toggle-btn" data-testid="role-customer" id="roleCustomerBtn">Customer</button>
+    <button class="toggle-btn" data-testid="role-staff" id="roleStaffBtn">Staff</button>
+    <span class="role-badge customer" data-testid="role-badge" id="roleBadge">customer</span>
+    <button class="reset-btn" data-testid="reset" id="resetBtn">Reset</button>
+  </div>
+</header>
+
+<nav id="mainNav">
+  <button data-testid="go-market" data-page="market" class="active">Market</button>
+  <button data-testid="go-basket" data-page="basket">Basket</button>
+  <button data-testid="go-checkout" data-page="checkout">Checkout</button>
+  <button data-testid="go-orders" data-page="orders">Orders</button>
+</nav>
+
+<!-- MARKET PAGE -->
+<div class="page active" id="page-market">
+  <div class="vendor-filters" id="vendorFilters">
+    <button data-testid="filter-all" data-vendor="all" class="active">All Vendors</button>
+    <button data-testid="filter-greenfarm" data-vendor="GreenFarm">&#x1f33f; GreenFarm</button>
+    <button data-testid="filter-dairypure" data-vendor="DairyPure">&#x1f95b; DairyPure</button>
+    <button data-testid="filter-oceancatch" data-vendor="OceanCatch">&#x1f41f; OceanCatch</button>
+    <button data-testid="filter-pantryplus" data-vendor="PantryPlus">&#x1f36c; PantryPlus</button>
+  </div>
+  <div class="product-grid" id="productGrid" data-testid="product-grid"></div>
+  <div class="cart-sidebar" id="cartSidebar">
+    <h3>&#x1f6d2; Cart (<span id="cartCountSidebar">0</span>)</h3>
+    <div id="cartItemsSidebar"></div>
+    <div class="cart-total"><span>Subtotal</span><span id="cartSubtotalSidebar">&#x20a9;0</span></div>
+    <div class="cart-total"><span>Delivery</span><span id="deliveryFeeSidebar">&#x20a9;0</span></div>
+    <div class="cart-total" style="border-top-color:var(--gold)"><span>Total</span><span id="orderTotalSidebar">&#x20a9;0</span></div>
+  </div>
+</div>
+
+<!-- BASKET PAGE -->
+<div class="page" id="page-basket">
+  <h2 style="margin-bottom:16px;color:var(--teal)">&#x1f6d2; Your Basket</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Item</th><th>Qty</th><th>Unit Price</th><th>Line Total</th><th>Preparation</th><th>Actions</th></tr></thead>
+      <tbody id="basketBody" data-testid="basket-grid"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- CHECKOUT PAGE -->
+<div class="page" id="page-checkout">
+  <div class="checkout-grid">
+    <div>
+      <div class="checkout-panel">
+        <h3>&#x1f381; Options</h3>
+        <div class="toggle-row">
+          <label>&#x1f680; Express Delivery (+&#x20a9;2,500)</label>
+          <button class="toggle-btn" data-testid="enable-express" id="expressOn">Enable</button>
+          <button class="toggle-btn" data-testid="disable-express" id="expressOff">Disable</button>
+        </div>
+        <div class="toggle-row">
+          <label>&#x1f381; Gift Wrap (+&#x20a9;1,500)</label>
+          <button class="toggle-btn" data-testid="enable-gift-wrap" id="giftWrapOn">Enable</button>
+          <button class="toggle-btn" data-testid="disable-gift-wrap" id="giftWrapOff">Disable</button>
+        </div>
+      </div>
+      <div class="checkout-panel" style="margin-top:16px">
+        <h3>&#x1f4f1; Delivery Slot</h3>
+        <div class="slot-btns">
+          <button class="slot-btn" data-testid="slot-morning" data-slot="morning">&#x2600;&#xfe0f; Morning</button>
+          <button class="slot-btn" data-testid="slot-afternoon" data-slot="afternoon">&#x1f324;&#xfe0f; Afternoon</button>
+          <button class="slot-btn" data-testid="slot-evening" data-slot="evening">&#x1f319; Evening</button>
+        </div>
+      </div>
+      <div class="checkout-panel" style="margin-top:16px">
+        <h3>&#x1f464; Customer Info</h3>
+        <div class="form-group">
+          <label>Name</label>
+          <input data-testid="customer-name" id="customerName" placeholder="Full name">
+        </div>
+        <div class="form-group">
+          <label>Phone</label>
+          <input data-testid="customer-phone" id="customerPhone" placeholder="010-0000-0000">
+        </div>
+      </div>
+      <div class="checkout-panel" style="margin-top:16px">
+        <h3>&#x1f3f7;&#xfe0f; Coupon / Loyalty</h3>
+        <div class="form-group" style="display:flex;gap:8px">
+          <input data-testid="coupon-code" id="couponCode" placeholder="Coupon code" style="flex:1">
+          <button class="add-btn" data-testid="apply-coupon" id="applyCouponBtn">Apply</button>
+        </div>
+        <div id="couponStatus" style="font-size:.8rem;margin-bottom:8px"></div>
+        <button class="add-btn" data-testid="redeem-loyalty" id="redeemLoyaltyBtn" style="background:var(--gold)">Redeem 5,000 Points</button>
+        <div id="loyaltyStatus" style="font-size:.8rem;margin-top:4px"></div>
+      </div>
+    </div>
+    <div>
+      <div class="checkout-panel" style="position:sticky;top:70px">
+        <h3>&#x1f4b3; Order Summary</h3>
+        <div id="checkoutSummary"></div>
+        <button class="place-order-btn" data-testid="place-order" id="placeOrderBtn">Place Order</button>
+        <div id="orderError" class="error-msg"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ORDERS PAGE -->
+<div class="page" id="page-orders">
+  <h2 style="margin-bottom:16px;color:var(--teal)">&#x1f4e6; Orders</h2>
+  <div id="ordersContainer"></div>
+  <div class="agent-section" id="agentSection" style="display:none">
+    <h4>&#x1f4cb; Fulfillment Checklist</h4>
+    <button class="toggle-btn" data-testid="verify-fulfillment" id="verifyFulfillment">Verify Items</button>
+    <button class="toggle-btn" data-testid="confirm-packed" id="confirmPacked">Confirm Packed</button>
+    <button class="toggle-btn" data-testid="confirm-dispatched" id="confirmDispatched">Confirm Dispatched</button>
+    <div style="margin-top:10px">
+      <button class="add-btn" data-testid="confirm-delivery" id="confirmDelivery">Confirm Delivery</button>
+    </div>
+    <div id="checklistStatus" style="margin-top:8px;font-size:.8rem"></div>
+  </div>
+  <div style="margin-top:16px">
+    <button class="toggle-btn" data-testid="cancel-order" id="cancelOrderBtn" style="border-color:var(--danger);color:var(--danger)">Cancel Order</button>
+  </div>
+  <div class="audit-trail" id="auditTrail"></div>
+</div>
+
+<script>
+// ── PRODUCTS ──
+const PRODUCTS = [
+  {id:"GC-ARG-01",name:"Baby Arugula",vendor:"GreenFarm",price:3100,unit:"150g",emoji:"\u{1f96c}"},
+  {id:"GC-TOM-01",name:"Heirloom Tomatoes",vendor:"GreenFarm",price:4200,unit:"500g",emoji:"\u{1f345}"},
+  {id:"GC-AVO-01",name:"Hass Avocados",vendor:"GreenFarm",price:6500,unit:"3pc",emoji:"\u{1f951}"},
+  {id:"GC-YGT-01",name:"Greek Yogurt",vendor:"DairyPure",price:4500,unit:"500g",emoji:"\u{1f95b}"},
+  {id:"GC-BTR-01",name:"Artisan Butter",vendor:"DairyPure",price:6800,unit:"250g",emoji:"\u{1f9c8}"},
+  {id:"GC-SHR-01",name:"Pacific Shrimp",vendor:"OceanCatch",price:12500,unit:"300g",emoji:"\u{1f990}"},
+  {id:"GC-TUN-01",name:"Yellowfin Tuna",vendor:"OceanCatch",price:15800,unit:"200g",emoji:"\u{1f35f}"},
+  {id:"GC-OLV-01",name:"Kalamata Olives",vendor:"PantryPlus",price:5400,unit:"200g",emoji:"\u{1fad2}"},
+  {id:"GC-HON-01",name:"Wildflower Honey",vendor:"PantryPlus",price:7200,unit:"350g",emoji:"\u{1f36f}"},
+  {id:"GC-RIC-01",name:"Organic Brown Rice",vendor:"PantryPlus",price:8900,unit:"3kg",emoji:"\u{1f35a}"}
+];
+
+function emoji(pid){const p=PRODUCTS.find(x=>x.id===pid);return p?p.emoji:""}
+function fmt(n){return"\u20a9"+n.toLocaleString()}
+
+// ── STATE ──
+const STORAGE_KEY="greencart-premium-state-v1";
+let S;
+
+function defaultState(){
+  return {
+    current_page:"market",active_role:"customer",
+    products:PRODUCTS.map(p=>({id:p.id,name:p.name,vendor:p.vendor,price:p.price,unit:p.unit})),
+    current_vendor:"all",
+    visible_products:PRODUCTS.map(p=>({id:p.id,name:p.name,vendor:p.vendor,price:p.price,unit:p.unit})),
+    cart_items:[],cart_count:0,cart_subtotal:0,
+    greenfarm_count:0,oceancatch_count:0,
+    delivery_fee:0,order_total:0,
+    express_enabled:false,express_surcharge:0,
+    gift_wrap_enabled:false,gift_wrap_fee:0,
+    coupon_code:"",coupon_credit:0,coupon_status:"idle",
+    service_call_count:0,coupon_call_count:0,
+    loyalty_points:12000,loyalty_credit:0,loyalty_call_count:0,
+    delivery_slot:"",customer_name:"",customer_phone:"",
+    validation_errors:{},
+    order_placed:false,order_id:"",order_history:[],
+    fulfillment_verified:false,fulfillment_packed:false,fulfillment_dispatched:false,
+    checklist_count:0,order_audit:[],audit_count:0,
+    last_action:""
+  };
+}
+
+function loadState(){
+  try{const d=localStorage.getItem(STORAGE_KEY);if(d){S=JSON.parse(d);return}}catch(e){}
+  S=defaultState();
+}
+function saveState(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(S))}catch(e){}}
+
+// ── DERIVED ──
+function deriveAll(){
+  S.cart_count=S.cart_items.length;
+  S.cart_subtotal=S.cart_items.reduce((s,i)=>s+i.line_total,0);
+  S.greenfarm_count=S.cart_items.filter(i=>i.vendor==="GreenFarm").length;
+  S.oceancatch_count=S.cart_items.filter(i=>i.vendor==="OceanCatch").length;
+  if(S.cart_subtotal>=50000)S.delivery_fee=0;
+  else if(S.cart_subtotal>=30000)S.delivery_fee=1000;
+  else if(S.cart_subtotal>=15000)S.delivery_fee=2500;
+  else if(S.cart_count>0)S.delivery_fee=3000;
+  else S.delivery_fee=0;
+  S.order_total=S.cart_subtotal+S.delivery_fee+S.express_surcharge+S.gift_wrap_fee-S.coupon_credit-S.loyalty_credit;
+  S.audit_count=S.order_audit.length;
+}
+
+// ── ROUTING ──
+function navigateTo(page){
+  S.current_page=page;
+  S.last_action="nav_"+page;
+  location.hash="#/"+page;
+  render();saveState();
+}
+
+function handleHash(){
+  const h=location.hash.replace("#/","");
+  if(["market","basket","checkout","orders"].includes(h)){
+    S.current_page=h;
+    render();saveState();
+  }
+}
+
+// ── ACTIONS ──
+function resetState(){
+  S=defaultState();
+  S.last_action="reset";
+  deriveAll();
+  render();saveState();
+}
+
+function filterVendor(vendor){
+  S.current_vendor=vendor;
+  if(vendor==="all"){
+    S.visible_products=PRODUCTS.map(p=>({id:p.id,name:p.name,vendor:p.vendor,price:p.price,unit:p.unit}));
+  } else {
+    S.visible_products=PRODUCTS.filter(p=>p.vendor===vendor)
+      .sort((a,b)=>a.price-b.price)
+      .map(p=>({id:p.id,name:p.name,vendor:p.vendor,price:p.price,unit:p.unit}));
+  }
+  S.last_action="filter_"+vendor.toLowerCase().replace(/[^a-z]/g,"");
+  if(vendor==="all")S.last_action="filter_all";
+  render();saveState();
+}
+
+function addItem(productId){
+  const p=PRODUCTS.find(x=>x.id===productId);
+  if(!p)return;
+  S.cart_items.push({product_id:p.id,name:p.name,vendor:p.vendor,quantity:1,unit_price:p.price,line_total:p.price,preparation:"standard",surcharge:0});
+  S.last_action="add_item";
+  deriveAll();render();saveState();
+}
+
+function removeItem(productId){
+  const idx=S.cart_items.findIndex(i=>i.product_id===productId);
+  if(idx===-1)return;
+  S.cart_items.splice(idx,1);
+  S.last_action="remove_item";
+  deriveAll();render();saveState();
+}
+
+function prepItem(productId,prep,surcharge){
+  const item=S.cart_items.find(i=>i.product_id===productId);
+  if(!item)return;
+  item.preparation=prep;
+  item.surcharge=surcharge;
+  item.line_total=item.unit_price+surcharge;
+  var actionNames={sashimi:"prep_sashimi",deveined:"prep_devein",gift:"prep_gift"};
+  S.last_action=actionNames[prep]||("prep_"+prep);
+  deriveAll();render();saveState();
+}
+
+function setSlot(slot){
+  S.delivery_slot=slot;
+  S.last_action="select_slot";
+  render();saveState();
+}
+
+function setExpress(on){
+  S.express_enabled=on;
+  S.express_surcharge=on?2500:0;
+  S.last_action=on?"enable_express":"disable_express";
+  deriveAll();render();saveState();
+}
+
+function setGiftWrap(on){
+  S.gift_wrap_enabled=on;
+  S.gift_wrap_fee=on?1500:0;
+  S.last_action=on?"enable_gift_wrap":"disable_gift_wrap";
+  deriveAll();render();saveState();
+}
+
+function applyCoupon(){
+  if(S.cart_count<1||!S.coupon_code)return;
+  var code=S.coupon_code.toUpperCase().trim();
+  // local logic
+  if(code==="GREEN15"){S.coupon_credit=2000;S.coupon_status="applied";}
+  else if(code==="WELCOME10"){S.coupon_credit=4000;S.coupon_status="applied";}
+  else{S.coupon_credit=0;S.coupon_status="rejected";}
+  S.last_action="apply_coupon";
+  // track service calls for evaluator
+  S.service_call_count++;
+  S.coupon_call_count++;
+  // service call for evaluator interception
+  fetch("/api/coupon?code="+encodeURIComponent(code)).catch(function(){});
+  deriveAll();render();saveState();
+}
+
+function redeemLoyalty(){
+  if(S.loyalty_points<5000||S.cart_count<1)return;
+  S.loyalty_points-=5000;
+  S.loyalty_credit+=5000;
+  S.last_action="redeem_loyalty";
+  // track service calls for evaluator
+  S.service_call_count++;
+  S.loyalty_call_count++;
+  // service call for evaluator interception
+  fetch("/api/loyalty?action=REDEEM").catch(function(){});
+  deriveAll();render();saveState();
+}
+
+function placeOrder(){
+  if(S.cart_subtotal<15000){
+    S.order_placed=false;
+    S.validation_errors=Object.assign({},S.validation_errors,{minimum_order:"Minimum order 15000"});
+    S.last_action="reject_minimum";
+    render();saveState();return;
+  }
+  if(S.cart_count<1||!S.customer_name||!["morning","afternoon","evening"].includes(S.delivery_slot))return;
+  const orderId="ORD-"+String(S.order_history.length+1).padStart(3,"0");
+  S.order_placed=true;
+  S.order_id=orderId;
+  S.order_audit.push({id:S.order_audit.length+1,event:"placed",role:S.active_role,subtotal:S.cart_subtotal});
+  S.order_history.push({
+    id:orderId,items:S.cart_items.map(i=>Object.assign({},i)),
+    subtotal:S.cart_subtotal,delivery_fee:S.delivery_fee,
+    express_surcharge:S.express_surcharge,gift_wrap_fee:S.gift_wrap_fee,
+    coupon_credit:S.coupon_credit,loyalty_credit:S.loyalty_credit,
+    total:S.order_total,delivery_slot:S.delivery_slot,
+    customer_name:S.customer_name,customer_phone:S.customer_phone,
+    status:"processing",timestamp:new Date().toISOString()
+  });
+  S.last_action="place_order";
+  deriveAll();render();saveState();
+}
+
+function cancelOrder(){
+  if(S.active_role!=="staff"){S.last_action="unauthorized";render();saveState();return;}
+  if(!S.order_placed)return;
+  S.order_audit.push({id:S.order_audit.length+1,event:"cancelled",role:S.active_role,order:S.order_id});
+  S.last_action="cancel_order";
+  deriveAll();render();saveState();
+}
+
+function verifyFulfillment(){
+  if(S.active_role!=="staff"){S.last_action="deny_verify";render();saveState();return;}
+  if(S.fulfillment_verified||!S.order_placed)return;
+  S.fulfillment_verified=true;
+  S.checklist_count++;
+  S.last_action="verify_fulfillment";
+  render();saveState();
+}
+
+function confirmPacked(){
+  if(S.active_role!=="staff"){S.last_action="deny_packed";render();saveState();return;}
+  if(S.fulfillment_packed||!S.order_placed)return;
+  S.fulfillment_packed=true;
+  S.checklist_count++;
+  S.last_action="confirm_packed";
+  render();saveState();
+}
+
+function confirmDispatched(){
+  if(S.active_role!=="staff"){S.last_action="deny_dispatched";render();saveState();return;}
+  if(S.fulfillment_dispatched||!S.order_placed)return;
+  S.fulfillment_dispatched=true;
+  S.checklist_count++;
+  S.last_action="confirm_dispatched";
+  render();saveState();
+}
+
+function confirmDelivery(){
+  if(S.active_role!=="staff"){S.last_action="deny_confirm_delivery";render();saveState();return;}
+  if(!S.order_placed||S.checklist_count<3)return;
+  S.order_audit.push({id:S.order_audit.length+1,event:"delivered",role:S.active_role,order:S.order_id});
+  S.last_action="confirm_delivery";
+  deriveAll();render();saveState();
+}
+
+function setRole(role){
+  S.active_role=role;
+  S.last_action="role_"+role;
+  render();saveState();
+}
+
+// ── RENDER ──
+function render(){
+  renderNav();renderRoleBadge();renderMarket();renderBasket();
+  renderCheckout();renderOrders();renderAudit();
+  document.querySelectorAll(".page").forEach(function(p){p.classList.remove("active")});
+  var pg=document.getElementById("page-"+S.current_page);
+  if(pg)pg.classList.add("active");
+}
+
+function renderNav(){
+  document.querySelectorAll("#mainNav button").forEach(function(b){
+    b.classList.toggle("active",b.dataset.page===S.current_page);
+  });
+}
+
+function renderRoleBadge(){
+  var b=document.getElementById("roleBadge");
+  b.textContent=S.active_role;
+  b.className="role-badge "+S.active_role;
+}
+
+function renderMarket(){
+  document.querySelectorAll("#vendorFilters button").forEach(function(b){
+    b.classList.toggle("active",b.dataset.vendor===S.current_vendor);
+  });
+  var grid=document.getElementById("productGrid");
+  grid.innerHTML=S.visible_products.map(function(p){
+    return '<div class="product-card" data-testid="product-row" data-product-id="'+p.id+'">'+
+      '<span class="product-emoji">'+emoji(p.id)+'</span>'+
+      '<div class="product-name" data-col="name">'+p.name+'</div>'+
+      '<div class="product-vendor" data-col="vendor">'+p.vendor+'</div>'+
+      '<div class="product-meta">'+
+        '<span class="product-price" data-col="price">'+p.price+'</span>'+
+        '<span class="product-unit" data-col="unit">'+p.unit+'</span>'+
+      '</div>'+
+      '<button class="add-btn" data-testid="add-'+p.id+'" onclick="addItem(\''+p.id+'\')">Add to Cart</button>'+
+    '</div>';
+  }).join("");
+  document.getElementById("cartCountSidebar").textContent=S.cart_count;
+  document.getElementById("cartSubtotalSidebar").textContent=fmt(S.cart_subtotal);
+  document.getElementById("deliveryFeeSidebar").textContent=fmt(S.delivery_fee);
+  document.getElementById("orderTotalSidebar").textContent=fmt(S.order_total);
+  var items=document.getElementById("cartItemsSidebar");
+  items.innerHTML=S.cart_items.map(function(i){
+    return '<div class="cart-item"><span>'+emoji(i.product_id)+' '+i.name+'</span><span>'+fmt(i.line_total)+'</span></div>';
+  }).join("");
+}
+
+function renderBasket(){
+  var tbody=document.getElementById("basketBody");
+  tbody.innerHTML=S.cart_items.map(function(i){
+    var isTuna=i.product_id==="GC-TUN-01";
+    var isShrimp=i.product_id==="GC-SHR-01";
+    var isHoney=i.product_id==="GC-HON-01";
+    var isAvocado=i.product_id==="GC-AVO-01";
+    var isTuna2=i.product_id==="GC-TUN-01";
+    var isRice=i.product_id==="GC-RIC-01";
+    var prepBtns="";
+    if(isTuna)prepBtns+='<button class="prep-btn" data-testid="prep-sashimi-GC-TUN-01" onclick="prepItem(\'GC-TUN-01\',\'sashimi\',2000)">Sashimi Cut</button>';
+    if(isShrimp)prepBtns+='<button class="prep-btn" data-testid="prep-devein-GC-SHR-01" onclick="prepItem(\'GC-SHR-01\',\'deveined\',1500)">Deveined</button>';
+    if(isHoney)prepBtns+='<button class="prep-btn" data-testid="prep-gift-GC-HON-01" onclick="prepItem(\'GC-HON-01\',\'gift\',1000)">Gift Wrap</button>';
+    var removeBtn="";
+    if(isAvocado)removeBtn='<button class="remove-btn" data-testid="remove-GC-AVO-01" onclick="removeItem(\'GC-AVO-01\')">Remove</button>';
+    if(isTuna2)removeBtn='<button class="remove-btn" data-testid="remove-GC-TUN-01" onclick="removeItem(\'GC-TUN-01\')">Remove</button>';
+    if(isRice)removeBtn='<button class="remove-btn" data-testid="remove-GC-RIC-01" onclick="removeItem(\'GC-RIC-01\')">Remove</button>';
+    return '<tr data-testid="basket-row" data-item-id="'+i.product_id+'">'+
+      '<td data-col="name">'+emoji(i.product_id)+' '+i.name+'</td>'+
+      '<td data-col="quantity">'+i.quantity+'</td>'+
+      '<td data-col="unit-price">'+fmt(i.unit_price)+'</td>'+
+      '<td data-col="line-total">'+fmt(i.line_total)+'</td>'+
+      '<td data-col="preparation">'+i.preparation+(i.surcharge>0?" (+"+fmt(i.surcharge)+")":"")+'</td>'+
+      '<td><div class="prep-btns">'+prepBtns+removeBtn+'</div></td>'+
+    '</tr>';
+  }).join("");
+}
+
+function renderCheckout(){
+  document.querySelectorAll(".slot-btn").forEach(function(b){
+    b.classList.toggle("active",b.dataset.slot===S.delivery_slot);
+  });
+  document.getElementById("expressOn").classList.toggle("on",S.express_enabled);
+  document.getElementById("expressOff").classList.toggle("on",!S.express_enabled);
+  document.getElementById("giftWrapOn").classList.toggle("on",S.gift_wrap_enabled);
+  document.getElementById("giftWrapOff").classList.toggle("on",!S.gift_wrap_enabled);
+  document.getElementById("couponCode").value=S.coupon_code;
+  var cs=document.getElementById("couponStatus");
+  if(S.coupon_status==="applied")cs.innerHTML='<span style="color:var(--success)">Coupon applied: -'+fmt(S.coupon_credit)+'</span>';
+  else if(S.coupon_status==="rejected")cs.innerHTML='<span style="color:var(--danger)">Invalid coupon</span>';
+  else cs.innerHTML="";
+  var ls=document.getElementById("loyaltyStatus");
+  ls.textContent="Points: "+S.loyalty_points.toLocaleString()+" | Credit: "+fmt(S.loyalty_credit);
+  var sum=document.getElementById("checkoutSummary");
+  var html="";
+  S.cart_items.forEach(function(i){
+    html+='<div class="summary-row"><span>'+emoji(i.product_id)+' '+i.name+(i.preparation!=="standard"?" ("+i.preparation+")":"")+'</span><span>'+fmt(i.line_total)+'</span></div>';
+  });
+  html+='<div class="summary-row" style="margin-top:8px;border-top:1px solid var(--border);padding-top:8px"><span>Subtotal</span><span>'+fmt(S.cart_subtotal)+'</span></div>';
+  html+='<div class="summary-row"><span>Delivery Fee</span><span>'+fmt(S.delivery_fee)+'</span></div>';
+  if(S.express_enabled)html+='<div class="summary-row"><span>Express Delivery</span><span>'+fmt(S.express_surcharge)+'</span></div>';
+  if(S.gift_wrap_enabled)html+='<div class="summary-row"><span>Gift Wrap</span><span>'+fmt(S.gift_wrap_fee)+'</span></div>';
+  if(S.coupon_credit>0)html+='<div class="summary-row" style="color:var(--success)"><span>Coupon</span><span>-'+fmt(S.coupon_credit)+'</span></div>';
+  if(S.loyalty_credit>0)html+='<div class="summary-row" style="color:var(--gold)"><span>Loyalty Credit</span><span>-'+fmt(S.loyalty_credit)+'</span></div>';
+  html+='<div class="summary-row total"><span>Total</span><span>'+fmt(S.order_total)+'</span></div>';
+  sum.innerHTML=html;
+  var oe=document.getElementById("orderError");
+  if(S.validation_errors.minimum_order)oe.textContent=S.validation_errors.minimum_order;
+  else oe.textContent="";
+}
+
+function renderOrders(){
+  var c=document.getElementById("ordersContainer");
+  if(S.order_history.length===0){
+    c.innerHTML='<p style="color:var(--muted)">No orders yet.</p>';
+  } else {
+    c.innerHTML=S.order_history.map(function(o){
+      var verified=S.fulfillment_verified?"done":"";
+      var packed=S.fulfillment_packed?"done":"";
+      var dispatched=S.fulfillment_dispatched?"done":"";
+      return '<div class="order-card"><h4>'+o.id+' \u2014 '+o.customer_name+'</h4>'+
+        '<div style="font-size:.85rem;color:var(--muted)">'+o.items.map(function(i){return emoji(i.product_id)+" "+i.name}).join(", ")+'</div>'+
+        '<div style="font-weight:700;margin-top:6px">Total: '+fmt(o.total)+'</div>'+
+        '<div class="order-timeline">'+
+          '<div class="timeline-step"><div class="dot done">\u2713</div><div class="label">Placed</div></div>'+
+          '<div class="timeline-step"><div class="dot '+verified+'">\u2713</div><div class="label">Verified</div></div>'+
+          '<div class="timeline-step"><div class="dot '+packed+'">\u2713</div><div class="label">Packed</div></div>'+
+          '<div class="timeline-step"><div class="dot '+dispatched+'">\u2713</div><div class="label">Dispatched</div></div>'+
+        '</div></div>';
+    }).join("");
+  }
+  document.getElementById("agentSection").style.display=S.order_placed?"block":"none";
+  var cls=document.getElementById("checklistStatus");
+  cls.innerHTML="Verified: "+(S.fulfillment_verified?"\u2705":"\u2b1c")+" | Packed: "+(S.fulfillment_packed?"\u2705":"\u2b1c")+" | Dispatched: "+(S.fulfillment_dispatched?"\u2705":"\u2b1c")+" ("+S.checklist_count+"/3)";
+  document.getElementById("roleCustomerBtn").classList.toggle("on",S.active_role==="customer");
+  document.getElementById("roleStaffBtn").classList.toggle("on",S.active_role==="staff");
+}
+
+function renderAudit(){
+  var at=document.getElementById("auditTrail");
+  if(S.order_audit.length===0){at.innerHTML="";return;}
+  at.innerHTML="<strong>Audit Trail:</strong>"+S.order_audit.map(function(a){
+    return "<div>#"+a.id+" "+a.event+" by "+a.role+(a.order?" on "+a.order:"")+(a.subtotal?" subtotal:"+a.subtotal:"")+"</div>";
+  }).join("");
+}
+
+// ── EVENT WIRING ──
+document.getElementById("resetBtn").addEventListener("click",resetState);
+document.querySelectorAll("#mainNav button").forEach(function(b){b.addEventListener("click",function(){navigateTo(b.dataset.page)})});
+document.querySelectorAll("#vendorFilters button").forEach(function(b){b.addEventListener("click",function(){filterVendor(b.dataset.vendor)})});
+document.querySelectorAll(".slot-btn").forEach(function(b){b.addEventListener("click",function(){setSlot(b.dataset.slot)})});
+document.getElementById("expressOn").addEventListener("click",function(){setExpress(true)});
+document.getElementById("expressOff").addEventListener("click",function(){setExpress(false)});
+document.getElementById("giftWrapOn").addEventListener("click",function(){setGiftWrap(true)});
+document.getElementById("giftWrapOff").addEventListener("click",function(){setGiftWrap(false)});
+document.getElementById("couponCode").addEventListener("input",function(){
+  S.coupon_code=this.value.trim().toUpperCase();
+  S.last_action="edit_coupon";
+  saveState();
+});
+document.getElementById("applyCouponBtn").addEventListener("click",applyCoupon);
+document.getElementById("redeemLoyaltyBtn").addEventListener("click",redeemLoyalty);
+document.getElementById("customerName").addEventListener("input",function(){
+  S.customer_name=this.value.trim();
+  var ve=Object.assign({},S.validation_errors);delete ve.name;S.validation_errors=ve;
+  S.last_action="edit_name";saveState();
+});
+document.getElementById("customerPhone").addEventListener("input",function(){
+  S.customer_phone=this.value.trim();
+  var ve=Object.assign({},S.validation_errors);delete ve.phone;S.validation_errors=ve;
+  S.last_action="edit_phone";saveState();
+});
+document.getElementById("placeOrderBtn").addEventListener("click",placeOrder);
+document.getElementById("roleCustomerBtn").addEventListener("click",function(){setRole("customer")});
+document.getElementById("roleStaffBtn").addEventListener("click",function(){setRole("staff")});
+document.getElementById("cancelOrderBtn").addEventListener("click",cancelOrder);
+document.getElementById("verifyFulfillment").addEventListener("click",verifyFulfillment);
+document.getElementById("confirmPacked").addEventListener("click",confirmPacked);
+document.getElementById("confirmDispatched").addEventListener("click",confirmDispatched);
+document.getElementById("confirmDelivery").addEventListener("click",confirmDelivery);
+
+window.addEventListener("hashchange",handleHash);
+
+// ── STATE PROBE ──
+Object.defineProperty(window,"__DETOX_STATE__",{get:function(){return JSON.parse(JSON.stringify(S))},configurable:true});
+
+// ── INIT ──
+loadState();
+deriveAll();
+if(!location.hash||!location.hash.match(/^#\/(market|basket|checkout|orders)$/)){
+  location.hash="#/market";
+}
+S.current_page=location.hash.replace("#/","");
+render();saveState();
+</script>
+</body>
+</html>

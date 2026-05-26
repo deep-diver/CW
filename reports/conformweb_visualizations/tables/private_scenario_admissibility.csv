@@ -1,0 +1,486 @@
+target_id,family,family_short,tier_id,tier_label,tier_name,scenario_id,scenario_tier,visibility,kind,difficulty,private_source,contract_source,steps,compiled_checks,component_action_refs,state_path_refs,page_refs,table_refs,event_refs,actor_refs,browser_steps,table_steps,upload_steps,relation_ops,browser_actions,step_modes,undeclared_symbols_total,compile_ok,compile_error,admissible
+stayflow_concierge,Travel,Travel,tier_a,Tier A,Consumer,private_01_show_all_catalog_order,smoke,private,scoring,,local,local,4,39,3,0,0,1,0,0,0,1,0,,,,0,True,,True
+stayflow_concierge,Travel,Travel,tier_a,Tier A,Consumer,private_02_kyoto_high_fee_quote,core,private,scoring,,local,local,2,43,2,2,0,0,0,0,0,0,0,equals,,,0,True,,True
+stayflow_concierge,Travel,Travel,tier_a,Tier A,Consumer,private_03_addon_stack_recalculates_total,core,private,scoring,,local,local,4,57,4,4,0,0,0,0,0,0,0,equals,,,0,True,,True
+stayflow_concierge,Travel,Travel,tier_a,Tier A,Consumer,private_04_flexible_cancel_on_kyoto_keeps_high_fee,core,private,scoring,,local,local,3,51,3,4,0,0,0,0,0,0,0,equals,,,0,True,,True
+stayflow_concierge,Travel,Travel,tier_a,Tier A,Consumer,private_05_guest_email_normalizes,validation,private,scoring,,local,local,4,42,4,1,0,0,0,0,0,0,0,equals,,,0,True,,True
+stayflow_concierge,Travel,Travel,tier_a,Tier A,Consumer,private_06_valid_guest_allows_hold,validation,private,scoring,,local,local,7,67,7,3,0,0,0,0,0,0,0,equals,,,0,True,,True
+stayflow_concierge,Travel,Travel,tier_a,Tier A,Consumer,private_07_welcome50_only_for_busan,service,private,scoring,,local,local,5,56,5,4,0,0,0,0,0,0,0,equals,,,0,True,,True
+stayflow_concierge,Travel,Travel,tier_a,Tier A,Consumer,private_08_bad_promo_rejected_without_credit,service,private,scoring,,local,local,5,56,5,4,0,0,0,0,0,0,0,equals,,,0,True,,True
+stayflow_concierge,Travel,Travel,tier_a,Tier A,Consumer,private_09_second_promo_call_keeps_service_count,service,private,scoring,,local,local,7,62,5,1,0,0,0,0,0,0,0,equals,,,0,True,,True
+stayflow_concierge,Travel,Travel,tier_a,Tier A,Consumer,private_10_manifest_upload_replaces_previous_rows,upload,private,scoring,,local,local,5,43,3,0,0,1,0,0,0,1,2,,,,0,True,,True
+stayflow_concierge,Travel,Travel,tier_a,Tier A,Consumer,private_11_guest_cannot_confirm_held_booking,permission,private,scoring,,local,local,9,73,9,2,0,0,0,0,0,0,0,equals,,unauthorized,0,True,,True
+stayflow_concierge,Travel,Travel,tier_a,Tier A,Consumer,private_12_agent_confirms_after_role_switch,permission,private,scoring,,local,local,10,75,10,2,0,0,0,0,0,0,0,equals,,,0,True,,True
+stayflow_concierge,Travel,Travel,tier_a,Tier A,Consumer,private_13_reload_preserves_quote_and_route,persistence,private,scoring,,local,local,5,53,4,4,0,0,0,0,1,0,0,unchanged,reload,,0,True,,True
+stayflow_concierge,Travel,Travel,tier_a,Tier A,Consumer,private_14_reload_preserves_manifest,persistence,private,scoring,,local,local,5,41,3,3,0,1,0,0,1,1,1,unchanged,reload,,0,True,,True
+stayflow_concierge,Travel,Travel,tier_a,Tier A,Consumer,private_15_browser_back_restores_search_route,persistence,private,scoring,,local,local,5,37,3,1,2,0,0,0,2,0,0,equals,back,,0,True,,True
+stayflow_concierge,Travel,Travel,tier_a,Tier A,Consumer,private_16_full_booking_with_manifest_and_agent,journey,private,scoring,,local,local,15,99,15,4,0,0,0,0,0,0,1,equals,,,0,True,,True
+stayflow_concierge,Travel,Travel,tier_a,Tier A,Consumer,private_17_reset_clears_everything_after_long_flow,journey,private,scoring,,local,local,9,104,8,4,0,0,0,0,0,0,0,equals,,,0,True,,True
+stayflow_concierge,Travel,Travel,tier_a,Tier A,Consumer,private_18_agent_role_persists_across_reload,persistence,private,scoring,,local,local,4,37,3,2,0,0,0,0,1,0,0,unchanged,reload,,0,True,,True
+stayflow_concierge,Travel,Travel,tier_b,Tier B,Operational,private_01_show_all_catalog_order,smoke,private,scoring,A,local,local,4,47,3,0,0,1,0,0,0,1,0,,,,0,True,,True
+stayflow_concierge,Travel,Travel,tier_b,Tier B,Operational,private_02_single_city_quote,service,private,scoring,A,local,local,4,66,4,4,0,0,0,0,0,0,0,equals,,,0,True,,True
+stayflow_concierge,Travel,Travel,tier_b,Tier B,Operational,private_03_three_city_itinerary_prices,core,private,scoring,B,local,local,5,86,4,5,0,1,0,0,0,1,0,equals,,,0,True,,True
+stayflow_concierge,Travel,Travel,tier_b,Tier B,Operational,private_04_three_city_all_addons,core,private,scoring,B,local,local,8,111,7,2,0,1,0,0,0,1,0,equals,,,0,True,,True
+stayflow_concierge,Travel,Travel,tier_b,Tier B,Operational,private_05_remove_middle_leg_reprices_route,core,private,scoring,B,local,local,6,96,5,5,0,1,0,0,0,1,0,equals,,,0,True,,True
+stayflow_concierge,Travel,Travel,tier_b,Tier B,Operational,private_06_multi120_two_city_with_addons,service,private,scoring,B,local,local,9,105,9,5,0,0,0,0,0,0,0,equals,,,0,True,,True
+stayflow_concierge,Travel,Travel,tier_b,Tier B,Operational,private_07_grand200_three_city_with_addons,service,private,scoring,C,local,local,11,126,11,5,0,0,0,0,0,0,0,equals,,,0,True,,True
+stayflow_concierge,Travel,Travel,tier_b,Tier B,Operational,private_08_bad_promo_rejected_without_credit,service,private,scoring,B,local,local,8,101,8,4,0,0,0,0,0,0,0,equals,,,0,True,,True
+stayflow_concierge,Travel,Travel,tier_b,Tier B,Operational,private_09_requote_after_route_expansion,service,private,scoring,C,local,local,9,104,7,4,0,0,0,0,0,0,0,equals,,,0,True,,True
+stayflow_concierge,Travel,Travel,tier_b,Tier B,Operational,private_10_guest_email_normalizes,validation,private,scoring,A,local,local,3,46,3,1,0,0,0,0,0,0,0,equals,,,0,True,,True
+stayflow_concierge,Travel,Travel,tier_b,Tier B,Operational,private_11_arrival_whitespace_collapses,validation,private,scoring,A,local,local,3,46,3,1,0,0,0,0,0,0,0,equals,,,0,True,,True
+stayflow_concierge,Travel,Travel,tier_b,Tier B,Operational,private_12_manifest_upload_replaces_previous_rows,upload,private,scoring,B,local,local,5,61,3,3,0,1,0,0,0,1,2,equals,,,0,True,,True
+stayflow_concierge,Travel,Travel,tier_b,Tier B,Operational,private_13_reload_preserves_quote_and_itinerary,persistence,private,scoring,B,local,local,7,88,6,5,0,0,0,0,1,0,0,unchanged,reload,,0,True,,True
+stayflow_concierge,Travel,Travel,tier_b,Tier B,Operational,private_14_reload_preserves_travelers,persistence,private,scoring,B,local,local,5,53,3,3,0,1,0,0,1,1,1,unchanged,reload,,0,True,,True
+stayflow_concierge,Travel,Travel,tier_b,Tier B,Operational,private_15_browser_back_forward_routes,persistence,private,scoring,B,local,local,6,47,4,1,2,0,0,0,2,0,0,equals,back; forward,,0,True,,True
+stayflow_concierge,Travel,Travel,tier_b,Tier B,Operational,private_16_agent_role_persists_across_reload,persistence,private,scoring,B,local,local,4,45,3,2,0,0,0,0,1,0,0,unchanged,reload,,0,True,,True
+stayflow_concierge,Travel,Travel,tier_b,Tier B,Operational,private_17_guest_cannot_check_manifest,permission,private,scoring,B,local,local,3,46,3,2,0,0,0,0,0,0,0,equals,,unauthorized,0,True,,True
+stayflow_concierge,Travel,Travel,tier_b,Tier B,Operational,private_18_reset_clears_long_flow,journey,private,scoring,C,local,local,12,165,11,5,0,0,0,0,0,0,0,equals,,,0,True,,True
+stayflow_concierge,Travel,Travel,tier_b,Tier B,Operational,private_19_full_three_city_confirmed_journey,journey,private,scoring,C,local,local,25,191,24,5,0,0,0,0,0,0,1,equals,,,0,True,,True
+stayflow_concierge,Travel,Travel,tier_c,Tier C,Regulated,private_01_show_all_inventory_after_filter,smoke,private,scoring,d1_smoke,local,local,5,63,4,0,0,1,0,0,0,1,0,,,,0,True,,True
+stayflow_concierge,Travel,Travel,tier_c,Tier C,Regulated,private_02_three_city_route_ops180,service,private,scoring,d3_integrated,local,local,10,118,10,6,0,0,0,0,0,0,0,equals,,,0,True,,True
+stayflow_concierge,Travel,Travel,tier_c,Tier C,Regulated,private_03_bad_promo_keeps_total,service,private,scoring,d2_core,local,local,10,120,10,4,0,0,0,0,0,0,0,equals,,,0,True,,True
+stayflow_concierge,Travel,Travel,tier_c,Tier C,Regulated,private_04_all_ready_documents_projection,upload,private,scoring,d3_integrated,local,local,6,75,5,2,0,1,0,0,0,1,2,equals,,,0,True,,True
+stayflow_concierge,Travel,Travel,tier_c,Tier C,Regulated,private_05_guest_cannot_check_supplier,permission,private,scoring,d2_core,local,local,3,60,3,2,0,0,0,0,0,0,0,equals,,unauthorized,0,True,,True
+stayflow_concierge,Travel,Travel,tier_c,Tier C,Regulated,private_06_agent_cannot_manager_approve,permission,private,scoring,d3_integrated,local,local,8,95,8,2,0,0,0,0,0,0,0,equals,,unauthorized,0,True,,True
+stayflow_concierge,Travel,Travel,tier_c,Tier C,Regulated,private_07_supplier_table_after_confirmed_holds,supplier,private,scoring,d3_integrated,local,local,9,116,8,0,0,1,0,0,0,1,0,,,,0,True,,True
+stayflow_concierge,Travel,Travel,tier_c,Tier C,Regulated,private_08_supplier_conflict_preserves_versions,supplier,private,scoring,d4_adversarial,local,local,10,124,10,4,0,0,0,0,0,0,0,equals,,conflict,0,True,,True
+stayflow_concierge,Travel,Travel,tier_c,Tier C,Regulated,private_09_payment_currency_normalizers,finance,private,scoring,d2_core,local,local,4,68,4,3,0,0,0,0,0,0,0,equals,,,0,True,,True
+stayflow_concierge,Travel,Travel,tier_c,Tier C,Regulated,private_10_back_forward_preserves_route_state,persistence,private,scoring,d4_adversarial,local,local,7,81,5,2,2,0,0,0,2,0,0,equals,back; forward,,0,True,,True
+stayflow_concierge,Travel,Travel,tier_c,Tier C,Regulated,private_11_reload_after_supplier_conflict,persistence,private,scoring,d4_adversarial,local,local,11,123,10,3,0,0,0,0,1,0,0,equals,reload,conflict,0,True,,True
+stayflow_concierge,Travel,Travel,tier_c,Tier C,Regulated,private_12_full_journey_with_exception_repair,stress,private,scoring,d5_stress,local,local,34,237,32,4,0,0,0,0,0,0,2,equals,,conflict,0,True,,True
+stayflow_concierge,Travel,Travel,tier_c,Tier C,Regulated,private_13_reset_after_dense_state_clears_ledgers,stress,private,scoring,d5_stress,local,local,15,198,14,5,0,0,0,0,0,0,0,equals,,conflict,0,True,,True
+stayflow_concierge,Travel,Travel,tier_c,Tier C,Regulated,private_14_agent_checklist_counts_three_keys,permission,private,scoring,d3_integrated,local,local,6,71,6,2,0,0,0,0,0,0,0,equals,,,0,True,,True
+stayflow_concierge,Travel,Travel,tier_c,Tier C,Regulated,private_15_final_confirm_denied_to_manager,permission,private,scoring,d4_adversarial,local,local,4,62,4,2,0,0,0,0,0,0,0,equals,,unauthorized,0,True,,True
+stayflow_concierge,Travel,Travel,tier_d,Tier D,Release stage,private_01_show_all_inventory_after_filter,smoke,private,scoring,d1_smoke,local,local,5,68,4,0,0,1,0,0,0,1,0,,,,0,True,,True
+stayflow_concierge,Travel,Travel,tier_d,Tier D,Release stage,private_02_three_city_route_ops180,service,private,scoring,d3_integrated,local,local,10,123,10,6,0,0,0,0,0,0,0,equals,,,0,True,,True
+stayflow_concierge,Travel,Travel,tier_d,Tier D,Release stage,private_03_bad_promo_keeps_total,service,private,scoring,d2_core,local,local,10,125,10,4,0,0,0,0,0,0,0,equals,,,0,True,,True
+stayflow_concierge,Travel,Travel,tier_d,Tier D,Release stage,private_04_all_ready_documents_projection,upload,private,scoring,d3_integrated,local,local,6,80,5,2,0,1,0,0,0,1,2,equals,,,0,True,,True
+stayflow_concierge,Travel,Travel,tier_d,Tier D,Release stage,private_05_guest_cannot_check_supplier,permission,private,scoring,d2_core,local,local,3,65,3,2,0,0,0,0,0,0,0,equals,,unauthorized,0,True,,True
+stayflow_concierge,Travel,Travel,tier_d,Tier D,Release stage,private_06_agent_cannot_manager_approve,permission,private,scoring,d3_integrated,local,local,8,100,8,2,0,0,0,0,0,0,0,equals,,unauthorized,0,True,,True
+stayflow_concierge,Travel,Travel,tier_d,Tier D,Release stage,private_07_supplier_table_after_confirmed_holds,supplier,private,scoring,d3_integrated,local,local,9,121,8,0,0,1,0,0,0,1,0,,,,0,True,,True
+stayflow_concierge,Travel,Travel,tier_d,Tier D,Release stage,private_08_supplier_conflict_preserves_versions,supplier,private,scoring,d4_adversarial,local,local,10,129,10,4,0,0,0,0,0,0,0,equals,,conflict,0,True,,True
+stayflow_concierge,Travel,Travel,tier_d,Tier D,Release stage,private_09_payment_currency_normalizers,finance,private,scoring,d2_core,local,local,4,73,4,3,0,0,0,0,0,0,0,equals,,,0,True,,True
+stayflow_concierge,Travel,Travel,tier_d,Tier D,Release stage,private_10_back_forward_preserves_route_state,persistence,private,scoring,d4_adversarial,local,local,7,86,5,2,2,0,0,0,2,0,0,equals,back; forward,,0,True,,True
+stayflow_concierge,Travel,Travel,tier_d,Tier D,Release stage,private_11_reload_after_supplier_conflict,persistence,private,scoring,d4_adversarial,local,local,11,128,10,3,0,0,0,0,1,0,0,equals,reload,conflict,0,True,,True
+stayflow_concierge,Travel,Travel,tier_d,Tier D,Release stage,private_12_full_journey_with_exception_repair,stress,private,scoring,d5_stress,local,local,34,242,32,4,0,0,0,0,0,0,2,equals,,conflict,0,True,,True
+stayflow_concierge,Travel,Travel,tier_d,Tier D,Release stage,private_13_reset_after_dense_state_clears_ledgers,stress,private,scoring,d5_stress,local,local,15,208,14,5,0,0,0,0,0,0,0,equals,,conflict,0,True,,True
+stayflow_concierge,Travel,Travel,tier_d,Tier D,Release stage,private_14_agent_checklist_counts_three_keys,permission,private,scoring,d3_integrated,local,local,6,76,6,2,0,0,0,0,0,0,0,equals,,,0,True,,True
+stayflow_concierge,Travel,Travel,tier_d,Tier D,Release stage,private_15_final_confirm_denied_to_manager,permission,private,scoring,d4_adversarial,local,local,4,67,4,2,0,0,0,0,0,0,0,equals,,unauthorized,0,True,,True
+stayflow_concierge,Travel,Travel,tier_d,Tier D,Release stage,private_16_tier_d_release_seal_full_journey,journey,private,scoring,d6_release_war_room,local,local,31,238,29,5,0,1,0,0,0,1,2,equals,,,0,True,,True
+stayflow_concierge,Travel,Travel,tier_d,Tier D,Release stage,private_17_manager_seal_blocked_before_confirmation,permission,private,scoring,d5_adversarial,local,local,4,70,4,4,0,0,0,0,0,0,0,equals,,rejected,0,True,,True
+freshcart_market,Grocery,Grocery,tier_a,Tier A,Consumer,private_01_show_all_catalog_order,smoke,private,scoring,,local,local,4,26,3,1,0,1,0,0,0,1,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_a,Tier A,Consumer,private_02_filter_dairy_two_items,smoke,private,scoring,,local,local,3,29,2,1,0,1,0,0,0,1,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_a,Tier A,Consumer,private_03_add_multiple_linear_total,core,private,scoring,,local,local,4,46,4,4,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_a,Tier A,Consumer,private_04_salmon_rice_free_delivery,core,private,scoring,,local,local,5,53,5,3,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_a,Tier A,Consumer,private_05_remove_item_recalculates,core,private,scoring,,local,local,6,46,6,3,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_a,Tier A,Consumer,private_06_phone_normalizes,validation,private,scoring,,local,local,4,29,4,1,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_a,Tier A,Consumer,private_07_minimum_order_10000_rejected,validation,private,scoring,,local,local,6,34,6,2,0,0,0,0,0,0,0,equals,,rejected,0,True,,True
+freshcart_market,Grocery,Grocery,tier_a,Tier A,Consumer,private_08_save20_coupon_credit,service,private,scoring,,local,local,6,41,6,3,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_a,Tier A,Consumer,private_09_bad_coupon_rejected_no_credit,service,private,scoring,,local,local,5,35,5,3,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_a,Tier A,Consumer,private_10_second_coupon_call_increments_count,service,private,scoring,,local,local,7,41,5,2,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_a,Tier A,Consumer,private_11_low_subtotal_with_slot_rejected,upload,private,scoring,,local,local,6,34,6,2,0,0,0,0,0,0,0,equals,,rejected,0,True,,True
+freshcart_market,Grocery,Grocery,tier_a,Tier A,Consumer,private_12_customer_cannot_cancel,permission,private,scoring,,local,local,8,41,8,1,0,0,0,0,0,0,0,equals,,unauthorized,0,True,,True
+freshcart_market,Grocery,Grocery,tier_a,Tier A,Consumer,private_13_staff_cancels_order,permission,private,scoring,,local,local,9,41,9,1,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_a,Tier A,Consumer,private_14_reload_preserves_cart,persistence,private,scoring,,local,local,4,37,3,3,1,0,0,0,1,0,0,equals; unchanged,reload,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_a,Tier A,Consumer,private_15_reload_preserves_order_history,persistence,private,scoring,,local,local,8,38,7,1,1,0,0,0,1,0,0,unchanged,reload,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_a,Tier A,Consumer,private_16_browser_back_restores_shop,persistence,private,scoring,,local,local,4,28,3,2,1,0,0,0,1,0,0,equals; unchanged,back,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_a,Tier A,Consumer,private_17_role_persists_across_reload,persistence,private,scoring,,local,local,3,23,2,1,0,0,0,0,1,0,0,equals,reload,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_a,Tier A,Consumer,private_18_full_grocery_run,journey,private,scoring,,local,local,17,97,16,3,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_a,Tier A,Consumer,private_19_reset_clears_after_full_flow,journey,private,scoring,,local,local,11,82,10,7,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_b,Tier B,Operational,private_01_show_all_catalog_order,smoke,private,scoring,,local,local,4,45,3,1,0,1,0,0,0,1,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_b,Tier B,Operational,private_02_filter_dairypure_two_items,smoke,private,scoring,,local,local,3,46,2,1,0,1,0,0,0,1,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_b,Tier B,Operational,private_03_add_multiple_derived_sums,core,private,scoring,,local,local,4,67,4,4,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_b,Tier B,Operational,private_04_four_tier_mid_delivery_fee,core,private,scoring,,local,local,5,76,5,2,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_b,Tier B,Operational,private_05_five_items_free_delivery,core,private,scoring,,local,local,6,81,6,5,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_b,Tier B,Operational,private_06_phone_normalizes,validation,private,scoring,,local,local,5,52,5,1,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_b,Tier B,Operational,private_07_minimum_order_15000_rejected,validation,private,scoring,,local,local,6,57,6,2,0,0,0,0,0,0,0,equals,,rejected,0,True,,True
+freshcart_market,Grocery,Grocery,tier_b,Tier B,Operational,private_08_coupon_welcome10_credit,service,private,scoring,,local,local,5,59,5,4,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_b,Tier B,Operational,private_09_bad_coupon_rejected,service,private,scoring,,local,local,5,58,5,3,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_b,Tier B,Operational,private_10_loyalty_redeem_credit,service,private,scoring,,local,local,4,59,4,5,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_b,Tier B,Operational,private_11_combined_service_calls,service,private,scoring,,local,local,7,80,7,6,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_b,Tier B,Operational,private_12_express_and_gift_wrap_fees,upload,private,scoring,,local,local,6,73,6,5,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_b,Tier B,Operational,private_13_customer_cannot_cancel,permission,private,scoring,,local,local,8,66,8,1,0,0,0,0,0,0,0,equals,,unauthorized,0,True,,True
+freshcart_market,Grocery,Grocery,tier_b,Tier B,Operational,private_14_customer_cannot_verify_fulfillment,permission,private,scoring,,local,local,8,66,8,2,0,0,0,0,0,0,0,equals,,unauthorized,0,True,,True
+freshcart_market,Grocery,Grocery,tier_b,Tier B,Operational,private_15_reload_preserves_cart,persistence,private,scoring,,local,local,4,58,3,4,1,0,0,0,1,0,0,equals; unchanged,reload,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_b,Tier B,Operational,private_16_reload_preserves_order_history,persistence,private,scoring,,local,local,10,74,9,2,1,0,0,0,1,0,0,equals; unchanged,reload,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_b,Tier B,Operational,private_17_browser_back_restores_market,persistence,private,scoring,,local,local,4,48,3,2,1,0,0,0,1,0,0,equals; unchanged,back,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_b,Tier B,Operational,private_18_role_persists_across_reload,persistence,private,scoring,,local,local,3,40,2,1,0,0,0,0,1,0,0,equals,reload,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_b,Tier B,Operational,private_19_express_persists_across_reload,persistence,private,scoring,,local,local,5,56,4,2,0,0,0,0,1,0,0,equals,reload,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_b,Tier B,Operational,private_20_full_gourmet_with_prep,journey,private,scoring,,local,local,22,185,21,9,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_b,Tier B,Operational,private_21_full_fulfillment_journey,journey,private,scoring,,local,local,16,125,16,9,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_b,Tier B,Operational,private_22_reset_clears_after_full_flow,journey,private,scoring,,local,local,12,140,11,13,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_b,Tier B,Operational,private_23_vendor_switch_preserves_cart,journey,private,scoring,,local,local,9,89,9,6,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_b,Tier B,Operational,private_24_double_loyalty_redeem,service,private,scoring,,local,local,5,68,4,3,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_c,Tier C,Regulated,private_01_show_all_catalog_order,smoke,private,scoring,,local,local,4,58,3,1,0,1,0,0,0,1,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_c,Tier C,Regulated,private_02_filter_dairypure_two_items,smoke,private,scoring,,local,local,3,59,2,1,0,1,0,0,0,1,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_c,Tier C,Regulated,private_03_filter_butcherbox_price_order,smoke,private,scoring,,local,local,3,54,2,0,0,1,0,0,0,1,0,,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_c,Tier C,Regulated,private_04_multi_item_derived_counts,core,private,scoring,,local,local,4,86,4,7,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_c,Tier C,Regulated,private_05_free_delivery_with_three_cold_items,core,private,scoring,,local,local,4,85,4,6,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_c,Tier C,Regulated,private_06_packaging_fee_tiers,core,private,scoring,,local,local,4,85,4,2,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_c,Tier C,Regulated,private_07_preparation_updates_striploin,core,private,scoring,,local,local,4,71,4,3,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_c,Tier C,Regulated,private_08_remove_item_updates_counts,core,private,scoring,,local,local,6,99,6,4,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_c,Tier C,Regulated,private_09_coupon_cold3000_credit,service,private,scoring,,local,local,6,84,6,4,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_c,Tier C,Regulated,private_10_bad_coupon_rejected,service,private,scoring,,local,local,5,73,5,3,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_c,Tier C,Regulated,private_11_double_wallet_redeem,service,private,scoring,,local,local,5,83,4,3,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_c,Tier C,Regulated,private_12_slot_service_reselection,service,private,scoring,,local,local,6,86,6,3,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_c,Tier C,Regulated,private_13_rush_and_substitution_toggles,core,private,scoring,,local,local,8,101,8,5,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_c,Tier C,Regulated,private_14_phone_normalizes,validation,private,scoring,,local,local,5,75,5,1,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_c,Tier C,Regulated,private_15_minimum_order_25000_rejected,validation,private,scoring,,local,local,6,75,6,2,0,0,0,0,0,0,0,equals,,rejected,0,True,,True
+freshcart_market,Grocery,Grocery,tier_c,Tier C,Regulated,private_16_customer_cannot_pick_order,permission,private,scoring,,local,local,9,95,9,2,0,0,0,0,0,0,0,equals,,unauthorized,0,True,,True
+freshcart_market,Grocery,Grocery,tier_c,Tier C,Regulated,private_17_staff_review_manager_approval,permission,private,scoring,,local,local,11,107,11,4,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_c,Tier C,Regulated,private_18_customer_cannot_resolve_ticket,support,private,scoring,,local,local,11,105,11,3,0,0,0,0,0,0,0,equals,,unauthorized,0,True,,True
+freshcart_market,Grocery,Grocery,tier_c,Tier C,Regulated,private_19_staff_resolves_support_ticket,support,private,scoring,,local,local,12,111,12,3,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_c,Tier C,Regulated,private_20_reload_preserves_cart_and_slot,persistence,private,scoring,,local,local,6,81,5,4,1,0,0,0,1,0,0,equals; unchanged,reload,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_c,Tier C,Regulated,private_21_role_persists_across_reload,persistence,private,scoring,,local,local,3,53,2,1,0,0,0,0,1,0,0,equals,reload,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_c,Tier C,Regulated,private_22_browser_back_restores_market,persistence,private,scoring,,local,local,4,63,3,2,1,0,0,0,1,0,0,equals; unchanged,back,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_c,Tier C,Regulated,private_23_full_cold_chain_fulfillment_journey,journey,private,scoring,,local,local,29,215,28,11,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_c,Tier C,Regulated,private_24_reset_clears_operational_state,journey,private,scoring,,local,local,13,170,12,12,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_d,Tier D,Release stage,private_01_show_all_catalog_order,smoke,private,scoring,,local,local,4,63,3,1,0,1,0,0,0,1,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_d,Tier D,Release stage,private_02_filter_dairypure_two_items,smoke,private,scoring,,local,local,3,64,2,1,0,1,0,0,0,1,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_d,Tier D,Release stage,private_03_filter_butcherbox_price_order,smoke,private,scoring,,local,local,3,59,2,0,0,1,0,0,0,1,0,,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_d,Tier D,Release stage,private_04_multi_item_derived_counts,core,private,scoring,,local,local,4,91,4,7,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_d,Tier D,Release stage,private_05_free_delivery_with_three_cold_items,core,private,scoring,,local,local,4,90,4,6,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_d,Tier D,Release stage,private_06_packaging_fee_tiers,core,private,scoring,,local,local,4,90,4,2,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_d,Tier D,Release stage,private_07_preparation_updates_striploin,core,private,scoring,,local,local,4,76,4,3,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_d,Tier D,Release stage,private_08_remove_item_updates_counts,core,private,scoring,,local,local,6,104,6,4,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_d,Tier D,Release stage,private_09_coupon_cold3000_credit,service,private,scoring,,local,local,6,89,6,4,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_d,Tier D,Release stage,private_10_bad_coupon_rejected,service,private,scoring,,local,local,5,78,5,3,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_d,Tier D,Release stage,private_11_double_wallet_redeem,service,private,scoring,,local,local,5,88,4,3,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_d,Tier D,Release stage,private_12_slot_service_reselection,service,private,scoring,,local,local,6,91,6,3,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_d,Tier D,Release stage,private_13_rush_and_substitution_toggles,core,private,scoring,,local,local,8,106,8,5,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_d,Tier D,Release stage,private_14_phone_normalizes,validation,private,scoring,,local,local,5,80,5,1,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_d,Tier D,Release stage,private_15_minimum_order_25000_rejected,validation,private,scoring,,local,local,6,80,6,2,0,0,0,0,0,0,0,equals,,rejected,0,True,,True
+freshcart_market,Grocery,Grocery,tier_d,Tier D,Release stage,private_16_customer_cannot_pick_order,permission,private,scoring,,local,local,9,100,9,2,0,0,0,0,0,0,0,equals,,unauthorized,0,True,,True
+freshcart_market,Grocery,Grocery,tier_d,Tier D,Release stage,private_17_staff_review_manager_approval,permission,private,scoring,,local,local,11,112,11,4,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_d,Tier D,Release stage,private_18_customer_cannot_resolve_ticket,support,private,scoring,,local,local,11,110,11,3,0,0,0,0,0,0,0,equals,,unauthorized,0,True,,True
+freshcart_market,Grocery,Grocery,tier_d,Tier D,Release stage,private_19_staff_resolves_support_ticket,support,private,scoring,,local,local,12,116,12,3,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_d,Tier D,Release stage,private_20_reload_preserves_cart_and_slot,persistence,private,scoring,,local,local,6,86,5,4,1,0,0,0,1,0,0,equals; unchanged,reload,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_d,Tier D,Release stage,private_21_role_persists_across_reload,persistence,private,scoring,,local,local,3,58,2,1,0,0,0,0,1,0,0,equals,reload,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_d,Tier D,Release stage,private_22_browser_back_restores_market,persistence,private,scoring,,local,local,4,68,3,2,1,0,0,0,1,0,0,equals; unchanged,back,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_d,Tier D,Release stage,private_23_full_cold_chain_fulfillment_journey,journey,private,scoring,,local,local,29,220,28,11,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_d,Tier D,Release stage,private_24_reset_clears_operational_state,journey,private,scoring,,local,local,13,180,12,12,0,0,0,0,0,0,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_d,Tier D,Release stage,private_25_tier_d_manifest_seal_full_cold_chain_journey,journey,private,scoring,,local,local,31,232,29,5,0,1,0,0,0,1,0,equals,,,0,True,,True
+freshcart_market,Grocery,Grocery,tier_d,Tier D,Release stage,private_26_manifest_seal_blocks_before_dispatch,permission,private,scoring,,local,local,9,96,9,4,0,0,0,0,0,0,0,equals,,rejected,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_a,Tier A,Consumer,private_01_all_queue_order,smoke,private,scoring,,git:codex/clinic-shift-tier-a,git:codex/clinic-shift-tier-a,2,34,1,0,0,1,0,0,0,1,0,,,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_a,Tier A,Consumer,private_02_filter_primary_queue,smoke,private,scoring,,git:codex/clinic-shift-tier-a,git:codex/clinic-shift-tier-a,3,32,2,1,0,1,0,0,0,1,0,equals,,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_a,Tier A,Consumer,private_03_filter_imaging_queue,smoke,private,scoring,,git:codex/clinic-shift-tier-a,git:codex/clinic-shift-tier-a,3,34,2,1,0,1,0,0,0,1,0,equals,,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_a,Tier A,Consumer,private_04_select_grace_assign_lab,core,private,scoring,,git:codex/clinic-shift-tier-a,git:codex/clinic-shift-tier-a,3,45,3,5,0,0,0,0,0,0,0,equals,,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_a,Tier A,Consumer,private_05_cleaning_room_rejected,validation,private,scoring,,git:codex/clinic-shift-tier-a,git:codex/clinic-shift-tier-a,3,41,3,2,0,0,0,0,0,0,0,equals,,rejected,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_a,Tier A,Consumer,private_06_cash_insurance_self_pay,service,private,scoring,,git:codex/clinic-shift-tier-a,git:codex/clinic-shift-tier-a,3,43,3,3,0,0,0,0,0,0,0,equals,,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_a,Tier A,Consumer,private_07_bad_plan_needs_review,service,private,scoring,,git:codex/clinic-shift-tier-a,git:codex/clinic-shift-tier-a,3,43,3,3,0,0,0,0,0,0,0,equals,,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_a,Tier A,Consumer,private_08_missing_vitals_rejected,validation,private,scoring,,git:codex/clinic-shift-tier-a,git:codex/clinic-shift-tier-a,4,44,4,2,0,0,0,0,0,0,0,equals,,rejected,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_a,Tier A,Consumer,private_09_clinician_handoff_table_note,core,private,scoring,,git:codex/clinic-shift-tier-a,git:codex/clinic-shift-tier-a,7,49,6,1,0,1,0,0,0,1,0,equals,,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_a,Tier A,Consumer,private_10_coordinator_cannot_discharge,permission,private,scoring,,git:codex/clinic-shift-tier-a,git:codex/clinic-shift-tier-a,4,46,4,3,0,0,0,0,0,0,0,equals,,unauthorized,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_a,Tier A,Consumer,private_11_clinician_cannot_assign_room,permission,private,scoring,,git:codex/clinic-shift-tier-a,git:codex/clinic-shift-tier-a,4,42,4,3,0,0,0,0,0,0,0,equals,,unauthorized,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_a,Tier A,Consumer,private_12_rooms_board_initial,smoke,private,scoring,,git:codex/clinic-shift-tier-a,git:codex/clinic-shift-tier-a,3,34,2,0,0,1,0,0,0,1,0,,,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_a,Tier A,Consumer,private_13_reload_preserves_chart_state,persistence,private,scoring,,git:codex/clinic-shift-tier-a,git:codex/clinic-shift-tier-a,5,50,4,4,1,0,0,0,1,0,0,unchanged,reload,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_a,Tier A,Consumer,private_14_role_persists_across_reload,persistence,private,scoring,,git:codex/clinic-shift-tier-a,git:codex/clinic-shift-tier-a,3,30,2,1,0,0,0,0,1,0,0,equals,reload,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_a,Tier A,Consumer,private_15_browser_back_restores_queue,persistence,private,scoring,,git:codex/clinic-shift-tier-a,git:codex/clinic-shift-tier-a,5,32,3,1,2,0,0,0,2,0,0,equals,back,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_a,Tier A,Consumer,private_16_full_urgent_visit_journey,journey,private,scoring,,git:codex/clinic-shift-tier-a,git:codex/clinic-shift-tier-a,12,76,12,4,0,0,0,0,0,0,0,equals,,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_a,Tier A,Consumer,private_17_reset_clears_operational_state,journey,private,scoring,,git:codex/clinic-shift-tier-a,git:codex/clinic-shift-tier-a,11,94,10,5,0,0,0,0,0,0,0,equals,,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_b,Tier B,Operational,private_01_all_queue_order,smoke,private,scoring,B,local,local,2,53,1,0,0,1,0,0,0,1,0,,,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_b,Tier B,Operational,private_02_filter_procedure_queue,smoke,private,scoring,B,local,local,3,53,2,1,0,1,0,0,0,1,0,equals,,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_b,Tier B,Operational,private_03_filter_authorization_queue,smoke,private,scoring,B,local,local,3,51,2,1,0,1,0,0,0,1,0,equals,,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_b,Tier B,Operational,private_04_select_paul_auth_snapshot,core,private,scoring,B,local,local,2,62,2,5,0,0,0,0,0,0,0,equals,,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_b,Tier B,Operational,private_05_assign_procedure_room,core,private,scoring,B,local,local,5,71,4,3,0,1,0,0,0,1,0,equals,,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_b,Tier B,Operational,private_06_cleaning_room_blocked,validation,private,scoring,B,local,local,3,66,3,3,0,0,0,0,0,0,0,equals,,rejected,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_b,Tier B,Operational,private_07_clinician_cannot_assign_isolation,permission,private,scoring,B,local,local,4,65,4,3,0,0,0,0,0,0,0,equals,,unauthorized,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_b,Tier B,Operational,private_08_billing_cannot_save_assessment,permission,private,scoring,B,local,local,6,69,6,3,0,0,0,0,0,0,0,equals,,unauthorized,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_b,Tier B,Operational,private_09_coordinator_cannot_request_auth,permission,private,scoring,B,local,local,3,63,3,3,0,0,0,0,0,0,0,equals,,unauthorized,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_b,Tier B,Operational,private_10_cash_insurance_self_pay,service,private,scoring,B,local,local,3,67,3,4,0,0,0,0,0,0,0,equals,,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_b,Tier B,Operational,private_11_badplan_needs_review,service,private,scoring,B,local,local,3,66,3,3,0,0,0,0,0,0,0,equals,,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_b,Tier B,Operational,private_12_prior_auth_denied,service,private,scoring,B,local,local,4,68,4,3,0,0,0,0,0,0,0,equals,,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_b,Tier B,Operational,private_13_missing_assessment_rejected,validation,private,scoring,B,local,local,4,67,4,2,0,0,0,0,0,0,0,equals,,rejected,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_b,Tier B,Operational,private_14_referral_upload_replaces_rows,upload,private,scoring,B,local,local,6,63,4,2,0,1,0,0,0,1,2,equals,,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_b,Tier B,Operational,private_15_order_requires_assessment,validation,private,scoring,B,local,local,4,66,4,3,0,0,0,0,0,0,0,equals,,rejected,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_b,Tier B,Operational,private_16_close_escalation,core,private,scoring,B,local,local,7,75,6,2,0,1,0,0,0,1,0,equals,,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_b,Tier B,Operational,private_17_reload_preserves_chart_workup,persistence,private,scoring,B,local,local,6,76,5,4,1,0,0,0,1,0,0,unchanged,reload,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_b,Tier B,Operational,private_18_role_persists_across_reload,persistence,private,scoring,B,local,local,3,49,2,1,0,0,0,0,1,0,0,equals,reload,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_b,Tier B,Operational,private_19_browser_back_chain,persistence,private,scoring,B,local,local,5,51,3,1,2,0,0,0,2,0,0,equals,back,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_b,Tier B,Operational,private_20_reset_clears_operational_state,journey,private,scoring,B,local,local,6,121,5,5,0,0,0,0,0,0,0,equals,,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_b,Tier B,Operational,private_21_full_multirole_critical_journey,journey,private,scoring,B,local,local,14,109,14,6,0,0,0,0,0,0,0,equals,,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_b,Tier B,Operational,private_22_release_blocked_before_prior_auth,validation,private,scoring,B,local,local,8,80,8,4,0,0,0,0,0,0,0,equals,,rejected,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_b,Tier B,Operational,private_23_handoff_blocked_until_escalation_closed,journey,private,scoring,B,local,local,18,126,17,4,0,0,0,0,0,0,1,equals,,rejected,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_b,Tier B,Operational,private_24_finalize_handoff_packet_after_release,persistence,private,scoring,B,local,local,21,143,18,6,1,1,0,0,1,1,1,equals; unchanged,reload,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_c,Tier C,Regulated,private_01_all_queue_order,smoke,private,scoring,C,local,local,2,98,1,0,0,1,0,0,0,1,0,,,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_c,Tier C,Regulated,private_02_filter_procedure_queue,smoke,private,scoring,C,local,local,3,98,2,1,0,1,0,0,0,1,0,equals,,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_c,Tier C,Regulated,private_03_filter_authorization_queue,smoke,private,scoring,C,local,local,3,96,2,1,0,1,0,0,0,1,0,equals,,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_c,Tier C,Regulated,private_04_select_paul_auth_snapshot,core,private,scoring,C,local,local,2,107,2,5,0,0,0,0,0,0,0,equals,,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_c,Tier C,Regulated,private_05_assign_procedure_room,core,private,scoring,C,local,local,5,116,4,3,0,1,0,0,0,1,0,equals,,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_c,Tier C,Regulated,private_06_cleaning_room_blocked,validation,private,scoring,C,local,local,3,111,3,3,0,0,0,0,0,0,0,equals,,rejected,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_c,Tier C,Regulated,private_07_clinician_cannot_assign_isolation,permission,private,scoring,C,local,local,4,110,4,3,0,0,0,0,0,0,0,equals,,unauthorized,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_c,Tier C,Regulated,private_08_billing_cannot_save_assessment,permission,private,scoring,C,local,local,6,114,6,3,0,0,0,0,0,0,0,equals,,unauthorized,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_c,Tier C,Regulated,private_09_coordinator_cannot_request_auth,permission,private,scoring,C,local,local,3,108,3,3,0,0,0,0,0,0,0,equals,,unauthorized,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_c,Tier C,Regulated,private_10_cash_insurance_self_pay,service,private,scoring,C,local,local,3,112,3,4,0,0,0,0,0,0,0,equals,,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_c,Tier C,Regulated,private_11_badplan_needs_review,service,private,scoring,C,local,local,3,111,3,3,0,0,0,0,0,0,0,equals,,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_c,Tier C,Regulated,private_12_prior_auth_denied,service,private,scoring,C,local,local,4,113,4,3,0,0,0,0,0,0,0,equals,,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_c,Tier C,Regulated,private_13_missing_assessment_rejected,validation,private,scoring,C,local,local,4,112,4,2,0,0,0,0,0,0,0,equals,,rejected,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_c,Tier C,Regulated,private_14_referral_upload_replaces_rows,upload,private,scoring,C,local,local,6,108,4,2,0,1,0,0,0,1,2,equals,,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_c,Tier C,Regulated,private_15_order_requires_assessment,validation,private,scoring,C,local,local,4,111,4,3,0,0,0,0,0,0,0,equals,,rejected,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_c,Tier C,Regulated,private_16_close_escalation,core,private,scoring,C,local,local,7,120,6,2,0,1,0,0,0,1,0,equals,,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_c,Tier C,Regulated,private_17_reload_preserves_chart_workup,persistence,private,scoring,C,local,local,6,121,5,4,1,0,0,0,1,0,0,unchanged,reload,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_c,Tier C,Regulated,private_18_role_persists_across_reload,persistence,private,scoring,C,local,local,3,94,2,1,0,0,0,0,1,0,0,equals,reload,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_c,Tier C,Regulated,private_19_browser_back_chain,persistence,private,scoring,C,local,local,5,96,3,1,2,0,0,0,2,0,0,equals,back,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_c,Tier C,Regulated,private_20_reset_clears_operational_state,journey,private,scoring,C,local,local,6,211,5,5,0,0,0,0,0,0,0,equals,,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_c,Tier C,Regulated,private_21_full_multirole_critical_journey,journey,private,scoring,C,local,local,14,154,14,6,0,0,0,0,0,0,0,equals,,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_c,Tier C,Regulated,private_22_release_blocked_before_prior_auth,validation,private,scoring,C,local,local,8,125,8,4,0,0,0,0,0,0,0,equals,,rejected,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_c,Tier C,Regulated,private_23_handoff_blocked_until_escalation_closed,journey,private,scoring,C,local,local,18,171,17,4,0,0,0,0,0,0,1,equals,,rejected,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_c,Tier C,Regulated,private_24_finalize_handoff_packet_after_release,persistence,private,scoring,C,local,local,21,188,18,6,1,1,0,0,1,1,1,equals; unchanged,reload,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_c,Tier C,Regulated,private_25_operations_director_role_persists,persistence,private,scoring,C,local,local,4,98,3,2,1,0,0,0,1,0,0,equals,reload,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_c,Tier C,Regulated,private_26_billing_cannot_score_risk,permission,private,scoring,C,local,local,4,110,4,3,0,0,0,0,0,0,0,equals,,unauthorized,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_c,Tier C,Regulated,private_27_transport_blocked_before_release,validation,private,scoring,C,local,local,5,119,5,3,0,0,0,0,0,0,0,equals,,rejected,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_c,Tier C,Regulated,private_28_surge_activation_blocked_before_forecast,validation,private,scoring,C,local,local,4,103,4,4,0,0,0,0,0,0,0,equals,,rejected,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_c,Tier C,Regulated,private_29_full_incident_command_clearance,journey,private,scoring,C,local,local,41,312,35,15,0,2,0,0,0,2,4,equals,,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_c,Tier C,Regulated,private_30_reload_preserves_incident_clearance,persistence,private,scoring,C,local,local,39,294,34,10,1,0,0,0,1,0,4,unchanged,reload,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_c,Tier C,Regulated,private_31_transport_ack_requires_charge_role,permission,private,scoring,C,local,local,18,170,16,3,0,0,0,0,0,0,0,equals,,unauthorized,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_c,Tier C,Regulated,private_32_reconciliation_upload_counts_mismatch,upload,private,scoring,C,local,local,4,106,3,4,0,1,0,0,0,1,1,equals,,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_c,Tier C,Regulated,private_33_reconciliation_lock_blocked_with_mismatch,validation,private,scoring,C,local,local,5,109,5,4,0,0,0,0,0,0,1,equals,,rejected,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_c,Tier C,Regulated,private_34_diversion_resolve_requires_director,permission,private,scoring,C,local,local,5,107,5,4,0,0,0,0,0,0,1,equals,,unauthorized,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_c,Tier C,Regulated,private_35_signoffs_require_locked_inputs,validation,private,scoring,C,local,local,6,110,6,3,0,0,0,0,0,0,0,equals,,rejected,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_c,Tier C,Regulated,private_36_final_clearance_blocked_without_signoffs,validation,private,scoring,C,local,local,33,259,32,4,0,0,0,0,0,0,4,equals,,rejected,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_c,Tier C,Regulated,private_37_reconciliation_reupload_reopens_readiness_blocker,validation,private,scoring,C,local,local,8,131,5,6,0,1,0,0,0,1,2,equals,,rejected,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_d,Tier D,Release stage,private_01_all_queue_order,smoke,private,scoring,C,local,local,2,103,1,0,0,1,0,0,0,1,0,,,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_d,Tier D,Release stage,private_02_filter_procedure_queue,smoke,private,scoring,C,local,local,3,103,2,1,0,1,0,0,0,1,0,equals,,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_d,Tier D,Release stage,private_03_filter_authorization_queue,smoke,private,scoring,C,local,local,3,101,2,1,0,1,0,0,0,1,0,equals,,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_d,Tier D,Release stage,private_04_select_paul_auth_snapshot,core,private,scoring,C,local,local,2,112,2,5,0,0,0,0,0,0,0,equals,,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_d,Tier D,Release stage,private_05_assign_procedure_room,core,private,scoring,C,local,local,5,121,4,3,0,1,0,0,0,1,0,equals,,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_d,Tier D,Release stage,private_06_cleaning_room_blocked,validation,private,scoring,C,local,local,3,116,3,3,0,0,0,0,0,0,0,equals,,rejected,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_d,Tier D,Release stage,private_07_clinician_cannot_assign_isolation,permission,private,scoring,C,local,local,4,115,4,3,0,0,0,0,0,0,0,equals,,unauthorized,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_d,Tier D,Release stage,private_08_billing_cannot_save_assessment,permission,private,scoring,C,local,local,6,119,6,3,0,0,0,0,0,0,0,equals,,unauthorized,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_d,Tier D,Release stage,private_09_coordinator_cannot_request_auth,permission,private,scoring,C,local,local,3,113,3,3,0,0,0,0,0,0,0,equals,,unauthorized,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_d,Tier D,Release stage,private_10_cash_insurance_self_pay,service,private,scoring,C,local,local,3,117,3,4,0,0,0,0,0,0,0,equals,,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_d,Tier D,Release stage,private_11_badplan_needs_review,service,private,scoring,C,local,local,3,116,3,3,0,0,0,0,0,0,0,equals,,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_d,Tier D,Release stage,private_12_prior_auth_denied,service,private,scoring,C,local,local,4,118,4,3,0,0,0,0,0,0,0,equals,,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_d,Tier D,Release stage,private_13_missing_assessment_rejected,validation,private,scoring,C,local,local,4,117,4,2,0,0,0,0,0,0,0,equals,,rejected,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_d,Tier D,Release stage,private_14_referral_upload_replaces_rows,upload,private,scoring,C,local,local,6,113,4,2,0,1,0,0,0,1,2,equals,,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_d,Tier D,Release stage,private_15_order_requires_assessment,validation,private,scoring,C,local,local,4,116,4,3,0,0,0,0,0,0,0,equals,,rejected,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_d,Tier D,Release stage,private_16_close_escalation,core,private,scoring,C,local,local,7,125,6,2,0,1,0,0,0,1,0,equals,,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_d,Tier D,Release stage,private_17_reload_preserves_chart_workup,persistence,private,scoring,C,local,local,6,126,5,4,1,0,0,0,1,0,0,unchanged,reload,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_d,Tier D,Release stage,private_18_role_persists_across_reload,persistence,private,scoring,C,local,local,3,99,2,1,0,0,0,0,1,0,0,equals,reload,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_d,Tier D,Release stage,private_19_browser_back_chain,persistence,private,scoring,C,local,local,5,101,3,1,2,0,0,0,2,0,0,equals,back,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_d,Tier D,Release stage,private_20_reset_clears_operational_state,journey,private,scoring,C,local,local,6,221,5,5,0,0,0,0,0,0,0,equals,,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_d,Tier D,Release stage,private_21_full_multirole_critical_journey,journey,private,scoring,C,local,local,14,159,14,6,0,0,0,0,0,0,0,equals,,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_d,Tier D,Release stage,private_22_release_blocked_before_prior_auth,validation,private,scoring,C,local,local,8,130,8,4,0,0,0,0,0,0,0,equals,,rejected,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_d,Tier D,Release stage,private_23_handoff_blocked_until_escalation_closed,journey,private,scoring,C,local,local,18,176,17,4,0,0,0,0,0,0,1,equals,,rejected,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_d,Tier D,Release stage,private_24_finalize_handoff_packet_after_release,persistence,private,scoring,C,local,local,21,193,18,6,1,1,0,0,1,1,1,equals; unchanged,reload,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_d,Tier D,Release stage,private_25_operations_director_role_persists,persistence,private,scoring,C,local,local,4,103,3,2,1,0,0,0,1,0,0,equals,reload,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_d,Tier D,Release stage,private_26_billing_cannot_score_risk,permission,private,scoring,C,local,local,4,115,4,3,0,0,0,0,0,0,0,equals,,unauthorized,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_d,Tier D,Release stage,private_27_transport_blocked_before_release,validation,private,scoring,C,local,local,5,124,5,3,0,0,0,0,0,0,0,equals,,rejected,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_d,Tier D,Release stage,private_28_surge_activation_blocked_before_forecast,validation,private,scoring,C,local,local,4,108,4,4,0,0,0,0,0,0,0,equals,,rejected,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_d,Tier D,Release stage,private_29_full_incident_command_clearance,journey,private,scoring,C,local,local,41,317,35,15,0,2,0,0,0,2,4,equals,,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_d,Tier D,Release stage,private_30_reload_preserves_incident_clearance,persistence,private,scoring,C,local,local,39,299,34,10,1,0,0,0,1,0,4,unchanged,reload,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_d,Tier D,Release stage,private_31_transport_ack_requires_charge_role,permission,private,scoring,C,local,local,18,175,16,3,0,0,0,0,0,0,0,equals,,unauthorized,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_d,Tier D,Release stage,private_32_reconciliation_upload_counts_mismatch,upload,private,scoring,C,local,local,4,111,3,4,0,1,0,0,0,1,1,equals,,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_d,Tier D,Release stage,private_33_reconciliation_lock_blocked_with_mismatch,validation,private,scoring,C,local,local,5,114,5,4,0,0,0,0,0,0,1,equals,,rejected,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_d,Tier D,Release stage,private_34_diversion_resolve_requires_director,permission,private,scoring,C,local,local,5,112,5,4,0,0,0,0,0,0,1,equals,,unauthorized,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_d,Tier D,Release stage,private_35_signoffs_require_locked_inputs,validation,private,scoring,C,local,local,6,115,6,3,0,0,0,0,0,0,0,equals,,rejected,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_d,Tier D,Release stage,private_36_final_clearance_blocked_without_signoffs,validation,private,scoring,C,local,local,33,264,32,4,0,0,0,0,0,0,4,equals,,rejected,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_d,Tier D,Release stage,private_37_reconciliation_reupload_reopens_readiness_blocker,validation,private,scoring,C,local,local,8,136,5,6,0,1,0,0,0,1,2,equals,,rejected,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_d,Tier D,Release stage,private_38_tier_d_incident_command_seal_full_journey,journey,private,scoring,D,local,local,49,397,36,12,0,2,0,0,0,4,7,equals,,,0,True,,True
+clinic_shift_command,Clinical Command,Clinical,tier_d,Tier D,Release stage,private_39_incident_seal_blocks_before_clearance,permission,private,scoring,D,local,local,4,107,4,4,0,0,0,0,0,0,0,equals,,rejected,0,True,,True
+campus_registrar_command,Campus Registrar,Campus,tier_a,Tier A,Consumer,private_01_history_enrollment_credit_total,journey,private,scoring,,local,local,6,49,5,2,0,1,0,0,0,1,0,equals,,,0,True,,True
+campus_registrar_command,Campus Registrar,Campus,tier_a,Tier A,Consumer,private_02_math_override_then_enroll,journey,private,scoring,,local,local,10,51,9,3,0,0,0,0,0,0,0,equals,,,0,True,,True
+campus_registrar_command,Campus Registrar,Campus,tier_a,Tier A,Consumer,private_03_filter_full_course,smoke,private,scoring,,local,local,3,31,2,0,0,1,0,0,0,1,0,,,,0,True,,True
+campus_registrar_command,Campus Registrar,Campus,tier_a,Tier A,Consumer,private_04_selection_survives_navigation,core,private,scoring,,local,local,5,32,4,1,0,0,0,0,0,0,0,equals,,,0,True,,True
+campus_registrar_command,Campus Registrar,Campus,tier_a,Tier A,Consumer,private_05_eligibility_call_count_twice,service,private,scoring,,local,local,5,40,4,1,0,0,0,0,0,0,0,equals,,,0,True,,True
+campus_registrar_command,Campus Registrar,Campus,tier_a,Tier A,Consumer,private_06_student_cannot_override,permission,private,scoring,,local,local,6,39,6,2,0,0,0,0,0,0,0,equals,,unauthorized,0,True,,True
+campus_registrar_command,Campus Registrar,Campus,tier_a,Tier A,Consumer,private_07_waitlist_persists_after_reload,persistence,private,scoring,,local,local,7,41,6,2,0,0,0,0,1,0,0,equals,reload,,0,True,,True
+campus_registrar_command,Campus Registrar,Campus,tier_a,Tier A,Consumer,private_08_student_id_uppercase,validation,private,scoring,,local,local,3,27,3,1,0,0,0,0,0,0,0,equals,,,0,True,,True
+campus_registrar_command,Campus Registrar,Campus,tier_a,Tier A,Consumer,private_09_add_to_plan_without_selection_blocks,validation,private,scoring,,local,local,3,30,3,2,0,0,0,0,0,0,0,equals,,rejected,0,True,,True
+campus_registrar_command,Campus Registrar,Campus,tier_a,Tier A,Consumer,private_10_selected_course_persists_reload,persistence,private,scoring,,local,local,3,33,2,2,0,0,0,0,1,0,0,equals,reload,,0,True,,True
+campus_registrar_command,Campus Registrar,Campus,tier_c,Tier C,Regulated,private_01_select_orion_from_filtered_queue,smoke,private,scoring,C,local,local,4,86,3,5,0,1,0,0,0,1,0,equals,,,0,True,,True
+campus_registrar_command,Campus Registrar,Campus,tier_c,Tier C,Regulated,private_02_browser_back_forward_chain_preserves_candidate,persistence,private,scoring,C,local,local,8,84,5,3,2,0,0,0,3,0,0,equals,back; forward,,0,True,,True
+campus_registrar_command,Campus Registrar,Campus,tier_c,Tier C,Regulated,private_03_catalog_lock_requires_registrar_but_preserves_denial,permission,private,scoring,C,local,local,6,92,5,3,0,0,0,0,0,0,0,equals,,unauthorized,0,True,,True
+campus_registrar_command,Campus Registrar,Campus,tier_c,Tier C,Regulated,private_04_validation_errors_are_object_fields,validation,private,scoring,C,local,local,18,149,11,2,0,0,0,0,0,0,1,equals,,rejected,0,True,,True
+campus_registrar_command,Campus Registrar,Campus,tier_c,Tier C,Regulated,private_05_transfer_reupload_replaces_rows_and_resets_equivalencies,upload,private,scoring,C,local,local,8,109,6,5,0,1,0,0,0,1,2,equals,,,0,True,,True
+campus_registrar_command,Campus Registrar,Campus,tier_c,Tier C,Regulated,private_06_exception_packet_waits_for_resolved_schedule,validation,private,scoring,C,local,local,18,162,15,5,0,0,0,0,0,0,1,equals,,rejected,0,True,,True
+campus_registrar_command,Campus Registrar,Campus,tier_c,Tier C,Regulated,private_07_bursar_success_clears_prior_finance_error,service,private,scoring,C,local,local,22,191,18,6,0,0,0,0,0,0,1,equals,,rejected,0,True,,True
+campus_registrar_command,Campus Registrar,Campus,tier_c,Tier C,Regulated,private_08_reconciliation_counts_multiple_mismatches,upload,private,scoring,C,local,local,6,86,5,4,0,1,0,0,0,1,1,equals,,rejected,0,True,,True
+campus_registrar_command,Campus Registrar,Campus,tier_c,Tier C,Regulated,private_09_reconciliation_lock_requires_registrar,permission,private,scoring,C,local,local,7,90,6,4,0,0,0,0,0,0,1,equals,,unauthorized,0,True,,True
+campus_registrar_command,Campus Registrar,Campus,tier_c,Tier C,Regulated,private_10_dean_vote_is_noop_before_required_gates,validation,private,scoring,C,local,local,5,88,5,6,0,0,0,0,0,0,0,equals,,rejected,0,True,,True
+campus_registrar_command,Campus Registrar,Campus,tier_c,Tier C,Regulated,private_11_registrar_seal_waits_for_dean_after_all_other_gates,journey,private,scoring,C,local,local,27,220,23,7,0,1,0,0,0,1,2,equals,,rejected,0,True,,True
+campus_registrar_command,Campus Registrar,Campus,tier_c,Tier C,Regulated,private_12_publish_release_requires_registrar_even_after_seal,permission,private,scoring,C,local,local,30,229,24,5,0,1,0,0,0,1,2,equals,,unauthorized,0,True,,True
+campus_registrar_command,Campus Registrar,Campus,tier_c,Tier C,Regulated,private_13_reload_preserves_midworkflow_articulation_state,persistence,private,scoring,C,local,local,14,130,12,6,1,1,0,0,1,1,1,equals,reload,,0,True,,True
+campus_registrar_command,Campus Registrar,Campus,tier_c,Tier C,Regulated,private_14_role_persists_across_reload_on_clearance_page,persistence,private,scoring,C,local,local,4,69,3,2,1,0,0,0,1,0,0,equals,reload,,0,True,,True
+campus_registrar_command,Campus Registrar,Campus,tier_c,Tier C,Regulated,private_15_reset_clears_all_complex_state,journey,private,scoring,C,local,local,10,188,9,16,0,0,0,0,0,0,1,equals,,,0,True,,True
+campus_registrar_command,Campus Registrar,Campus,tier_c,Tier C,Regulated,private_16_transfer_reupload_after_locked_equivalencies_reopens_staging,upload,private,scoring,C,local,local,11,128,10,6,0,0,0,0,0,0,2,equals,,,0,True,,True
+campus_registrar_command,Campus Registrar,Campus,tier_c,Tier C,Regulated,private_17_full_journey_with_four_transfer_rows,journey,private,scoring,C,local,local,30,242,24,13,1,2,1,0,1,2,2,equals,reload,,0,True,,True
+campus_registrar_command,Campus Registrar,Campus,tier_d,Tier D,Release stage,private_01_marek_selection_from_wave_filter,smoke,private,scoring,D,local,local,3,38,3,5,0,0,0,0,0,0,0,equals,,,0,True,,True
+campus_registrar_command,Campus Registrar,Campus,tier_d,Tier D,Release stage,private_02_browser_back_forward_keeps_selected_dossier,persistence,private,scoring,D,local,local,8,41,5,3,2,0,0,0,3,0,0,equals,back; forward,,0,True,,True
+campus_registrar_command,Campus Registrar,Campus,tier_d,Tier D,Release stage,private_03_policy_lock_requires_registrar,permission,private,scoring,D,local,local,4,38,4,3,0,0,0,0,0,0,0,equals,,unauthorized,0,True,,True
+campus_registrar_command,Campus Registrar,Campus,tier_d,Tier D,Release stage,private_04_reset_cleans_deep_partial_work,persistence,private,scoring,D,local,local,7,81,6,6,0,0,0,0,0,0,1,equals,,,0,True,,True
+campus_registrar_command,Campus Registrar,Campus,tier_d,Tier D,Release stage,private_05_degree_plan_reload_preserves_matrix,persistence,private,scoring,D,local,local,6,58,5,4,1,0,0,0,1,0,0,equals,reload,,0,True,,True
+campus_registrar_command,Campus Registrar,Campus,tier_d,Tier D,Release stage,private_06_uploaded_crosswalk_persists_after_reload,persistence,private,scoring,D,local,local,7,48,5,3,1,1,0,0,1,1,2,equals,reload,,0,True,,True
+campus_registrar_command,Campus Registrar,Campus,tier_d,Tier D,Release stage,private_07_certify_crosswalk_unauthorized_preserves_stage,permission,private,scoring,D,local,local,9,58,9,2,0,0,0,0,0,0,2,equals,,unauthorized,0,True,,True
+campus_registrar_command,Campus Registrar,Campus,tier_d,Tier D,Release stage,private_08_exception_table_after_successful_certification,journey,private,scoring,D,local,local,16,105,15,0,0,1,0,0,0,1,2,,,,0,True,,True
+campus_registrar_command,Campus Registrar,Campus,tier_d,Tier D,Release stage,private_09_name_variance_event_reopens_identity_gate,service,private,scoring,D,local,local,7,58,6,4,0,0,1,0,0,0,0,equals,,,0,True,,True
+campus_registrar_command,Campus Registrar,Campus,tier_d,Tier D,Release stage,private_10_bursar_button_requires_bursar_role,permission,private,scoring,D,local,local,4,37,4,2,0,0,0,0,0,0,0,equals,,unauthorized,0,True,,True
+campus_registrar_command,Campus Registrar,Campus,tier_d,Tier D,Release stage,private_11_diploma_quote_preserves_identity_service_count,service,private,scoring,D,local,local,7,61,7,4,0,0,0,0,0,0,0,equals,,,0,True,,True
+campus_registrar_command,Campus Registrar,Campus,tier_d,Tier D,Release stage,private_12_reconciliation_lock_requires_registrar,permission,private,scoring,D,local,local,5,43,5,2,0,0,0,0,0,0,1,equals,,unauthorized,0,True,,True
+campus_registrar_command,Campus Registrar,Campus,tier_d,Tier D,Release stage,private_13_weak_committee_fails_quorum,validation,private,scoring,D,local,local,6,50,6,4,0,0,0,0,0,0,1,equals,,rejected,0,True,,True
+campus_registrar_command,Campus Registrar,Campus,tier_d,Tier D,Release stage,private_14_senate_docket_blocks_without_quorum,validation,private,scoring,D,local,local,5,41,5,2,0,0,0,0,0,0,0,equals,,rejected,0,True,,True
+campus_registrar_command,Campus Registrar,Campus,tier_d,Tier D,Release stage,private_15_provost_counterseal_blocks_before_senate,validation,private,scoring,D,local,local,5,40,5,2,0,0,0,0,0,0,0,equals,,rejected,0,True,,True
+campus_registrar_command,Campus Registrar,Campus,tier_d,Tier D,Release stage,private_16_release_wave_blocks_before_counterseal,validation,private,scoring,D,local,local,5,41,5,2,0,0,0,0,0,0,0,equals,,rejected,0,True,,True
+campus_registrar_command,Campus Registrar,Campus,tier_d,Tier D,Release stage,private_17_role_and_senate_page_persist_after_reload,persistence,private,scoring,D,local,local,5,37,4,3,1,0,0,0,1,0,0,equals,reload,,0,True,,True
+campus_registrar_command,Campus Registrar,Campus,tier_d,Tier D,Release stage,private_18_full_service_counts_before_senate,service,private,scoring,D,local,local,11,78,9,3,0,0,0,0,0,0,0,equals,,rejected,0,True,,True
+campus_registrar_command,Campus Registrar,Campus,tier_d,Tier D,Release stage,private_19_manifest_publish_blocks_after_accreditation_freeze,journey,private,scoring,D,local,local,37,220,33,3,0,0,1,0,0,0,4,equals,,rejected,0,True,,True
+campus_registrar_command,Campus Registrar,Campus,tier_d,Tier D,Release stage,private_20_full_release_tables_after_manifest,journey,private,scoring,D,local,local,39,215,33,0,0,3,0,0,0,3,4,,,,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_a,Tier A,Consumer,private_01_banner_display_launch,journey,private,scoring,,local,local,11,61,10,2,0,1,0,0,0,1,0,equals,,,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_a,Tier A,Consumer,private_02_creator_legal_launch,journey,private,scoring,,local,local,13,65,13,3,0,0,0,0,0,0,0,equals,,,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_a,Tier A,Consumer,private_03_filter_video_asset,smoke,private,scoring,,local,local,3,31,2,0,0,1,0,0,0,1,0,,,,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_a,Tier A,Consumer,private_04_selection_survives_navigation,core,private,scoring,,local,local,5,33,4,1,0,0,0,0,0,0,0,equals,,,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_a,Tier A,Consumer,private_05_rights_call_count_twice,service,private,scoring,,local,local,5,43,4,1,0,0,0,0,0,0,0,equals,,,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_a,Tier A,Consumer,private_06_marketer_cannot_legal_approve,permission,private,scoring,,local,local,5,42,5,2,0,0,0,0,0,0,0,equals,,unauthorized,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_a,Tier A,Consumer,private_07_schedule_persists_after_reload,persistence,private,scoring,,local,local,5,38,4,2,0,0,0,0,1,0,0,equals,reload,,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_a,Tier A,Consumer,private_08_budget_currency_normalization,validation,private,scoring,,local,local,3,27,3,1,0,0,0,0,0,0,0,equals,,,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_a,Tier A,Consumer,private_09_launch_blocked_without_clearance,validation,private,scoring,,local,local,9,45,9,1,0,0,0,0,0,0,0,equals,,rejected,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_a,Tier A,Consumer,private_10_selected_asset_persists_reload,persistence,private,scoring,,local,local,3,34,2,2,0,0,0,0,1,0,0,equals,reload,,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_c,Tier C,Regulated,private_01_filter_premium_video_projection,smoke,private,scoring,C,local,local,3,56,2,2,0,1,0,0,0,1,0,equals,,,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_c,Tier C,Regulated,private_02_select_family_and_build_mix,core,private,scoring,C,local,local,4,70,4,5,0,0,0,0,0,0,0,equals,,,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_c,Tier C,Regulated,private_03_repeated_forecast_calls_increment_service_counter,service,private,scoring,C,local,local,5,79,4,3,0,0,0,0,0,0,0,equals,,,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_c,Tier C,Regulated,private_04_header_only_inventory_upload_stays_empty,upload,private,scoring,C,local,local,4,60,3,3,0,1,0,0,0,1,1,equals,,,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_c,Tier C,Regulated,private_05_three_partner_inventory_validates_as_buyer,permission,private,scoring,C,local,local,6,69,5,3,0,1,0,0,0,1,1,equals,,,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_c,Tier C,Regulated,private_06_reupload_after_validation_resets_deal_review,upload,private,scoring,C,local,local,6,76,5,4,0,0,0,0,0,0,2,equals,,,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_c,Tier C,Regulated,private_07_finance_lock_persists_budget_key,persistence,private,scoring,C,local,local,7,85,6,5,1,0,0,0,1,0,0,equals,reload,,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_c,Tier C,Regulated,private_08_strategist_cannot_export_guardrails,permission,private,scoring,C,local,local,3,54,3,3,0,0,0,0,0,0,0,equals,,unauthorized,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_c,Tier C,Regulated,private_09_beacon_activation_requires_analyst_role,permission,private,scoring,C,local,local,9,89,9,4,0,0,0,0,0,0,0,equals,,unauthorized,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_c,Tier C,Regulated,private_10_luxury_audience_forecast_uses_same_mix_shell,core,private,scoring,C,local,local,5,76,5,4,0,0,0,0,0,0,0,equals,,,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_c,Tier C,Regulated,private_11_holdout_then_reload_keeps_cells_and_role,persistence,private,scoring,C,local,local,8,84,7,4,1,0,0,0,1,0,0,equals,reload,,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_c,Tier C,Regulated,private_12_activation_guardrails_persist_without_launch,persistence,private,scoring,C,local,local,6,61,4,4,1,1,0,0,1,1,0,equals,reload,,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_c,Tier C,Regulated,private_13_director_launch_survives_reload,journey,private,scoring,C,local,local,21,145,18,3,1,1,0,0,1,1,1,equals,reload,,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_c,Tier C,Regulated,private_14_reset_after_activation_clears_audit_and_service_counts,persistence,private,scoring,C,local,local,20,191,18,4,0,0,0,0,0,0,1,equals,,,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_c,Tier C,Regulated,private_15_back_navigation_from_activate_to_experiments,persistence,private,scoring,C,local,local,6,54,4,1,2,0,0,0,2,0,0,equals,back,,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_c,Tier C,Regulated,private_16_budget_then_deal_then_beacon_audit_order,journey,private,scoring,C,local,local,15,121,14,0,0,1,0,0,0,1,1,,,,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_c,Tier C,Regulated,private_17_select_luxury_then_reset_returns_all_audiences,core,private,scoring,C,local,local,5,107,3,3,0,1,0,0,0,1,0,equals,,,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_c,Tier C,Regulated,private_18_inventory_reload_after_validation_keeps_approval,persistence,private,scoring,C,local,local,6,69,5,4,1,0,0,0,1,0,1,equals,reload,,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_c,Tier C,Regulated,private_19_director_launch_blocked_without_guardrails,validation,private,scoring,C,local,local,17,129,17,4,0,0,0,0,0,0,1,equals,,,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_c,Tier C,Regulated,private_20_family_selection_survives_back_from_mix,persistence,private,scoring,C,local,local,4,60,3,3,1,0,0,0,1,0,0,equals,back,,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_d,Tier D,Release stage,private_01_all_assets_initial_order,smoke,private,scoring,D,local,local,2,33,1,0,0,1,0,0,0,1,0,,,,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_d,Tier D,Release stage,private_02_filter_uncleared_assets,smoke,private,scoring,D,local,local,3,31,2,1,0,1,0,0,0,1,0,equals,,,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_d,Tier D,Release stage,private_03_select_social_asset_snapshot,core,private,scoring,D,local,local,2,40,2,5,0,0,0,0,0,0,0,equals,,,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_d,Tier D,Release stage,private_04_trailer_legal_clearance_service_score,service,private,scoring,D,local,local,5,51,5,4,0,0,0,0,0,0,0,equals,,,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_d,Tier D,Release stage,private_05_social_legal_clearance_service_score,service,private,scoring,D,local,local,5,49,5,2,0,0,0,0,0,0,0,equals,,,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_d,Tier D,Release stage,private_06_ops_cannot_lock_asset,permission,private,scoring,D,local,local,5,45,5,3,0,0,0,0,0,0,0,equals,,unauthorized,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_d,Tier D,Release stage,private_07_legal_cannot_lock_windows,permission,private,scoring,D,local,local,5,41,5,3,0,0,0,0,0,0,1,equals,,unauthorized,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_d,Tier D,Release stage,private_08_window_upload_replaces_rows,upload,private,scoring,D,local,local,5,44,3,3,0,1,0,0,0,1,2,equals,,,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_d,Tier D,Release stage,private_09_delivery_ack_blocks_before_lock,validation,private,scoring,D,local,local,4,36,4,3,0,0,0,0,0,0,0,equals,,rejected,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_d,Tier D,Release stage,private_10_measurement_cannot_ack_delivery,permission,private,scoring,D,local,local,7,49,7,3,0,0,0,0,0,0,1,equals,,unauthorized,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_d,Tier D,Release stage,private_11_arm_beacons_blocks_without_upload,validation,private,scoring,D,local,local,4,36,4,3,0,0,0,0,0,0,0,equals,,rejected,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_d,Tier D,Release stage,private_12_ops_cannot_run_attribution,permission,private,scoring,D,local,local,4,35,4,3,0,0,0,0,0,0,0,equals,,unauthorized,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_d,Tier D,Release stage,private_13_sentiment_reupload_reopens_measurement_gate,validation,private,scoring,D,local,local,6,51,5,4,0,0,0,0,0,0,2,equals,,,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_d,Tier D,Release stage,private_14_finance_cannot_clear_sentiment,permission,private,scoring,D,local,local,5,41,5,3,0,0,0,0,0,0,1,equals,,unauthorized,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_d,Tier D,Release stage,private_15_finance_signoff_blocks_before_escrow_lock,validation,private,scoring,D,local,local,4,36,4,3,0,0,0,0,0,0,0,equals,,rejected,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_d,Tier D,Release stage,private_16_executive_signoff_blocks_before_operator_signoffs,validation,private,scoring,D,local,local,4,39,4,3,0,0,0,0,0,0,0,equals,,rejected,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_d,Tier D,Release stage,private_17_legal_signoff_after_asset_lock,journey,private,scoring,D,local,local,12,68,11,4,0,0,0,0,0,0,0,equals,,,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_d,Tier D,Release stage,private_18_operator_signoffs_reach_ninety_before_executive,journey,private,scoring,D,local,local,37,165,32,7,0,0,0,0,0,0,5,equals,,,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_d,Tier D,Release stage,private_19_full_launch_reload_preserves_seal,persistence,private,scoring,D,local,local,40,181,35,6,1,0,0,0,1,0,5,equals; unchanged,reload,,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_d,Tier D,Release stage,private_20_post_seal_window_reupload_reopens_launch,journey,private,scoring,D,local,local,41,190,35,7,0,0,0,0,0,0,6,equals,,,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_d,Tier D,Release stage,private_21_repair_reopened_windows_and_reseal,journey,private,scoring,D,local,local,50,230,35,6,0,0,0,0,0,0,7,equals,,,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_d,Tier D,Release stage,private_22_reset_clears_launch_state,persistence,private,scoring,D,local,local,7,76,6,6,0,0,0,0,0,0,1,equals,,,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_d,Tier D,Release stage,private_23_browser_back_chain_to_slate,persistence,private,scoring,D,local,local,7,34,4,1,3,0,0,0,3,0,0,equals,back,,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_d,Tier D,Release stage,private_24_role_persists_across_reload,persistence,private,scoring,D,local,local,4,31,3,2,1,0,0,0,1,0,0,equals,reload,,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_d,Tier D,Release stage,private_25_blocker_grid_after_partial_readiness,core,private,scoring,D,local,local,11,62,10,0,0,1,0,0,0,1,0,,,,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_d,Tier D,Release stage,private_26_producer_cannot_finalize_launch,permission,private,scoring,D,local,local,3,33,3,3,0,0,0,0,0,0,0,equals,,unauthorized,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_d,Tier D,Release stage,private_27_traffic_reupload_qa_fail_reopens_ops_gate,validation,private,scoring,D,local,local,8,62,6,5,0,0,0,0,0,0,2,equals,,rejected,0,True,,True
+media_campaign_launch_desk,Media Campaign,Media,tier_d,Tier D,Release stage,private_28_launch_blocker_score_after_eight_gates,core,private,scoring,D,local,local,27,132,27,2,0,0,0,0,0,0,5,equals,,,0,True,,True
+homefix_hub,Home Services,Home,tier_a,Tier A,Consumer,private_01_ac_quote_and_acceptance_journey,journey,private,scoring,,local,local,12,48,12,2,0,0,0,0,0,0,0,equals,,,0,True,,True
+homefix_hub,Home Services,Home,tier_a,Tier A,Consumer,private_02_address_normalization,validation,private,scoring,,local,local,3,20,3,1,0,0,0,0,0,0,0,equals,,,0,True,,True
+homefix_hub,Home Services,Home,tier_a,Tier A,Consumer,private_03_filter_roundtrip_keeps_full_catalog,smoke,private,scoring,,local,local,4,23,3,0,0,1,0,0,0,1,0,,,,0,True,,True
+homefix_hub,Home Services,Home,tier_a,Tier A,Consumer,private_04_selection_survives_page_navigation,core,private,scoring,,local,local,5,22,4,1,0,0,0,0,0,0,0,equals,,,0,True,,True
+homefix_hub,Home Services,Home,tier_a,Tier A,Consumer,private_05_quote_call_count_increments_twice,service,private,scoring,,local,local,5,34,4,1,0,0,0,0,0,0,0,equals,,,0,True,,True
+homefix_hub,Home Services,Home,tier_a,Tier A,Consumer,private_06_missing_slot_records_blocked_booking,validation,private,scoring,,local,local,6,34,6,1,0,0,0,0,0,0,0,equals,,rejected,0,True,,True
+homefix_hub,Home Services,Home,tier_a,Tier A,Consumer,private_07_homeowner_denial_count_for_pro_accept,permission,private,scoring,,local,local,9,42,9,1,0,0,0,0,0,0,0,equals,,unauthorized,0,True,,True
+homefix_hub,Home Services,Home,tier_a,Tier A,Consumer,private_08_ac_visit_acceptance_table_state,journey,private,scoring,,local,local,10,45,10,1,0,0,0,0,0,0,0,equals,,,0,True,,True
+homefix_hub,Home Services,Home,tier_a,Tier A,Consumer,private_09_address_and_customer_trim_together,validation,private,scoring,,local,local,4,22,4,2,0,0,0,0,0,0,0,equals,,,0,True,,True
+homefix_hub,Home Services,Home,tier_a,Tier A,Consumer,private_10_selected_service_persists_without_booking,persistence,private,scoring,,local,local,3,22,2,1,0,0,0,0,1,0,0,equals,reload,,0,True,,True
+homefix_hub,Home Services,Home,tier_b,Tier B,Operational,private_01_ac_quote_and_acceptance_journey,journey,private,scoring,,local,local,12,48,12,2,0,0,0,0,0,0,0,equals,,,0,True,,True
+homefix_hub,Home Services,Home,tier_b,Tier B,Operational,private_02_address_normalization,validation,private,scoring,,local,local,3,20,3,1,0,0,0,0,0,0,0,equals,,,0,True,,True
+homefix_hub,Home Services,Home,tier_b,Tier B,Operational,private_03_homeowner_cannot_assign_technician,permission,private,scoring,,local,local,7,34,7,1,0,0,0,0,0,0,0,equals,,unauthorized,0,True,,True
+homefix_hub,Home Services,Home,tier_b,Tier B,Operational,private_04_dispatch_persists_after_reload,persistence,private,scoring,,local,local,12,53,11,2,0,0,0,0,1,0,0,equals,reload,,0,True,,True
+homefix_hub,Home Services,Home,tier_b,Tier B,Operational,private_05_dispatcher_assignment_roster_table,core,private,scoring,,local,local,4,22,3,0,0,1,0,0,0,1,0,,,,0,True,,True
+homefix_hub,Home Services,Home,tier_b,Tier B,Operational,private_06_parts_readiness_counter,core,private,scoring,,local,local,4,25,4,1,0,0,0,0,0,0,0,equals,,,0,True,,True
+homefix_hub,Home Services,Home,tier_b,Tier B,Operational,private_07_technician_cannot_dispatch_without_dispatcher_role,permission,private,scoring,,local,local,4,24,4,1,0,0,0,0,0,0,0,equals,,unauthorized,0,True,,True
+homefix_hub,Home Services,Home,tier_b,Tier B,Operational,private_08_dispatcher_role_persists_after_reload,persistence,private,scoring,,local,local,3,21,2,1,0,0,0,0,1,0,0,equals,reload,,0,True,,True
+homefix_hub,Home Services,Home,tier_b,Tier B,Operational,private_09_ready_parts_persist_after_reload,persistence,private,scoring,,local,local,5,25,4,1,0,0,0,0,1,0,0,equals,reload,,0,True,,True
+homefix_hub,Home Services,Home,tier_b,Tier B,Operational,private_10_assign_after_ac_quote,journey,private,scoring,,local,local,8,39,8,1,0,0,0,0,0,0,0,equals,,,0,True,,True
+homefix_hub,Home Services,Home,tier_b,Tier B,Operational,private_11_dispatch_visit_sets_booking_dispatched,journey,private,scoring,,local,local,11,52,11,1,0,0,0,0,0,0,0,equals,,,0,True,,True
+homefix_hub,Home Services,Home,tier_b,Tier B,Operational,private_12_dispatch_requires_assignment_rejected,validation,private,scoring,,local,local,4,25,4,1,0,0,0,0,0,0,0,equals,,rejected,0,True,,True
+homefix_hub,Home Services,Home,tier_b,Tier B,Operational,private_13_reset_clears_parts_and_dispatch_count,validation,private,scoring,,local,local,5,44,4,2,0,0,0,0,0,0,0,equals,,,0,True,,True
+homefix_hub,Home Services,Home,tier_c,Tier C,Regulated,private_01_ac_quote_and_acceptance_journey,journey,private,scoring,,local,local,12,53,12,2,0,0,0,0,0,0,0,equals,,,0,True,,True
+homefix_hub,Home Services,Home,tier_c,Tier C,Regulated,private_02_address_normalization,validation,private,scoring,,local,local,3,25,3,1,0,0,0,0,0,0,0,equals,,,0,True,,True
+homefix_hub,Home Services,Home,tier_c,Tier C,Regulated,private_03_homeowner_cannot_assign_technician,permission,private,scoring,,local,local,7,39,7,1,0,0,0,0,0,0,0,equals,,unauthorized,0,True,,True
+homefix_hub,Home Services,Home,tier_c,Tier C,Regulated,private_04_dispatch_persists_after_reload,persistence,private,scoring,,local,local,12,58,11,2,0,0,0,0,1,0,0,equals,reload,,0,True,,True
+homefix_hub,Home Services,Home,tier_c,Tier C,Regulated,private_05_invoice_requires_qa,permission,private,scoring,,local,local,4,29,4,1,0,0,0,0,0,0,0,equals,,rejected,0,True,,True
+homefix_hub,Home Services,Home,tier_c,Tier C,Regulated,private_06_full_quality_invoice_path,journey,private,scoring,,local,local,16,78,16,2,0,0,0,0,0,0,1,equals,,,0,True,,True
+homefix_hub,Home Services,Home,tier_c,Tier C,Regulated,private_07_homeowner_approval_persists_after_reload,persistence,private,scoring,,local,local,4,27,3,1,0,0,0,0,1,0,0,equals,reload,,0,True,,True
+homefix_hub,Home Services,Home,tier_c,Tier C,Regulated,private_08_permit_upload_replaces_existing_rows,upload,private,scoring,,local,local,5,36,4,1,0,0,0,0,0,0,2,equals,,,0,True,,True
+homefix_hub,Home Services,Home,tier_c,Tier C,Regulated,private_09_dispatch_to_quality_page_persists,persistence,private,scoring,,local,local,4,26,3,1,0,0,0,0,1,0,0,equals,reload,,0,True,,True
+homefix_hub,Home Services,Home,tier_c,Tier C,Regulated,private_10_invoice_rejected_after_permit_without_qa,validation,private,scoring,,local,local,5,34,5,1,0,0,0,0,0,0,1,equals,,rejected,0,True,,True
+homefix_hub,Home Services,Home,tier_c,Tier C,Regulated,private_11_quality_role_after_navigation_roundtrip,permission,private,scoring,,local,local,4,26,4,1,0,0,0,0,0,0,0,equals,,,0,True,,True
+homefix_hub,Home Services,Home,tier_c,Tier C,Regulated,private_12_pass_qa_marks_ready_count,journey,private,scoring,,local,local,15,73,15,2,0,0,0,0,0,0,1,equals,,,0,True,,True
+homefix_hub,Home Services,Home,tier_c,Tier C,Regulated,private_13_invoice_total_persists_after_reload,persistence,private,scoring,,local,local,17,77,16,1,0,0,0,0,1,0,1,equals,reload,,0,True,,True
+homefix_hub,Home Services,Home,tier_c,Tier C,Regulated,private_14_quality_reset_returns_homeowner,validation,private,scoring,,local,local,4,50,3,2,0,0,0,0,0,0,0,equals,,,0,True,,True
+homefix_hub,Home Services,Home,tier_c,Tier C,Regulated,private_15_pass_qa_rejected_without_dispatch,validation,private,scoring,,local,local,5,36,5,2,0,0,0,0,0,0,1,equals,,rejected,0,True,,True
+homefix_hub,Home Services,Home,tier_c,Tier C,Regulated,private_16_technician_cannot_dispatch_even_after_assignment,permission,private,scoring,,local,local,11,54,11,2,0,0,0,0,0,0,0,equals,,unauthorized,0,True,,True
+homefix_hub,Home Services,Home,tier_c,Tier C,Regulated,private_17_permit_table_order_after_reupload,upload,private,scoring,,local,local,6,38,4,1,0,1,0,0,0,1,2,equals,,,0,True,,True
+homefix_hub,Home Services,Home,tier_c,Tier C,Regulated,private_18_qa_table_open_before_pass,core,private,scoring,,local,local,4,29,3,0,0,1,0,0,0,1,0,,,,0,True,,True
+homefix_hub,Home Services,Home,tier_c,Tier C,Regulated,private_19_homeowner_cannot_issue_invoice_after_qa,permission,private,scoring,,local,local,17,76,17,1,0,0,0,0,0,0,1,equals,,unauthorized,0,True,,True
+homefix_hub,Home Services,Home,tier_c,Tier C,Regulated,private_20_reset_after_invoice_clears_quality_state,validation,private,scoring,,local,local,17,102,16,3,0,0,0,0,0,0,1,equals,,,0,True,,True
+homefix_hub,Home Services,Home,tier_c,Tier C,Regulated,private_21_ac_invoice_total_is_quote_plus_diagnostic,journey,private,scoring,,local,local,16,77,16,1,0,0,0,0,0,0,1,equals,,,0,True,,True
+homefix_hub,Home Services,Home,tier_c,Tier C,Regulated,private_22_permit_count_survives_double_reload,persistence,private,scoring,,local,local,6,32,4,2,0,0,0,0,2,0,1,equals,reload,,0,True,,True
+homefix_hub,Home Services,Home,tier_c,Tier C,Regulated,private_23_filter_all_restores_price_order,core,private,scoring,,local,local,4,28,3,0,0,1,0,0,0,1,0,,,,0,True,,True
+homefix_hub,Home Services,Home,tier_c,Tier C,Regulated,private_24_pro_accept_does_not_reopen_dispatched_visit,validation,private,scoring,,local,local,14,62,14,1,0,0,0,0,0,0,0,equals,,rejected,0,True,,True
+homefix_hub,Home Services,Home,tier_c,Tier C,Regulated,private_25_rework_flag_reopens_qa_after_invoice,journey,private,scoring,,local,local,17,88,17,3,0,0,0,0,0,0,1,equals,,,0,True,,True
+homefix_hub,Home Services,Home,tier_c,Tier C,Regulated,private_26_rework_table_marks_parts_open,validation,private,scoring,,local,local,17,82,16,0,0,1,0,0,0,1,1,,,,0,True,,True
+homefix_hub,Home Services,Home,tier_c,Tier C,Regulated,private_27_supplement_rejected_before_rework_resolution,validation,private,scoring,,local,local,17,82,17,2,0,0,0,0,0,0,1,equals,,rejected,0,True,,True
+homefix_hub,Home Services,Home,tier_c,Tier C,Regulated,private_28_resolved_rework_supplement_total,journey,private,scoring,,local,local,19,105,19,3,0,0,0,0,0,0,1,equals,,,0,True,,True
+homefix_hub,Home Services,Home,tier_c,Tier C,Regulated,private_29_ac_rework_supplement_total,journey,private,scoring,,local,local,19,103,19,1,0,0,0,0,0,0,1,equals,,,0,True,,True
+homefix_hub,Home Services,Home,tier_c,Tier C,Regulated,private_30_homeowner_cannot_issue_supplement,permission,private,scoring,,local,local,20,100,20,1,0,0,0,0,0,0,1,equals,,unauthorized,0,True,,True
+homefix_hub,Home Services,Home,tier_c,Tier C,Regulated,private_31_release_packet_after_supplement,journey,private,scoring,,local,local,20,109,20,2,0,0,0,0,0,0,1,equals,,,0,True,,True
+homefix_hub,Home Services,Home,tier_c,Tier C,Regulated,private_32_rework_state_survives_reload,persistence,private,scoring,,local,local,17,82,16,2,0,0,0,0,1,0,1,equals,reload,,0,True,,True
+homefix_hub,Home Services,Home,tier_d,Tier D,Release stage,private_01_ac_quote_and_acceptance_journey,journey,private,scoring,,local,local,12,52,12,2,0,0,0,0,0,0,0,equals,,,0,True,,True
+homefix_hub,Home Services,Home,tier_d,Tier D,Release stage,private_02_address_normalization,validation,private,scoring,,local,local,3,24,3,1,0,0,0,0,0,0,0,equals,,,0,True,,True
+homefix_hub,Home Services,Home,tier_d,Tier D,Release stage,private_03_homeowner_cannot_assign_technician,permission,private,scoring,,local,local,7,38,7,1,0,0,0,0,0,0,0,equals,,unauthorized,0,True,,True
+homefix_hub,Home Services,Home,tier_d,Tier D,Release stage,private_04_dispatch_persists_after_reload,persistence,private,scoring,,local,local,12,57,11,2,0,0,0,0,1,0,0,equals,reload,,0,True,,True
+homefix_hub,Home Services,Home,tier_d,Tier D,Release stage,private_05_invoice_requires_qa,permission,private,scoring,,local,local,4,28,4,1,0,0,0,0,0,0,0,equals,,rejected,0,True,,True
+homefix_hub,Home Services,Home,tier_d,Tier D,Release stage,private_06_full_quality_invoice_path,journey,private,scoring,,local,local,16,77,16,2,0,0,0,0,0,0,1,equals,,,0,True,,True
+homefix_hub,Home Services,Home,tier_d,Tier D,Release stage,private_07_warranty_seal_full_journey,journey,private,scoring,D,local,local,25,117,23,5,0,1,0,0,0,1,3,equals,,,0,True,,True
+homefix_hub,Home Services,Home,tier_d,Tier D,Release stage,private_08_claim_code_trim_uppercase,validation,private,scoring,,local,local,3,24,3,1,0,0,0,0,0,0,0,equals,,,0,True,,True
+homefix_hub,Home Services,Home,tier_d,Tier D,Release stage,private_09_zero_mismatch_reconcile_path,upload,private,scoring,,local,local,5,35,5,2,0,0,0,0,0,0,1,equals,,,0,True,,True
+homefix_hub,Home Services,Home,tier_d,Tier D,Release stage,private_10_warranty_rejected_without_invoice,validation,private,scoring,,local,local,5,33,5,1,0,0,0,0,0,0,0,equals,,rejected,0,True,,True
+homefix_hub,Home Services,Home,tier_d,Tier D,Release stage,private_11_full_warranty_table_cleared,journey,private,scoring,,local,local,23,103,22,0,0,1,0,0,0,1,2,,,,0,True,,True
+homefix_hub,Home Services,Home,tier_d,Tier D,Release stage,private_12_post_seal_material_upload_reopens_warranty,journey,private,scoring,,local,local,23,109,22,2,0,0,0,0,0,0,3,equals,,,0,True,,True
+homefix_hub,Home Services,Home,tier_d,Tier D,Release stage,private_13_quote_and_claim_service_call_total,service,private,scoring,,local,local,7,38,7,1,0,0,0,0,0,0,0,equals,,,0,True,,True
+homefix_hub,Home Services,Home,tier_d,Tier D,Release stage,private_14_materials_mismatch_persists_after_reload,persistence,private,scoring,,local,local,5,30,4,1,0,0,0,0,1,0,1,equals,reload,,0,True,,True
+homefix_hub,Home Services,Home,tier_d,Tier D,Release stage,private_15_reset_clears_warranty_state,validation,private,scoring,,local,local,5,52,4,2,0,0,0,0,0,0,0,equals,,,0,True,,True
+homefix_hub,Home Services,Home,tier_d,Tier D,Release stage,private_16_full_warranty_status_persists_reload,persistence,private,scoring,,local,local,23,104,22,2,0,0,0,0,1,0,2,equals,reload,,0,True,,True
+homefix_hub,Home Services,Home,tier_d,Tier D,Release stage,private_17_warranty_reseal_after_clear_reupload,journey,private,scoring,,local,local,26,131,22,3,0,0,0,0,0,0,4,equals,,,0,True,,True
+homefix_hub,Home Services,Home,tier_d,Tier D,Release stage,private_18_seal_blocked_without_claim,validation,private,scoring,,local,local,21,92,21,2,0,0,0,0,0,0,2,equals,,rejected,0,True,,True
+homefix_hub,Home Services,Home,tier_d,Tier D,Release stage,private_19_reconcile_mismatch_does_not_clear,upload,private,scoring,,local,local,5,34,5,2,0,0,0,0,0,0,1,equals,,rejected,0,True,,True
+homefix_hub,Home Services,Home,tier_d,Tier D,Release stage,private_20_claim_code_persists_after_reload,persistence,private,scoring,,local,local,4,25,3,2,0,0,0,0,1,0,0,equals,reload,,0,True,,True
+homefix_hub,Home Services,Home,tier_d,Tier D,Release stage,private_21_double_quote_then_claim_service_call_count,service,private,scoring,,local,local,8,44,7,1,0,0,0,0,0,0,0,equals,,,0,True,,True
+homefix_hub,Home Services,Home,tier_d,Tier D,Release stage,private_22_materials_table_three_row_order,upload,private,scoring,,local,local,5,32,4,1,0,1,0,0,0,1,1,equals,,,0,True,,True
+homefix_hub,Home Services,Home,tier_d,Tier D,Release stage,private_23_warranty_score_after_claim_and_dispatch_only,core,private,scoring,,local,local,15,66,14,2,0,1,0,0,0,1,0,equals,,,0,True,,True
+homefix_hub,Home Services,Home,tier_d,Tier D,Release stage,private_24_post_seal_mismatch_reopens_score,journey,private,scoring,,local,local,23,110,22,3,0,0,0,0,0,0,3,equals,,,0,True,,True
+homefix_hub,Home Services,Home,tier_d,Tier D,Release stage,private_25_reset_clears_material_rows,validation,private,scoring,,local,local,5,53,4,2,0,0,0,0,0,0,1,equals,,,0,True,,True
+homefix_hub,Home Services,Home,tier_d,Tier D,Release stage,private_26_ac_invoice_total_in_warranty_tier,journey,private,scoring,,local,local,16,76,16,1,0,0,0,0,0,0,1,equals,,,0,True,,True
+homefix_hub,Home Services,Home,tier_d,Tier D,Release stage,private_27_dispatch_count_does_not_increment_without_parts,validation,private,scoring,,local,local,9,48,9,2,0,0,0,0,0,0,0,equals,,rejected,0,True,,True
+homefix_hub,Home Services,Home,tier_d,Tier D,Release stage,private_28_claims_manager_warranty_page_persists,persistence,private,scoring,,local,local,4,26,3,2,0,0,0,0,1,0,0,equals,reload,,0,True,,True
+homefix_hub,Home Services,Home,tier_d,Tier D,Release stage,private_29_warranty_table_all_cleared_after_reload,persistence,private,scoring,,local,local,24,107,22,0,0,1,0,0,1,1,2,,reload,,0,True,,True
+homefix_hub,Home Services,Home,tier_d,Tier D,Release stage,private_30_materials_clear_reupload_replaces_mismatch,upload,private,scoring,,local,local,6,37,4,1,0,1,0,0,0,1,2,equals,,,0,True,,True
+homefix_hub,Home Services,Home,tier_d,Tier D,Release stage,private_31_homeowner_cannot_preauth_claim,permission,private,scoring,,local,local,3,27,3,2,0,0,0,0,0,0,0,equals,,unauthorized,0,True,,True
+homefix_hub,Home Services,Home,tier_d,Tier D,Release stage,private_32_claim_after_quote_preserves_quote_amount,service,private,scoring,,local,local,7,39,7,2,0,0,0,0,0,0,0,equals,,,0,True,,True
+homefix_hub,Home Services,Home,tier_d,Tier D,Release stage,private_33_seal_blocked_after_material_mismatch,validation,private,scoring,,local,local,22,95,22,2,0,0,0,0,0,0,2,equals,,rejected,0,True,,True
+homefix_hub,Home Services,Home,tier_d,Tier D,Release stage,private_34_post_seal_mismatch_persists_reload,persistence,private,scoring,,local,local,24,109,22,2,0,0,0,0,1,0,3,equals,reload,,0,True,,True
+homefix_hub,Home Services,Home,tier_d,Tier D,Release stage,private_35_pro_accept_does_not_reopen_dispatched_visit,validation,private,scoring,,local,local,14,61,14,1,0,0,0,0,0,0,0,equals,,rejected,0,True,,True
+homefix_hub,Home Services,Home,tier_d,Tier D,Release stage,private_36_warranty_count_unchanged_after_blocked_second_seal,journey,private,scoring,,local,local,24,113,22,2,0,0,0,0,0,0,3,equals,,rejected,0,True,,True
+homefix_hub,Home Services,Home,tier_d,Tier D,Release stage,private_37_carrier_hold_reopens_claim_after_seal,journey,private,scoring,,local,local,23,114,23,3,0,0,0,0,0,0,2,equals,,,0,True,,True
+homefix_hub,Home Services,Home,tier_d,Tier D,Release stage,private_38_carrier_hold_table_marks_claim_open,validation,private,scoring,,local,local,24,113,23,0,0,1,0,0,0,1,2,,,,0,True,,True
+homefix_hub,Home Services,Home,tier_d,Tier D,Release stage,private_39_reseal_rejected_without_customer_ack,validation,private,scoring,,local,local,25,125,25,2,0,0,0,0,0,0,2,equals,,rejected,0,True,,True
+homefix_hub,Home Services,Home,tier_d,Tier D,Release stage,private_40_claims_manager_cannot_customer_ack,permission,private,scoring,,local,local,4,28,4,2,0,0,0,0,0,0,0,equals,,unauthorized,0,True,,True
+homefix_hub,Home Services,Home,tier_d,Tier D,Release stage,private_41_customer_ack_then_reseal_counts,journey,private,scoring,,local,local,28,144,27,3,0,0,0,0,0,0,2,equals,,,0,True,,True
+homefix_hub,Home Services,Home,tier_d,Tier D,Release stage,private_42_reopen_materials_after_reseal,journey,private,scoring,,local,local,29,155,28,3,0,0,0,0,0,0,2,equals,,,0,True,,True
+homefix_hub,Home Services,Home,tier_d,Tier D,Release stage,private_43_reopen_materials_table_order,upload,private,scoring,,local,local,24,115,23,0,0,1,0,0,0,1,2,,,,0,True,,True
+homefix_hub,Home Services,Home,tier_d,Tier D,Release stage,private_44_hold_state_survives_reload,persistence,private,scoring,,local,local,24,114,23,3,0,0,0,0,1,0,2,equals,reload,,0,True,,True
+homefix_hub,Home Services,Home,tier_d,Tier D,Release stage,private_45_reset_clears_reseal_counters,validation,private,scoring,,local,local,5,53,4,3,0,0,0,0,0,0,0,equals,,,0,True,,True
+homefix_hub,Home Services,Home,tier_d,Tier D,Release stage,private_46_reseal_status_persists_after_reload,persistence,private,scoring,,local,local,29,144,27,3,0,0,0,0,1,0,2,equals,reload,,0,True,,True

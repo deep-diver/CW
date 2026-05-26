@@ -1,0 +1,157 @@
+dsl_version: "3.0.0"
+visibility: private
+tier_weights:
+  smoke: 1
+  core: 2
+  validation: 3
+  service: 4
+  permission: 4
+  persistence: 5
+  journey: 6
+
+scenarios:
+  - id: private_01_banner_display_launch
+    tier: journey
+    steps:
+      - do: reset_button.click
+      - do: select_banner_button.click
+      - do: go_calendar_button.click
+      - do: campaign_name_input.fill
+        input: {value: "Metro Display"}
+      - do: budget_input.fill
+        input: {value: "1800"}
+      - do: commit_budget_button.click
+      - do: schedule_evening_button.click
+      - do: go_launch_button.click
+      - do: check_rights_button.click
+      - do: launch_campaign_button.click
+        expect:
+          - {op: equals, path: launch_status, value: launched}
+          - {op: equals, path: launch_count, value: 1}
+      - table: launch_grid
+        expect_order: [LAUNCH-001]
+        expect_row_count: 1
+        expect_rows:
+          - id: LAUNCH-001
+            cells: {campaign: "Metro Display", asset: "Metro Banner Set", channel: display, status: launched}
+
+  - id: private_02_creator_legal_launch
+    tier: journey
+    steps:
+      - do: reset_button.click
+      - do: select_creator_button.click
+      - do: go_calendar_button.click
+      - do: campaign_name_input.fill
+        input: {value: "Creator Push"}
+      - do: budget_input.fill
+        input: {value: "2600"}
+      - do: commit_budget_button.click
+      - do: schedule_morning_button.click
+      - do: go_launch_button.click
+      - do: request_legal_review_button.click
+      - do: role_legal_button.click
+      - do: legal_note_input.fill
+        input: {value: "  usage window cleared  "}
+      - do: legal_approve_button.click
+      - do: launch_campaign_button.click
+        expect:
+          - {op: equals, path: legal_note, value: "usage window cleared"}
+          - {op: equals, path: approval_status, value: legal_approved}
+          - {op: equals, path: launch_status, value: launched}
+
+  - id: private_03_filter_video_asset
+    tier: smoke
+    steps:
+      - do: reset_button.click
+      - do: filter_video_button.click
+      - table: asset_grid
+        expect_order: [AD-VID-01]
+        expect_row_count: 1
+        expect_rows:
+          - id: AD-VID-01
+            cells: {name: "Aurora Launch Film", type: video}
+
+  - id: private_04_selection_survives_navigation
+    tier: core
+    steps:
+      - do: reset_button.click
+      - do: select_email_button.click
+      - do: go_calendar_button.click
+      - do: go_assets_button.click
+      - do: go_calendar_button.click
+        expect:
+          - {op: equals, path: selected_asset_name, value: "Alumni Email Hero"}
+
+  - id: private_05_rights_call_count_twice
+    tier: service
+    steps:
+      - do: reset_button.click
+      - do: select_video_button.click
+      - do: go_launch_button.click
+      - do: check_rights_button.click
+      - do: check_rights_button.click
+        expect:
+          - {op: equals, path: service_call_count, value: 2}
+
+  - id: private_06_marketer_cannot_legal_approve
+    tier: permission
+    steps:
+      - do: reset_button.click
+      - do: select_creator_button.click
+      - do: go_launch_button.click
+      - do: request_legal_review_button.click
+      - do: legal_approve_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: denied_count, value: 1}
+          - {op: equals, path: rights_status, value: legal_required}
+
+  - id: private_07_schedule_persists_after_reload
+    tier: persistence
+    steps:
+      - do: reset_button.click
+      - do: select_banner_button.click
+      - do: go_calendar_button.click
+      - do: schedule_evening_button.click
+      - browser: reload
+        expect:
+          - {op: equals, path: schedule_count, value: 1}
+          - {op: equals, path: selected_asset_id, value: AD-BAN-02}
+
+  - id: private_08_budget_currency_normalization
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: go_calendar_button.click
+      - do: budget_input.fill
+        input: {value: "$7,750"}
+        expect:
+          - {op: equals, path: budget_key, value: "7750"}
+
+  - id: private_09_launch_blocked_without_clearance
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: select_banner_button.click
+      - do: go_calendar_button.click
+      - do: campaign_name_input.fill
+        input: {value: "Blocked Banner"}
+      - do: budget_input.fill
+        input: {value: "1800"}
+      - do: commit_budget_button.click
+      - do: schedule_morning_button.click
+      - do: go_launch_button.click
+      - do: launch_campaign_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: launch_status, value: blocked}
+
+  - id: private_10_selected_asset_persists_reload
+    tier: persistence
+    steps:
+      - do: reset_button.click
+      - do: select_creator_button.click
+      - browser: reload
+        expect:
+          - {op: equals, path: selected_asset_id, value: AD-INF-03}
+          - {op: equals, path: selected_asset_name, value: "Creator Cutdown"}

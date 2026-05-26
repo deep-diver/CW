@@ -1,0 +1,1194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clinic Shift Command Tier C</title>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#eef5f4;color:#132431}
+button,input,textarea{font:inherit}
+.shell{min-height:100vh}
+.topbar{position:sticky;top:0;z-index:30;background:#fbfdfe;border-bottom:1px solid #c5d8dc;box-shadow:0 10px 26px rgba(21,58,70,.1)}
+.topline{min-height:78px;display:flex;align-items:center;justify-content:space-between;gap:18px;padding:12px 22px}
+.brand{display:flex;align-items:center;gap:13px;min-width:278px}
+.brand-mark{width:48px;height:48px;border-radius:9px;background:linear-gradient(145deg,#073a54,#0b8a82);position:relative;box-shadow:inset 0 0 0 1px rgba(255,255,255,.48),0 14px 26px rgba(8,72,84,.18)}
+.brand-mark::before,.brand-mark::after{content:"";position:absolute;background:#fff;border-radius:2px}
+.brand-mark::before{width:28px;height:6px;left:10px;top:21px}
+.brand-mark::after{width:6px;height:28px;left:21px;top:10px}
+.brand-title{font-size:18px;font-weight:950;letter-spacing:0}
+.brand-sub{font-size:12px;color:#617983;font-weight:850}
+.command-strip{display:grid;grid-template-columns:repeat(5,minmax(112px,1fr));gap:8px;flex:1}
+.metric{border:1px solid #d1e0e3;background:#f7fbfc;border-radius:8px;padding:9px 11px;min-height:60px}
+.metric span{display:block;font-size:10px;font-weight:950;text-transform:uppercase;color:#667d86}
+.metric strong{display:block;font-size:21px;line-height:1.15;margin-top:4px}
+.top-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.btn{border:1px solid #b8cbd0;background:#fff;color:#17313b;border-radius:7px;padding:9px 12px;font-weight:850;font-size:13px;cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:#0b777b;box-shadow:0 8px 18px rgba(11,119,123,.13)}
+.btn.primary{background:#0b777b;border-color:#0b777b;color:#fff}
+.btn.warn{background:#aa3e3e;border-color:#aa3e3e;color:#fff}
+.btn.active,.btn.on{background:#163f58;border-color:#163f58;color:#fff}
+.role-badge{border-radius:999px;background:#e0f2f0;color:#075d65;padding:8px 11px;font-size:12px;font-weight:950;text-transform:uppercase}
+.nav{display:flex;gap:4px;padding:0 22px;background:#dbeaec;border-bottom:1px solid #c3d8dc;overflow:auto}
+.nav button{border:0;background:transparent;color:#49636d;padding:13px 18px;font-weight:950;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap}
+.nav button.active{color:#075d65;border-bottom-color:#d96742}
+.page{display:none;max-width:1540px;margin:0 auto;padding:18px 22px 30px}
+.page.active{display:block}
+.panel{background:#fff;border:1px solid #cbdee2;border-radius:8px;box-shadow:0 13px 30px rgba(23,49,59,.07)}
+.panel-pad{padding:16px}
+.section-head{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:12px}
+.section-head h1,.section-head h2,.panel h2{margin:3px 0 0;letter-spacing:0}
+.eyebrow{font-size:11px;font-weight:950;text-transform:uppercase;color:#647a83}
+.filters,.actions,.roles{display:flex;gap:8px;flex-wrap:wrap}
+.table-wrap{overflow:auto}
+.queue-table,.room-table,.order-table,.referral-table,.escalation-table,.staffing-table,.surge-table,.audit-table,.reconciliation-table,.diversion-table{width:100%;border-collapse:collapse;font-size:13px}
+.queue-table th,.room-table th,.order-table th,.referral-table th,.escalation-table th,.staffing-table th,.surge-table th,.audit-table th,.reconciliation-table th,.diversion-table th{background:#163f58;color:#fff;text-align:left;padding:10px}
+.queue-table td,.room-table td,.order-table td,.referral-table td,.escalation-table td,.staffing-table td,.surge-table td,.audit-table td,.reconciliation-table td,.diversion-table td{border-bottom:1px solid #e0eaed;padding:10px;vertical-align:middle}
+.patient-main{font-weight:950}
+.muted{color:#687f88;font-weight:700}
+.chip{display:inline-flex;align-items:center;border-radius:999px;padding:5px 8px;font-size:11px;font-weight:950;background:#e8f2f4;color:#0b626a}
+.chip.red,.chip.critical{background:#fde7e2;color:#9b3228}
+.chip.orange,.chip.high{background:#fff1da;color:#a15b08}
+.chip.yellow,.chip.watch{background:#fff8d7;color:#7d6412}
+.chip.green,.chip.ready,.chip.accepted,.chip.complete,.chip.closed{background:#e6f4ea;color:#287246}
+.chip.cleaning,.chip.queued,.chip.active,.chip.surge{background:#fff1da;color:#a15b08}
+.chip.occupied,.chip.blocked{background:#fde7e2;color:#9b3228}
+.acuity{display:inline-grid;place-items:center;min-width:28px;height:28px;border-radius:50%;font-weight:950;color:#fff}
+.a1{background:#aa3030}.a2{background:#d96742}.a3{background:#d4a036}.a4{background:#4d8b68}
+.command-grid{display:grid;grid-template-columns:minmax(0,1.35fr) 430px;gap:16px}
+.side-stack{display:grid;gap:12px}
+.patient-card{display:grid;gap:10px}
+.patient-name{font-size:26px;font-weight:950}
+.mini-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.mini{border:1px solid #d8e4e7;background:#f7fbfc;border-radius:8px;padding:10px}
+.mini span{display:block;font-size:10px;text-transform:uppercase;font-weight:950;color:#6c7f88}
+.mini strong{display:block;margin-top:3px;overflow-wrap:anywhere}
+.heatmap{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+#heatmapCommand{grid-template-columns:repeat(2,minmax(0,1fr))}
+.heat{min-height:88px;border:1px solid #d6e3e7;border-radius:8px;padding:10px;background:#f7fbfc}
+.heat h3{margin:4px 0 6px;font-size:14px;overflow-wrap:anywhere}
+.heat.ready{background:#effaf3}.heat.cleaning{background:#fff8e8}.heat.occupied{background:#fff0ec}
+.radar{position:relative;min-height:218px;border-radius:8px;border:1px solid #cbdde1;background:radial-gradient(circle at 50% 50%,rgba(31,177,190,.19) 0 18%,transparent 19% 31%,rgba(15,96,117,.1) 32% 34%,transparent 35% 52%,rgba(217,103,66,.12) 53% 56%,transparent 57%),linear-gradient(135deg,#f8fcfd,#ecf6f6);overflow:hidden}
+.radar::before,.radar::after{content:"";position:absolute;inset:18px;border:1px solid rgba(13,98,117,.16);border-radius:50%}
+.radar::after{inset:50px}
+.radar-line{position:absolute;left:50%;top:50%;width:44%;height:2px;background:#0b777b;transform-origin:left center;transform:rotate(-24deg);box-shadow:0 0 18px rgba(11,119,123,.45)}
+.radar-score{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:grid;place-items:center;width:102px;height:102px;border-radius:50%;background:#fff;border:1px solid #bdd4da;box-shadow:0 14px 28px rgba(23,49,59,.12);text-align:center}
+.radar-score strong{font-size:30px}.radar-score span{font-size:10px;font-weight:950;text-transform:uppercase;color:#667d86}
+.radar-note{position:absolute;left:14px;right:14px;bottom:12px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.floor-map{display:grid;grid-template-columns:1.1fr .9fr;gap:10px}
+.zone-tile{border:1px solid #d5e2e5;background:#f7fbfc;border-radius:8px;padding:11px;min-height:92px;position:relative;overflow:hidden}
+.zone-tile::after{content:"";position:absolute;right:10px;bottom:10px;width:50px;height:8px;border-radius:999px;background:#dbe8eb}
+.zone-tile.surge::after{background:#d96742}.zone-tile.good::after{background:#2f8d68}.zone-tile.watch::after{background:#d4a036}
+.zone-title{font-weight:950}.zone-copy{font-size:12px;margin-top:5px;color:#667d86;font-weight:750}
+.chart-grid,.capacity-layout,.handoff-layout{display:grid;grid-template-columns:minmax(0,1fr) 440px;gap:16px}
+.surge-layout{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(420px,.8fr);gap:16px}
+.work-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field label{display:block;margin-bottom:5px;font-size:11px;font-weight:950;color:#5f747e;text-transform:uppercase}
+.field input,.field textarea{width:100%;border:1px solid #b9cbd0;border-radius:7px;padding:10px 11px;background:#fff}
+.field textarea{min-height:92px;resize:vertical}
+.workflow{display:grid;gap:9px}
+.step{border-left:5px solid #c9d9de;border-radius:7px;background:#f7fbfc;padding:11px}
+.step.done{border-left-color:#0b777b;background:#eef9fa}
+.step.warn{border-left-color:#d96742;background:#fff7ef}
+.file-input{border:1px dashed #95b3ba;background:#f7fbfc;border-radius:8px;padding:12px;width:100%}
+.sparkline{height:82px;border:1px solid #d6e3e7;border-radius:8px;background:#f7fbfc;padding:10px;display:flex;align-items:end;gap:7px}
+.bar{flex:1;border-radius:4px 4px 0 0;background:#7ecbd0;min-height:14px}
+.bar:nth-child(2){height:58%}.bar:nth-child(3){height:74%;background:#0b777b}.bar:nth-child(4){height:88%;background:#d4a036}.bar:nth-child(5){height:68%;background:#d96742}.bar:nth-child(6){height:42%}
+.timeline{display:grid;gap:8px}
+.timeline-item{display:grid;grid-template-columns:28px minmax(0,1fr);gap:8px;align-items:start}
+.dot{width:18px;height:18px;border-radius:50%;margin-top:2px;background:#c7d7dc;border:3px solid #fff;box-shadow:0 0 0 1px #c7d7dc}
+.timeline-item.done .dot{background:#0b777b;box-shadow:0 0 0 1px #0b777b}
+.timeline-item.warn .dot{background:#d96742;box-shadow:0 0 0 1px #d96742}
+.timeline-card{border:1px solid #d8e4e7;border-radius:8px;padding:9px;background:#f7fbfc}
+.footer-note{position:fixed;right:14px;bottom:12px;background:#163f58;color:#fff;border-radius:999px;padding:8px 12px;font-size:12px;font-weight:950;box-shadow:0 8px 22px rgba(22,63,88,.22)}
+@media(max-width:1180px){
+  .topline{align-items:flex-start;flex-direction:column}
+  .command-strip{width:100%;grid-template-columns:repeat(2,minmax(0,1fr))}
+  .command-grid,.chart-grid,.capacity-layout,.handoff-layout,.surge-layout{grid-template-columns:1fr}
+  .page{padding:16px}
+  .work-grid,.heatmap,#heatmapCommand,.floor-map{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <header class="topbar">
+    <div class="topline">
+      <div class="brand">
+        <div class="brand-mark"></div>
+        <div>
+          <div class="brand-title">Clinic Shift Command</div>
+          <div class="brand-sub">Tier C incident command</div>
+        </div>
+      </div>
+      <div class="command-strip" id="metrics"></div>
+      <div class="top-actions">
+        <button class="btn" data-testid="role-coordinator" id="roleCoordinator">Coordinator</button>
+        <button class="btn" data-testid="role-clinician" id="roleClinician">Clinician</button>
+        <button class="btn" data-testid="role-charge-nurse" id="roleCharge">Charge nurse</button>
+        <button class="btn" data-testid="role-billing" id="roleBilling">Billing</button>
+        <button class="btn" data-testid="role-operations-director" id="roleDirector">Ops director</button>
+        <span class="role-badge" id="roleBadge">coordinator</span>
+        <button class="btn warn" data-testid="reset" id="resetBtn">Reset</button>
+      </div>
+    </div>
+    <nav class="nav">
+      <button data-testid="go-command" data-page="command">Command</button>
+      <button data-testid="go-chart" data-page="chart">Chart workup</button>
+      <button data-testid="go-capacity" data-page="capacity">Capacity</button>
+      <button data-testid="go-handoff" data-page="handoff">Handoff</button>
+      <button data-testid="go-surge" data-page="surge">Surge command</button>
+    </nav>
+  </header>
+
+  <main>
+    <section class="page" id="page-command">
+      <div class="command-grid">
+        <div class="panel panel-pad">
+          <div class="section-head">
+            <div>
+              <div class="eyebrow">Live command board</div>
+              <h1>Queue pressure and risk routing</h1>
+            </div>
+            <div class="filters">
+              <button class="btn" data-testid="filter-all" data-filter="all">All</button>
+              <button class="btn" data-testid="filter-critical" data-filter="critical">Critical</button>
+              <button class="btn" data-testid="filter-procedure" data-filter="procedure">Procedure</button>
+              <button class="btn" data-testid="filter-authorization" data-filter="authorization">Authorization</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table class="queue-table">
+              <thead><tr><th>Patient</th><th>Lane</th><th>Acuity</th><th>Status</th><th>Wait</th><th>Room need</th><th>Risk</th><th></th></tr></thead>
+              <tbody data-testid="patient-queue" id="patientQueue"></tbody>
+            </table>
+          </div>
+        </div>
+        <aside class="side-stack">
+          <div class="panel panel-pad">
+            <div class="section-head"><div><div class="eyebrow">Active workup</div><h2>Selected patient</h2></div></div>
+            <div id="selectedCard" class="patient-card"></div>
+          </div>
+          <div class="panel panel-pad">
+            <div class="section-head"><div><div class="eyebrow">Risk telemetry</div><h2>Patient risk radar</h2></div></div>
+            <div class="radar" id="riskRadar"></div>
+          </div>
+          <div class="panel panel-pad">
+            <div class="section-head"><div><div class="eyebrow">Clinic floor</div><h2>Live floor map</h2></div></div>
+            <div class="heatmap" id="heatmapCommand"></div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="page" id="page-chart">
+      <div class="chart-grid">
+        <div class="side-stack">
+          <div class="panel panel-pad">
+            <div class="section-head">
+              <div><div class="eyebrow">Patient workup</div><h1>Chart, coverage, diagnostics</h1></div>
+              <div class="actions">
+                <button class="btn primary" data-testid="assign-isolation" id="assignIsolation">Assign Isolation 2</button>
+                <button class="btn primary" data-testid="assign-procedure" id="assignProcedure">Assign Procedure A</button>
+                <button class="btn" data-testid="assign-imaging" id="assignImaging">Assign Imaging Hold</button>
+              </div>
+            </div>
+            <div id="chartPatient"></div>
+          </div>
+
+          <div class="panel panel-pad">
+            <div class="section-head"><div><div class="eyebrow">Revenue access</div><h2>Insurance and prior auth</h2></div></div>
+            <div class="work-grid">
+              <div class="field"><label>Insurance code</label><input data-testid="insurance-code" id="insuranceCode" placeholder="PPO-B"></div>
+              <div class="field"><label>Authorization key</label><input data-testid="auth-key" id="authKey" placeholder="CARD-STAT"></div>
+            </div>
+            <div class="actions" style="margin-top:10px">
+              <button class="btn primary" data-testid="verify-insurance" id="verifyInsurance">Verify insurance</button>
+              <button class="btn primary" data-testid="request-auth" id="requestAuth">Request prior auth</button>
+            </div>
+          </div>
+
+          <div class="panel panel-pad">
+            <div class="section-head"><div><div class="eyebrow">Clinical command lane</div><h2>Risk, assessment, transport</h2></div></div>
+            <div class="work-grid">
+              <div class="field"><label>Pain score</label><input data-testid="pain-score" id="painScore" placeholder="0-10"></div>
+              <div class="field"><label>Disposition</label><input data-testid="disposition" id="disposition" placeholder="STAT CBC and follow-up"></div>
+            </div>
+            <div class="actions" style="margin-top:10px">
+              <button class="btn primary" data-testid="score-risk" id="scoreRisk">Score risk</button>
+              <button class="btn primary" data-testid="save-assessment" id="saveAssessment">Save assessment</button>
+              <button class="btn" data-testid="place-lab-order" id="placeLabOrder">Place CBC order</button>
+              <button class="btn" data-testid="release-diagnostics" id="releaseDiagnostics">Release diagnostics</button>
+              <button class="btn" data-testid="request-transport" id="requestTransport">Request transport</button>
+              <button class="btn" data-testid="escalate-delay" id="escalateDelay">Escalate delay</button>
+            </div>
+          </div>
+
+          <div class="panel panel-pad">
+            <div class="section-head"><div><div class="eyebrow">Referral packets</div><h2>Document intake</h2></div></div>
+            <input class="file-input" data-testid="referral-upload" id="referralUpload" type="file" accept=".csv,text/csv">
+          </div>
+        </div>
+
+        <aside class="panel panel-pad">
+          <div class="section-head"><div><div class="eyebrow">Dependency stack</div><h2>Operational checklist</h2></div></div>
+          <div class="workflow" id="workflow"></div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="page" id="page-capacity">
+      <div class="capacity-layout">
+        <div class="side-stack">
+          <div class="panel panel-pad">
+            <div class="section-head"><div><div class="eyebrow">Clinic floor</div><h1>Room capacity</h1></div></div>
+            <div class="heatmap" id="heatmapCapacity"></div>
+          </div>
+          <div class="panel table-wrap">
+            <table class="room-table">
+              <thead><tr><th>Room</th><th>Zone</th><th>Status</th><th>Occupant</th><th>Equipment</th></tr></thead>
+              <tbody data-testid="room-board" id="roomBoard"></tbody>
+            </table>
+          </div>
+        </div>
+        <aside class="panel panel-pad table-wrap">
+          <div class="section-head"><div><div class="eyebrow">Diagnostics</div><h2>Order board</h2></div></div>
+          <table class="order-table">
+            <thead><tr><th>Patient</th><th>Type</th><th>Priority</th><th>Status</th></tr></thead>
+            <tbody data-testid="order-grid" id="orderGrid"></tbody>
+          </table>
+        </aside>
+      </div>
+    </section>
+
+    <section class="page" id="page-handoff">
+      <div class="handoff-layout">
+        <div class="panel panel-pad table-wrap">
+          <div class="section-head">
+            <div><div class="eyebrow">Charge nurse</div><h1>Escalation handoff</h1></div>
+            <div class="actions">
+              <button class="btn primary" data-testid="close-escalation" id="closeEscalation">Close escalation</button>
+              <button class="btn" data-testid="finalize-handoff" id="finalizeHandoff">Finalize packet</button>
+            </div>
+          </div>
+          <table class="escalation-table">
+            <thead><tr><th>Patient</th><th>Reason</th><th>Owner</th><th>Status</th></tr></thead>
+            <tbody data-testid="escalation-grid" id="escalationGrid"></tbody>
+          </table>
+        </div>
+        <aside class="panel panel-pad table-wrap">
+          <div class="section-head"><div><div class="eyebrow">Referral intake</div><h2>Packets</h2></div></div>
+          <table class="referral-table">
+            <thead><tr><th>Document</th><th>Priority</th><th>Status</th></tr></thead>
+            <tbody data-testid="referral-grid" id="referralGrid"></tbody>
+          </table>
+          <div class="section-head" style="margin-top:18px"><div><div class="eyebrow">Release packet</div><h2>Final handoff</h2></div></div>
+          <table class="referral-table">
+            <thead><tr><th>Patient</th><th>Referral file</th><th>Status</th></tr></thead>
+            <tbody data-testid="handoff-packet-grid" id="handoffPacketGrid"></tbody>
+          </table>
+        </aside>
+      </div>
+    </section>
+
+    <section class="page" id="page-surge">
+      <div class="surge-layout">
+        <div class="side-stack">
+          <div class="panel panel-pad">
+            <div class="section-head">
+              <div><div class="eyebrow">Incident command</div><h1>Surge operations desk</h1></div>
+              <div class="actions">
+                <button class="btn primary" data-testid="forecast-capacity" id="forecastCapacity">Forecast capacity</button>
+                <button class="btn primary" data-testid="activate-surge" id="activateSurge">Activate surge</button>
+                <button class="btn" data-testid="ack-transport" id="ackTransport">Ack transport</button>
+                <button class="btn" data-testid="lock-reconciliation" id="lockReconciliation">Lock recon</button>
+                <button class="btn" data-testid="resolve-diversion" id="resolveDiversion">Resolve diversion</button>
+                <button class="btn" data-testid="close-surge" id="closeSurge">Close surge task</button>
+                <button class="btn" data-testid="charge-signoff" id="chargeSignoff">Charge sign-off</button>
+                <button class="btn" data-testid="director-signoff" id="directorSignoff">Director sign-off</button>
+                <button class="btn" data-testid="finalize-clearance" id="finalizeClearance">Finalize clearance</button>
+              </div>
+            </div>
+            <div class="mini-grid">
+              <div class="mini"><span>Forecast</span><strong id="forecastMini">idle</strong></div>
+              <div class="mini"><span>Transport</span><strong id="transportMini">idle</strong></div>
+              <div class="mini"><span>Surge</span><strong id="surgeMini">idle</strong></div>
+              <div class="mini"><span>Clearance</span><strong id="clearanceMini">idle</strong></div>
+              <div class="mini"><span>Reconciliation</span><strong id="reconciliationMini">idle</strong></div>
+              <div class="mini"><span>Sign-offs</span><strong id="signoffMini">0/2</strong></div>
+              <div class="mini"><span>Readiness</span><strong id="readinessMini">0%</strong></div>
+            </div>
+          </div>
+
+          <div class="panel panel-pad">
+            <div class="section-head"><div><div class="eyebrow">Floor pressure</div><h2>Forecast bands</h2></div></div>
+            <div class="sparkline" id="sparkline">
+              <div class="bar" style="height:36%"></div>
+              <div class="bar"></div>
+              <div class="bar"></div>
+              <div class="bar"></div>
+              <div class="bar"></div>
+              <div class="bar"></div>
+            </div>
+            <div class="floor-map" id="surgeFloorMap" style="margin-top:12px"></div>
+          </div>
+
+          <div class="panel panel-pad table-wrap">
+            <div class="section-head"><div><div class="eyebrow">Staffing exceptions</div><h2>Exception upload</h2></div></div>
+            <input class="file-input" data-testid="staffing-upload" id="staffingUpload" type="file" accept=".csv,text/csv">
+            <table class="staffing-table" style="margin-top:12px">
+              <thead><tr><th>Unit</th><th>Nurse</th><th>Gap</th><th>Status</th></tr></thead>
+              <tbody data-testid="staffing-grid" id="staffingGrid"></tbody>
+            </table>
+          </div>
+          <div class="panel panel-pad table-wrap">
+            <div class="section-head"><div><div class="eyebrow">Reconciliation</div><h2>Wristband and transport lock</h2></div></div>
+            <input class="file-input" data-testid="reconciliation-upload" id="reconciliationUpload" type="file" accept=".csv,text/csv">
+            <table class="reconciliation-table" style="margin-top:12px">
+              <thead><tr><th>Patient</th><th>Wristband</th><th>Transport</th><th>Status</th></tr></thead>
+              <tbody data-testid="reconciliation-grid" id="reconciliationGrid"></tbody>
+            </table>
+          </div>
+          <div class="panel panel-pad table-wrap">
+            <div class="section-head"><div><div class="eyebrow">Diversion matrix</div><h2>Receiving site reconciliation</h2></div></div>
+            <input class="file-input" data-testid="diversion-upload" id="diversionUpload" type="file" accept=".csv,text/csv">
+            <table class="diversion-table" style="margin-top:12px">
+              <thead><tr><th>Site</th><th>Service</th><th>Status</th><th>ETA</th></tr></thead>
+              <tbody data-testid="diversion-grid" id="diversionGrid"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <aside class="side-stack">
+          <div class="panel panel-pad">
+            <div class="section-head"><div><div class="eyebrow">Command timeline</div><h2>Clearance gates</h2></div></div>
+            <div class="timeline" id="commandTimeline"></div>
+          </div>
+          <div class="panel panel-pad table-wrap">
+            <div class="section-head"><div><div class="eyebrow">Readiness ledger</div><h2>Open blockers</h2></div></div>
+            <table class="blocker-table">
+              <thead><tr><th>Gate</th><th>Status</th></tr></thead>
+              <tbody data-testid="clearance-blocker-grid" id="clearanceBlockerGrid"></tbody>
+            </table>
+          </div>
+          <div class="panel panel-pad table-wrap">
+            <div class="section-head"><div><div class="eyebrow">Surge tasks</div><h2>Director queue</h2></div></div>
+            <table class="surge-table">
+              <thead><tr><th>Zone</th><th>Action</th><th>Owner</th><th>Status</th></tr></thead>
+              <tbody data-testid="surge-grid" id="surgeGrid"></tbody>
+            </table>
+          </div>
+          <div class="panel panel-pad table-wrap">
+            <div class="section-head"><div><div class="eyebrow">Audit trail</div><h2>Final command log</h2></div></div>
+            <table class="audit-table">
+              <thead><tr><th>Event</th><th>Role</th><th>Patient</th></tr></thead>
+              <tbody data-testid="audit-grid" id="auditGrid"></tbody>
+            </table>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </main>
+  <div class="footer-note" id="lastAction">ready</div>
+</div>
+
+<script>
+const STORAGE_KEY = 'clinic-shift-tier-c-state-v1';
+const ROUTES = ['command','chart','capacity','handoff','surge'];
+const PATIENTS = [
+  {id:'CVC-206',name:'Ava Chen',lane:'urgent',acuity:1,status:'waiting',wait_mins:3,room_need:'isolation',risk:'red',complaint:'Chest pressure with fever',insurance_code:'PPO-B',auth_required:true,auth_key:'CARD-STAT'},
+  {id:'CVC-205',name:'June Park',lane:'lab',acuity:2,status:'waiting',wait_mins:22,room_need:'lab',risk:'orange',complaint:'Fever panel follow-up',insurance_code:'HMO-A',auth_required:false,auth_key:''},
+  {id:'CVC-202',name:'Omar Haddad',lane:'procedure',acuity:2,status:'waiting',wait_mins:16,room_need:'procedure',risk:'orange',complaint:'Fracture reduction review',insurance_code:'PPO-B',auth_required:true,auth_key:'ORTHO-77'},
+  {id:'CVC-204',name:'Paul Rivers',lane:'imaging',acuity:3,status:'waiting',wait_mins:34,room_need:'imaging',risk:'yellow',complaint:'CT authorization hold',insurance_code:'BADPLAN',auth_required:true,auth_key:'BAD-AUTH'},
+  {id:'CVC-201',name:'Lina Torres',lane:'primary',acuity:3,status:'waiting',wait_mins:28,room_need:'exam',risk:'yellow',complaint:'Uncontrolled migraine',insurance_code:'HMO-A',auth_required:false,auth_key:''},
+  {id:'CVC-203',name:'Nia Brooks',lane:'followup',acuity:4,status:'waiting',wait_mins:47,room_need:'exam',risk:'green',complaint:'Post-op wound check',insurance_code:'CASH',auth_required:false,auth_key:''}
+];
+const ROOMS = [
+  {id:'R-ISO2',name:'Isolation 2',zone:'west',status:'ready',occupant:'',equipment:'negative-pressure'},
+  {id:'R-PROC',name:'Procedure A',zone:'procedure',status:'ready',occupant:'',equipment:'casting-cart'},
+  {id:'R-LAB2',name:'Lab Draw 2',zone:'diagnostics',status:'ready',occupant:'',equipment:'phlebotomy'},
+  {id:'R-IMG',name:'Imaging Hold',zone:'diagnostics',status:'cleaning',occupant:'',equipment:'wheelchair'},
+  {id:'R-OBS',name:'Observation 1',zone:'east',status:'occupied',occupant:'Walk-in infusion',equipment:'monitor'}
+];
+let S;
+
+function clone(value){return JSON.parse(JSON.stringify(value))}
+function sortPatients(items){return clone(items).sort((a,b)=>a.acuity-b.acuity||b.wait_mins-a.wait_mins)}
+function defaultState(){
+  return {
+    current_page:'command',active_role:'coordinator',
+    patients:clone(PATIENTS),visible_patients:sortPatients(PATIENTS),current_filter:'all',
+    rooms:clone(ROOMS),
+    selected_patient_id:'',selected_patient_name:'',selected_lane:'',selected_acuity:0,
+    selected_patient_status:'',selected_room_need:'',selected_risk:'',
+    assigned_room_id:'',assigned_room_name:'',
+    insurance_code:'',insurance_status:'idle',copay_due:0,auth_required:false,auth_key:'',authorization_status:'idle',
+    service_call_count:0,insurance_call_count:0,auth_call_count:0,
+    risk_score:0,risk_band:'idle',risk_protocol:'',risk_call_count:0,
+    forecast_status:'idle',forecast_level:0,forecast_minutes:0,forecast_call_count:0,
+    transport_status:'idle',transport_eta:0,transport_call_count:0,transport_ack_status:'idle',transport_ack_count:0,
+    pain_score:'',disposition:'',assessment_status:'idle',
+    order_status:'idle',diagnostic_orders:[],diagnostic_order_count:0,released_order_count:0,release_block_count:0,
+    referral_docs:[],referral_doc_count:0,last_referral_file:'',
+    escalation_tasks:[],escalation_count:0,closed_escalation_count:0,
+    handoff_packets:[],handoff_packet_count:0,handoff_status:'idle',handoff_block_count:0,
+    staffing_rows:[],staffing_count:0,short_staff_count:0,last_staffing_file:'',
+    reconciliation_rows:[],reconciliation_count:0,mismatch_count:0,last_reconciliation_file:'',reconciliation_status:'idle',reconciliation_lock_count:0,reconciliation_block_count:0,
+    diversion_rows:[],diversion_count:0,open_diversion_count:0,last_diversion_file:'',diversion_status:'idle',diversion_resolve_count:0,
+    surge_tasks:[],surge_task_count:0,closed_surge_task_count:0,surge_status:'idle',surge_block_count:0,
+    nurse_signoff_status:'idle',director_signoff_status:'idle',signoff_count:0,
+    clearance_readiness_score:0,open_clearance_blockers:8,clearance_blocker_rows:[],
+    command_audit:[],audit_count:0,final_clearance_status:'idle',final_clearance_count:0,
+    validation_errors:{},denied_count:0,room_block_count:0,last_action:'ready','__services.calls':[]
+  };
+}
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw){S = Object.assign(defaultState(), JSON.parse(raw)); return}
+  }catch(e){}
+  S = defaultState();
+}
+function saveState(){try{localStorage.setItem(STORAGE_KEY, JSON.stringify(S))}catch(e){}}
+function syncReadiness(){
+  const gates = [
+    ['B-HANDOFF','Handoff packet ready', S.handoff_status === 'ready'],
+    ['B-TRANSPORT','Transport accepted', S.transport_status === 'accepted'],
+    ['B-ACK','Transport acknowledged', S.transport_ack_status === 'acknowledged'],
+    ['B-RECON','Reconciliation locked', S.reconciliation_status === 'locked'],
+    ['B-DIVERSION','Diversion resolved', S.diversion_status === 'resolved'],
+    ['B-SURGE','Surge closed', S.surge_status === 'closed'],
+    ['B-SIGNOFF-NURSE','Charge nurse sign-off', S.nurse_signoff_status === 'signed'],
+    ['B-SIGNOFF-DIRECTOR','Operations director sign-off', S.director_signoff_status === 'signed']
+  ];
+  S.clearance_blocker_rows = gates.map(([id,label,ready]) => ({id,label,status:ready ? 'cleared' : 'open'}));
+  S.open_clearance_blockers = S.clearance_blocker_rows.filter(row => row.status === 'open').length;
+  S.clearance_readiness_score = Math.round(((gates.length - S.open_clearance_blockers) / gates.length) * 100);
+}
+function navigateTo(page){
+  if(!ROUTES.includes(page))return;
+  S.current_page = page;
+  S.last_action = 'nav_' + page;
+  if(location.hash !== '#/' + page) location.hash = '#/' + page;
+  render();
+  saveState();
+}
+function syncPage(){
+  const page = location.hash.replace('#/','');
+  if(ROUTES.includes(page)){
+    S.current_page = page;
+    render();
+    saveState();
+  }
+}
+function resetState(){
+  S = defaultState();
+  S.last_action = 'reset';
+  location.hash = '#/command';
+  render();
+  saveState();
+}
+function setRole(role){
+  S.active_role = role;
+  S.last_action = 'role_' + role;
+  render();
+  saveState();
+}
+function filterQueue(filter){
+  S.current_filter = filter;
+  let items = S.patients;
+  if(filter === 'critical') items = items.filter(p => p.acuity <= 2);
+  if(filter === 'procedure') items = items.filter(p => p.lane === 'procedure');
+  if(filter === 'authorization') items = items.filter(p => p.auth_required);
+  S.visible_patients = sortPatients(items);
+  S.last_action = 'filter_' + filter;
+  render();
+  saveState();
+}
+function patientById(id){return PATIENTS.find(p => p.id === id)}
+function selectPatient(id){
+  const p = patientById(id);
+  if(!p)return;
+  S.selected_patient_id = p.id;
+  S.selected_patient_name = p.name;
+  S.selected_lane = p.lane;
+  S.selected_acuity = p.acuity;
+  S.selected_patient_status = 'selected';
+  S.selected_room_need = p.room_need;
+  S.selected_risk = p.risk;
+  S.assigned_room_id = '';
+  S.assigned_room_name = '';
+  S.insurance_code = p.insurance_code;
+  S.insurance_status = 'idle';
+  S.copay_due = 0;
+  S.auth_required = p.auth_required;
+  S.auth_key = p.auth_key;
+  S.authorization_status = p.auth_required ? 'idle' : 'not_required';
+  S.risk_score = 0;
+  S.risk_band = 'idle';
+  S.risk_protocol = '';
+  S.risk_call_count = 0;
+  S.transport_status = 'idle';
+  S.transport_eta = 0;
+  S.transport_call_count = 0;
+  S.transport_ack_status = 'idle';
+  S.transport_ack_count = 0;
+  S.pain_score = '';
+  S.disposition = '';
+  S.assessment_status = 'idle';
+  S.order_status = 'idle';
+  S.diagnostic_orders = [];
+  S.diagnostic_order_count = 0;
+  S.released_order_count = 0;
+  S.release_block_count = 0;
+  S.handoff_packets = [];
+  S.handoff_packet_count = 0;
+  S.handoff_status = 'idle';
+  S.handoff_block_count = 0;
+  S.final_clearance_status = 'idle';
+  S.final_clearance_count = 0;
+  S.reconciliation_rows = [];
+  S.reconciliation_count = 0;
+  S.mismatch_count = 0;
+  S.last_reconciliation_file = '';
+  S.reconciliation_status = 'idle';
+  S.reconciliation_lock_count = 0;
+  S.reconciliation_block_count = 0;
+  S.diversion_rows = [];
+  S.diversion_count = 0;
+  S.open_diversion_count = 0;
+  S.last_diversion_file = '';
+  S.diversion_status = 'idle';
+  S.diversion_resolve_count = 0;
+  S.nurse_signoff_status = 'idle';
+  S.director_signoff_status = 'idle';
+  S.signoff_count = 0;
+  S.command_audit = [];
+  S.audit_count = 0;
+  S.validation_errors = {};
+  S.current_page = 'chart';
+  S.last_action = 'select_patient';
+  location.hash = '#/chart';
+  render();
+  saveState();
+}
+function deny(action){
+  S.denied_count += 1;
+  S.last_action = action;
+  render();
+  saveState();
+}
+function setRoom(id){
+  S.rooms = clone(ROOMS).map(r => r.id === id ? Object.assign({}, r, {status:'occupied', occupant:S.selected_patient_name}) : r);
+}
+function assignIsolation(){
+  if(S.active_role !== 'charge_nurse'){deny('unauthorized_capacity'); return}
+  if(!S.selected_patient_id)return;
+  S.assigned_room_id = 'R-ISO2';
+  S.assigned_room_name = 'Isolation 2';
+  S.selected_patient_status = 'roomed';
+  setRoom('R-ISO2');
+  S.last_action = 'assign_isolation';
+  render();
+  saveState();
+}
+function assignProcedure(){
+  if(!['coordinator','charge_nurse'].includes(S.active_role)){deny('unauthorized_capacity'); return}
+  if(!S.selected_patient_id)return;
+  S.assigned_room_id = 'R-PROC';
+  S.assigned_room_name = 'Procedure A';
+  S.selected_patient_status = 'roomed';
+  setRoom('R-PROC');
+  S.last_action = 'assign_procedure';
+  render();
+  saveState();
+}
+function assignImaging(){
+  if(!['coordinator','charge_nurse'].includes(S.active_role)){deny('unauthorized_capacity'); return}
+  if(!S.selected_patient_id)return;
+  S.room_block_count += 1;
+  S.assigned_room_id = '';
+  S.assigned_room_name = '';
+  S.last_action = 'room_cleaning_block';
+  render();
+  saveState();
+}
+function editInsurance(value){
+  S.insurance_code = value.trim().toUpperCase();
+  S.last_action = 'edit_insurance';
+  render();
+  saveState();
+}
+function verifyInsurance(){
+  if(!S.selected_patient_id || !S.insurance_code)return;
+  const code = S.insurance_code.trim().toUpperCase();
+  let status = 'needs_review';
+  let copay = 0;
+  if(code === 'HMO-A'){status='approved'; copay=20}
+  else if(code === 'PPO-B'){status='approved'; copay=35}
+  else if(code === 'CASH'){status='self_pay'; copay=120}
+  else if(code === 'BADPLAN'){status='needs_review'; copay=0}
+  S.insurance_code = code;
+  S.insurance_status = status;
+  S.copay_due = copay;
+  S.service_call_count += 1;
+  S.insurance_call_count += 1;
+  S.last_action = 'verify_insurance';
+  fetch('/api/insurance?code=' + encodeURIComponent(code)).catch(() => {});
+  render();
+  saveState();
+}
+function editAuth(value){
+  S.auth_key = value.trim().toUpperCase();
+  S.last_action = 'edit_auth_key';
+  render();
+  saveState();
+}
+function requestAuth(){
+  if(S.active_role !== 'billing'){deny('unauthorized_billing'); return}
+  if(!S.selected_patient_id)return;
+  const key = S.auth_key.trim().toUpperCase();
+  let status = 'not_required';
+  if(S.auth_required) status = (key === 'CARD-STAT' || key === 'ORTHO-77') ? 'approved' : 'denied';
+  S.auth_key = key;
+  S.authorization_status = status;
+  S.service_call_count += 1;
+  S.auth_call_count += 1;
+  S.last_action = 'request_auth';
+  fetch('/api/prior-auth?auth=' + encodeURIComponent(key)).catch(() => {});
+  render();
+  saveState();
+}
+function scoreRisk(){
+  if(!['clinician','charge_nurse'].includes(S.active_role)){deny('unauthorized_clinical'); return}
+  if(!S.selected_patient_id)return;
+  const map = {
+    'CVC-206': {score:94, band:'critical', protocol:'cardiac_isolation'},
+    'CVC-202': {score:78, band:'high', protocol:'ortho_procedure'},
+    'CVC-205': {score:64, band:'watch', protocol:'fever_lab'}
+  };
+  const result = map[S.selected_patient_id] || {score:42, band:'watch', protocol:'standard_review'};
+  S.risk_score = result.score;
+  S.risk_band = result.band;
+  S.risk_protocol = result.protocol;
+  S.service_call_count += 1;
+  S.risk_call_count += 1;
+  S.last_action = 'score_risk';
+  fetch('/api/risk-score?patient=' + encodeURIComponent(S.selected_patient_id)).catch(() => {});
+  render();
+  saveState();
+}
+function forecastCapacity(){
+  if(!['charge_nurse','operations_director'].includes(S.active_role)){deny('unauthorized_capacity'); return}
+  S.forecast_status = 'surge';
+  S.forecast_level = 3;
+  S.forecast_minutes = 18;
+  S.service_call_count += 1;
+  S.forecast_call_count += 1;
+  S.last_action = 'forecast_capacity';
+  fetch('/api/capacity-forecast?zone=west').catch(() => {});
+  render();
+  saveState();
+}
+function requestTransport(){
+  if(S.active_role !== 'charge_nurse'){deny('unauthorized_capacity'); return}
+  if(S.order_status !== 'released' || S.risk_score <= 0){
+    S.transport_status = 'blocked';
+    S.last_action = 'transport_blocked';
+    render();
+    saveState();
+    return;
+  }
+  S.transport_status = 'accepted';
+  S.transport_eta = 12;
+  S.service_call_count += 1;
+  S.transport_call_count += 1;
+  S.last_action = 'request_transport';
+  fetch('/api/transport-eta?mode=STAT').catch(() => {});
+  render();
+  saveState();
+}
+function editPain(value){
+  S.pain_score = value.trim();
+  delete S.validation_errors.assessment;
+  render();
+  saveState();
+}
+function editDisposition(value){
+  S.disposition = value.trim().replace(/\s+/g,' ');
+  delete S.validation_errors.assessment;
+  render();
+  saveState();
+}
+function saveAssessment(){
+  if(S.active_role !== 'clinician'){deny('unauthorized_clinical'); return}
+  if(!S.pain_score || !S.disposition){
+    S.assessment_status = 'incomplete';
+    S.validation_errors = Object.assign({}, S.validation_errors, {assessment:'Pain score and disposition are required'});
+    S.last_action = 'reject_assessment';
+    render();
+    saveState();
+    return;
+  }
+  S.assessment_status = 'recorded';
+  S.selected_patient_status = 'assessed';
+  S.last_action = 'save_assessment';
+  render();
+  saveState();
+}
+function placeLabOrder(){
+  if(S.active_role !== 'clinician'){deny('unauthorized_clinical'); return}
+  if(S.assessment_status !== 'recorded'){
+    S.order_status = 'blocked';
+    S.last_action = 'order_requires_assessment';
+    render();
+    saveState();
+    return;
+  }
+  S.diagnostic_orders = [...S.diagnostic_orders, {id:'O-1', patient:S.selected_patient_name, type:'CBC', priority:'stat', status:'ordered'}];
+  S.diagnostic_order_count += 1;
+  S.order_status = 'ordered';
+  S.last_action = 'place_lab_order';
+  render();
+  saveState();
+}
+function releaseDiagnostics(){
+  if(S.active_role !== 'clinician'){deny('unauthorized_clinical'); return}
+  const cleared = (S.insurance_status === 'approved' || S.insurance_status === 'self_pay') && (S.authorization_status === 'approved' || S.authorization_status === 'not_required');
+  if(S.order_status !== 'ordered' || !cleared){
+    S.release_block_count += 1;
+    S.last_action = 'release_blocked';
+    render();
+    saveState();
+    return;
+  }
+  S.diagnostic_orders = S.diagnostic_orders.map(o => o.id === 'O-1' ? Object.assign({}, o, {status:'released'}) : o);
+  S.released_order_count += 1;
+  S.order_status = 'released';
+  S.selected_patient_status = 'diagnostic_ready';
+  S.last_action = 'release_diagnostics';
+  render();
+  saveState();
+}
+function parseCsv(text){
+  const lines = text.trim().split(/\r?\n/).filter(Boolean);
+  if(lines.length < 2)return [];
+  const headers = lines[0].split(',').map(h => h.trim());
+  return lines.slice(1).map(line => {
+    const values = line.split(',').map(v => v.trim());
+    const row = {};
+    headers.forEach((h,i) => row[h] = values[i] || '');
+    return row;
+  });
+}
+async function uploadReferrals(event){
+  const file = event.target.files && event.target.files[0];
+  if(!file)return;
+  const text = await file.text();
+  S.referral_docs = parseCsv(text);
+  S.referral_doc_count = S.referral_docs.length;
+  S.last_referral_file = file.name;
+  S.last_action = 'upload_referrals';
+  render();
+  saveState();
+}
+async function uploadStaffing(event){
+  const file = event.target.files && event.target.files[0];
+  if(!file)return;
+  const text = await file.text();
+  S.staffing_rows = parseCsv(text);
+  S.staffing_count = S.staffing_rows.length;
+  S.short_staff_count = S.staffing_rows.filter(r => r.gap === 'short').length;
+  S.last_staffing_file = file.name;
+  S.last_action = 'upload_staffing';
+  render();
+  saveState();
+}
+function acknowledgeTransport(){
+  if(S.active_role !== 'charge_nurse'){deny('unauthorized_capacity'); return}
+  if(S.transport_status !== 'accepted'){
+    S.transport_ack_status = 'blocked';
+    S.last_action = 'transport_ack_blocked';
+    render();
+    saveState();
+    return;
+  }
+  S.transport_ack_status = 'acknowledged';
+  S.transport_ack_count += 1;
+  S.last_action = 'acknowledge_transport';
+  render();
+  saveState();
+}
+async function uploadReconciliation(event){
+  const file = event.target.files && event.target.files[0];
+  if(!file)return;
+  const text = await file.text();
+  S.reconciliation_rows = parseCsv(text);
+  S.reconciliation_count = S.reconciliation_rows.length;
+  S.mismatch_count = S.reconciliation_rows.filter(r => r.status === 'mismatch').length;
+  S.last_reconciliation_file = file.name;
+  S.reconciliation_status = 'review';
+  S.last_action = 'upload_reconciliation';
+  render();
+  saveState();
+}
+function lockReconciliation(){
+  if(S.active_role !== 'operations_director'){deny('unauthorized_director'); return}
+  if(S.reconciliation_count <= 0 || S.mismatch_count > 0){
+    S.reconciliation_block_count += 1;
+    S.reconciliation_status = 'blocked';
+    S.last_action = 'reconciliation_blocked';
+    render();
+    saveState();
+    return;
+  }
+  S.reconciliation_status = 'locked';
+  S.reconciliation_lock_count += 1;
+  S.last_action = 'lock_reconciliation';
+  render();
+  saveState();
+}
+async function uploadDiversion(event){
+  const file = event.target.files && event.target.files[0];
+  if(!file)return;
+  const text = await file.text();
+  S.diversion_rows = parseCsv(text).map(row => ({...row, eta: Number(row.eta)}));
+  S.diversion_count = S.diversion_rows.length;
+  S.open_diversion_count = S.diversion_rows.filter(r => r.status === 'open').length;
+  S.last_diversion_file = file.name;
+  S.diversion_status = 'review';
+  S.last_action = 'upload_diversion';
+  render();
+  saveState();
+}
+function resolveDiversion(){
+  if(S.active_role !== 'operations_director'){deny('unauthorized_director'); return}
+  if(S.diversion_count <= 0)return;
+  S.diversion_rows = S.diversion_rows.map(r => r.id === 'D-1' ? Object.assign({}, r, {status:'resolved'}) : r);
+  S.open_diversion_count = 0;
+  S.diversion_status = 'resolved';
+  S.diversion_resolve_count += 1;
+  S.last_action = 'resolve_diversion';
+  render();
+  saveState();
+}
+function escalateDelay(){
+  if(S.active_role !== 'charge_nurse'){deny('unauthorized_capacity'); return}
+  if(!S.selected_patient_id)return;
+  S.escalation_tasks = [...S.escalation_tasks, {id:'E-1', patient:S.selected_patient_name, reason:'delayed_room', owner:'charge_nurse', status:'open'}];
+  S.escalation_count += 1;
+  S.last_action = 'escalate_delay';
+  render();
+  saveState();
+}
+function closeEscalation(){
+  if(S.active_role !== 'charge_nurse'){deny('unauthorized_capacity'); return}
+  if(S.escalation_count <= 0)return;
+  S.escalation_tasks = S.escalation_tasks.map(t => t.id === 'E-1' ? Object.assign({}, t, {status:'closed'}) : t);
+  S.closed_escalation_count += 1;
+  S.last_action = 'close_escalation';
+  render();
+  saveState();
+}
+function finalizeHandoff(){
+  if(S.active_role !== 'charge_nurse'){deny('unauthorized_capacity'); return}
+  if(S.order_status !== 'released' || S.referral_doc_count < 1 || S.closed_escalation_count !== 1){
+    S.handoff_block_count += 1;
+    S.handoff_status = 'blocked';
+    S.last_action = 'handoff_blocked';
+    render();
+    saveState();
+    return;
+  }
+  S.handoff_packets = [...S.handoff_packets, {id:'H-1', patient:S.selected_patient_name, referral_file:S.last_referral_file, status:'ready'}];
+  S.handoff_packet_count += 1;
+  S.handoff_status = 'ready';
+  S.last_action = 'finalize_handoff';
+  render();
+  saveState();
+}
+function activateSurge(){
+  if(S.active_role !== 'operations_director'){deny('unauthorized_director'); return}
+  if(S.forecast_status !== 'surge' || S.short_staff_count <= 0){
+    S.surge_block_count += 1;
+    S.surge_status = 'blocked';
+    S.last_action = 'surge_blocked';
+    render();
+    saveState();
+    return;
+  }
+  if(!S.surge_tasks.some(t => t.id === 'S-1')){
+    S.surge_tasks = [...S.surge_tasks, {id:'S-1', zone:'west', action:'flex_isolation_staff', owner:'operations_director', status:'active'}];
+    S.surge_task_count += 1;
+  }
+  S.surge_status = 'active';
+  S.last_action = 'activate_surge';
+  render();
+  saveState();
+}
+function closeSurge(){
+  if(!['charge_nurse','operations_director'].includes(S.active_role)){deny('unauthorized_capacity'); return}
+  if(S.surge_task_count <= 0)return;
+  S.surge_tasks = S.surge_tasks.map(t => t.id === 'S-1' ? Object.assign({}, t, {status:'closed'}) : t);
+  S.closed_surge_task_count += 1;
+  S.surge_status = 'closed';
+  S.last_action = 'close_surge';
+  render();
+  saveState();
+}
+function chargeSignoff(){
+  if(S.active_role !== 'charge_nurse'){deny('unauthorized_capacity'); return}
+  if(S.transport_ack_status !== 'acknowledged' || S.reconciliation_status !== 'locked'){
+    S.nurse_signoff_status = 'idle';
+    S.last_action = 'signoff_blocked';
+    render();
+    saveState();
+    return;
+  }
+  if(S.nurse_signoff_status !== 'signed') S.signoff_count += 1;
+  S.nurse_signoff_status = 'signed';
+  S.last_action = 'charge_signoff';
+  render();
+  saveState();
+}
+function directorSignoff(){
+  if(S.active_role !== 'operations_director'){deny('unauthorized_director'); return}
+  if(S.diversion_status !== 'resolved' || S.surge_status !== 'closed'){
+    S.director_signoff_status = 'idle';
+    S.last_action = 'signoff_blocked';
+    render();
+    saveState();
+    return;
+  }
+  if(S.director_signoff_status !== 'signed') S.signoff_count += 1;
+  S.director_signoff_status = 'signed';
+  S.last_action = 'director_signoff';
+  render();
+  saveState();
+}
+function finalizeClearance(){
+  if(S.active_role !== 'operations_director'){deny('unauthorized_director'); return}
+  syncReadiness();
+  const gatesReady = S.handoff_status === 'ready' && S.transport_status === 'accepted' && S.transport_ack_status === 'acknowledged' && S.reconciliation_status === 'locked' && S.diversion_status === 'resolved' && S.surge_status === 'closed' && S.nurse_signoff_status === 'signed' && S.director_signoff_status === 'signed' && S.clearance_readiness_score === 100 && S.open_clearance_blockers === 0;
+  if(!gatesReady){
+    S.final_clearance_status = 'blocked';
+    S.last_action = 'clearance_blocked';
+    render();
+    saveState();
+    return;
+  }
+  if(!S.command_audit.some(a => a.id === 'A-1')){
+    S.command_audit = [...S.command_audit, {id:'A-1', event:'final_clearance', role:S.active_role, patient:S.selected_patient_name}];
+    S.audit_count += 1;
+    S.final_clearance_count += 1;
+  }
+  S.final_clearance_status = 'complete';
+  S.last_action = 'finalize_clearance';
+  render();
+  saveState();
+}
+
+function render(){
+  syncReadiness();
+  renderShell();
+  renderQueue();
+  renderSelected();
+  renderRiskRadar();
+  renderChart();
+  renderCapacity();
+  renderHandoff();
+  renderSurge();
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const page = document.getElementById('page-' + S.current_page);
+  if(page) page.classList.add('active');
+  document.getElementById('lastAction').textContent = S.last_action;
+}
+function renderShell(){
+  document.querySelectorAll('.nav button').forEach(b => b.classList.toggle('active', b.dataset.page === S.current_page));
+  document.getElementById('roleBadge').textContent = S.active_role;
+  [
+    ['roleCoordinator','coordinator'],
+    ['roleClinician','clinician'],
+    ['roleCharge','charge_nurse'],
+    ['roleBilling','billing'],
+    ['roleDirector','operations_director']
+  ].forEach(([id,role]) => document.getElementById(id).classList.toggle('active', S.active_role === role));
+  const ready = S.rooms.filter(r => r.status === 'ready').length;
+  const auth = S.patients.filter(p => p.auth_required).length;
+  const data = [
+    ['Queue', S.visible_patients.length],
+    ['Ready rooms', ready],
+    ['Risk score', S.risk_score || '-'],
+    ['Recon', S.reconciliation_status],
+    ['Sign-offs', `${S.signoff_count}/2`],
+    ['Readiness', `${S.clearance_readiness_score}%`]
+  ];
+  document.getElementById('metrics').innerHTML = data.map(m => `<div class="metric"><span>${m[0]}</span><strong>${m[1]}</strong></div>`).join('');
+}
+function renderQueue(){
+  document.querySelectorAll('[data-filter]').forEach(b => b.classList.toggle('active', b.dataset.filter === S.current_filter));
+  document.getElementById('patientQueue').innerHTML = S.visible_patients.map(p => `
+    <tr data-testid="patient-row" data-patient-id="${p.id}">
+      <td><div class="patient-main" data-col="name">${p.name}</div><div class="muted">${p.complaint}</div></td>
+      <td data-col="lane">${p.lane}</td>
+      <td data-col="acuity"><span class="acuity a${p.acuity}">${p.acuity}</span></td>
+      <td data-col="status">${p.status}</td>
+      <td data-col="wait_mins">${p.wait_mins}</td>
+      <td data-col="room_need">${p.room_need}</td>
+      <td data-col="risk"><span class="chip ${p.risk}">${p.risk}</span></td>
+      <td><button class="btn primary" data-testid="select-${p.id}" onclick="selectPatient('${p.id}')">Open</button></td>
+    </tr>`).join('');
+}
+function selectedMarkup(){
+  if(!S.selected_patient_id)return '<div class="muted">No patient selected.</div>';
+  return `
+    <div class="patient-name">${S.selected_patient_name}</div>
+    <div class="actions">
+      <span class="chip ${S.selected_risk}">${S.selected_risk}</span>
+      <span class="chip">acuity ${S.selected_acuity}</span>
+      <span class="chip">${S.selected_lane}</span>
+      <span class="chip">${S.selected_patient_status}</span>
+    </div>
+    <div class="mini-grid">
+      <div class="mini"><span>Room need</span><strong>${S.selected_room_need || 'none'}</strong></div>
+      <div class="mini"><span>Assigned room</span><strong>${S.assigned_room_name || 'unassigned'}</strong></div>
+      <div class="mini"><span>Coverage</span><strong>${S.insurance_status} / $${S.copay_due}</strong></div>
+      <div class="mini"><span>Prior auth</span><strong>${S.authorization_status}</strong></div>
+      <div class="mini"><span>Risk protocol</span><strong>${S.risk_protocol || 'unscored'}</strong></div>
+      <div class="mini"><span>Transport ETA</span><strong>${S.transport_eta ? S.transport_eta + ' min' : S.transport_status}</strong></div>
+      <div class="mini"><span>Transport ack</span><strong>${S.transport_ack_status}</strong></div>
+      <div class="mini"><span>Final sign-off</span><strong>${S.signoff_count}/2</strong></div>
+    </div>`;
+}
+function renderSelected(){document.getElementById('selectedCard').innerHTML = selectedMarkup()}
+function renderRiskRadar(){
+  const score = S.risk_score || 0;
+  const band = S.risk_band || 'idle';
+  document.getElementById('riskRadar').innerHTML = `
+    <div class="radar-line"></div>
+    <div class="radar-score"><div><strong>${score || '-'}</strong><span>${band}</span></div></div>
+    <div class="radar-note">
+      <span class="chip ${band}">${S.risk_protocol || 'protocol pending'}</span>
+      <span class="chip">${S.risk_call_count} risk calls</span>
+    </div>`;
+}
+function renderChart(){
+  document.getElementById('chartPatient').innerHTML = selectedMarkup();
+  document.getElementById('insuranceCode').value = S.insurance_code;
+  document.getElementById('authKey').value = S.auth_key;
+  document.getElementById('painScore').value = S.pain_score;
+  document.getElementById('disposition').value = S.disposition;
+  const steps = [
+    ['Room capacity', !!S.assigned_room_id, S.assigned_room_name || 'Unassigned'],
+    ['Risk score', S.risk_score > 0, `${S.risk_score || 0} / ${S.risk_band}`],
+    ['Insurance', S.insurance_status === 'approved' || S.insurance_status === 'self_pay', `${S.insurance_status} / $${S.copay_due}`],
+    ['Prior auth', !S.auth_required || S.authorization_status === 'approved', S.auth_required ? S.authorization_status : 'not required'],
+    ['Assessment', S.assessment_status === 'recorded', S.assessment_status],
+    ['Diagnostics order', S.order_status === 'ordered' || S.order_status === 'released', S.order_status],
+    ['Release gate', S.order_status === 'released', `${S.released_order_count} released / ${S.release_block_count} blocked`],
+    ['Transport', S.transport_status === 'accepted', S.transport_eta ? `${S.transport_eta} min ETA` : S.transport_status],
+    ['Escalation', S.escalation_count > 0, `${S.escalation_count} open, ${S.closed_escalation_count} closed`],
+    ['Handoff packet', S.handoff_status === 'ready', S.handoff_status]
+  ];
+  document.getElementById('workflow').innerHTML = steps.map(s => `<div class="step ${s[1] ? 'done' : String(s[2]).includes('blocked') ? 'warn' : ''}"><strong>${s[0]}</strong><div class="muted">${s[2]}</div></div>`).join('') + (S.validation_errors.assessment ? `<div class="step warn"><strong>Validation</strong><div class="muted">${S.validation_errors.assessment}</div></div>` : '');
+}
+function heatmapHtml(){
+  return S.rooms.map(r => `<div class="heat ${r.status}"><div class="eyebrow">${r.zone}</div><h3>${r.name}</h3><span class="chip ${r.status}">${r.status}</span><p class="muted">${r.occupant || r.equipment}</p></div>`).join('');
+}
+function renderCapacity(){
+  document.getElementById('heatmapCommand').innerHTML = heatmapHtml();
+  document.getElementById('heatmapCapacity').innerHTML = heatmapHtml();
+  document.getElementById('roomBoard').innerHTML = S.rooms.map(r => `<tr data-testid="room-row" data-room-id="${r.id}"><td data-col="name">${r.name}</td><td data-col="zone">${r.zone}</td><td data-col="status">${r.status}</td><td data-col="occupant">${r.occupant}</td><td data-col="equipment">${r.equipment}</td></tr>`).join('');
+  document.getElementById('orderGrid').innerHTML = S.diagnostic_orders.length ? S.diagnostic_orders.map(o => `<tr data-testid="order-row" data-order-id="${o.id}"><td data-col="patient">${o.patient}</td><td data-col="type">${o.type}</td><td data-col="priority">${o.priority}</td><td data-col="status">${o.status}</td></tr>`).join('') : '<tr><td colspan="4" class="muted">No diagnostic orders.</td></tr>';
+}
+function renderHandoff(){
+  document.getElementById('escalationGrid').innerHTML = S.escalation_tasks.length ? S.escalation_tasks.map(t => `<tr data-testid="escalation-row" data-escalation-id="${t.id}"><td data-col="patient">${t.patient}</td><td data-col="reason">${t.reason}</td><td data-col="owner">${t.owner}</td><td data-col="status">${t.status}</td></tr>`).join('') : '<tr><td colspan="4" class="muted">No escalations.</td></tr>';
+  document.getElementById('referralGrid').innerHTML = S.referral_docs.length ? S.referral_docs.map(r => `<tr data-testid="referral-row" data-referral-id="${r.id}"><td data-col="document">${r.document}</td><td data-col="priority">${r.priority}</td><td data-col="status">${r.status}</td></tr>`).join('') : '<tr><td colspan="3" class="muted">No referral packets.</td></tr>';
+  document.getElementById('handoffPacketGrid').innerHTML = S.handoff_packets.length ? S.handoff_packets.map(p => `<tr data-testid="handoff-packet-row" data-packet-id="${p.id}"><td data-col="patient">${p.patient}</td><td data-col="referral_file">${p.referral_file}</td><td data-col="status">${p.status}</td></tr>`).join('') : '<tr><td colspan="3" class="muted">No finalized packet.</td></tr>';
+}
+function renderSurge(){
+  document.getElementById('forecastMini').textContent = S.forecast_status === 'idle' ? 'idle' : `${S.forecast_status} L${S.forecast_level} in ${S.forecast_minutes} min`;
+  document.getElementById('transportMini').textContent = S.transport_eta ? `${S.transport_status} ${S.transport_eta} min / ${S.transport_ack_status}` : S.transport_status;
+  document.getElementById('surgeMini').textContent = `${S.surge_status} / ${S.surge_task_count} task`;
+  document.getElementById('clearanceMini').textContent = S.final_clearance_status;
+  document.getElementById('reconciliationMini').textContent = `${S.reconciliation_status} / ${S.mismatch_count} mismatch`;
+  document.getElementById('signoffMini').textContent = `${S.signoff_count}/2`;
+  document.getElementById('readinessMini').textContent = `${S.clearance_readiness_score}% / ${S.open_clearance_blockers} open`;
+  document.getElementById('surgeFloorMap').innerHTML = [
+    ['West isolation', S.forecast_status === 'surge' ? 'surge' : 'watch', `${S.forecast_minutes || 0} min breach window`],
+    ['Diagnostics', S.order_status === 'released' ? 'good' : 'watch', `${S.released_order_count} released orders`],
+    ['Transport bay', S.transport_ack_status === 'acknowledged' ? 'good' : 'watch', `${S.transport_eta || 0} min ETA`],
+    ['Staffing', S.short_staff_count > 0 ? 'surge' : 'good', `${S.short_staff_count} short unit`],
+    ['Reconciliation', S.reconciliation_status === 'locked' ? 'good' : 'watch', `${S.mismatch_count} mismatch`],
+    ['Diversion', S.diversion_status === 'resolved' ? 'good' : 'surge', `${S.open_diversion_count} open`]
+  ].map(z => `<div class="zone-tile ${z[1]}"><div class="zone-title">${z[0]}</div><div class="zone-copy">${z[2]}</div></div>`).join('');
+  document.getElementById('staffingGrid').innerHTML = S.staffing_rows.length ? S.staffing_rows.map(r => `<tr data-testid="staffing-row" data-staffing-id="${r.id}"><td data-col="unit">${r.unit}</td><td data-col="nurse">${r.nurse}</td><td data-col="gap">${r.gap}</td><td data-col="status">${r.status}</td></tr>`).join('') : '<tr><td colspan="4" class="muted">No staffing exceptions.</td></tr>';
+  document.getElementById('reconciliationGrid').innerHTML = S.reconciliation_rows.length ? S.reconciliation_rows.map(r => `<tr data-testid="reconciliation-row" data-reconciliation-id="${r.id}"><td data-col="patient">${r.patient}</td><td data-col="wristband">${r.wristband}</td><td data-col="transport">${r.transport}</td><td data-col="status">${r.status}</td></tr>`).join('') : '<tr><td colspan="4" class="muted">No reconciliation rows.</td></tr>';
+  document.getElementById('diversionGrid').innerHTML = S.diversion_rows.length ? S.diversion_rows.map(r => `<tr data-testid="diversion-row" data-diversion-id="${r.id}"><td data-col="site">${r.site}</td><td data-col="service">${r.service}</td><td data-col="status">${r.status}</td><td data-col="eta">${r.eta}</td></tr>`).join('') : '<tr><td colspan="4" class="muted">No diversion matrix.</td></tr>';
+  document.getElementById('clearanceBlockerGrid').innerHTML = S.clearance_blocker_rows.map(r => `<tr data-testid="clearance-blocker-row" data-blocker-id="${r.id}"><td data-col="label">${r.label}</td><td data-col="status">${r.status}</td></tr>`).join('');
+  document.getElementById('surgeGrid').innerHTML = S.surge_tasks.length ? S.surge_tasks.map(t => `<tr data-testid="surge-row" data-surge-id="${t.id}"><td data-col="zone">${t.zone}</td><td data-col="action">${t.action}</td><td data-col="owner">${t.owner}</td><td data-col="status">${t.status}</td></tr>`).join('') : '<tr><td colspan="4" class="muted">No surge tasks.</td></tr>';
+  document.getElementById('auditGrid').innerHTML = S.command_audit.length ? S.command_audit.map(a => `<tr data-testid="audit-row" data-audit-id="${a.id}"><td data-col="event">${a.event}</td><td data-col="role">${a.role}</td><td data-col="patient">${a.patient}</td></tr>`).join('') : '<tr><td colspan="3" class="muted">No final audit events.</td></tr>';
+  const gates = [
+    ['Risk scored', S.risk_score > 0, S.risk_band],
+    ['Diagnostics released', S.order_status === 'released', S.order_status],
+    ['Transport accepted', S.transport_status === 'accepted', S.transport_status],
+    ['Transport acknowledged', S.transport_ack_status === 'acknowledged', S.transport_ack_status],
+    ['Handoff ready', S.handoff_status === 'ready', S.handoff_status],
+    ['Reconciliation locked', S.reconciliation_status === 'locked', S.reconciliation_status],
+    ['Diversion resolved', S.diversion_status === 'resolved', S.diversion_status],
+    ['Surge closed', S.surge_status === 'closed', S.surge_status],
+    ['Charge sign-off', S.nurse_signoff_status === 'signed', S.nurse_signoff_status],
+    ['Director sign-off', S.director_signoff_status === 'signed', S.director_signoff_status],
+    ['Clearance complete', S.final_clearance_status === 'complete', S.final_clearance_status]
+  ];
+  document.getElementById('commandTimeline').innerHTML = gates.map(g => `<div class="timeline-item ${g[1] ? 'done' : String(g[2]).includes('blocked') ? 'warn' : ''}"><div class="dot"></div><div class="timeline-card"><strong>${g[0]}</strong><div class="muted">${g[2] || 'idle'}</div></div></div>`).join('');
+}
+
+document.getElementById('resetBtn').addEventListener('click', resetState);
+document.getElementById('roleCoordinator').addEventListener('click', () => setRole('coordinator'));
+document.getElementById('roleClinician').addEventListener('click', () => setRole('clinician'));
+document.getElementById('roleCharge').addEventListener('click', () => setRole('charge_nurse'));
+document.getElementById('roleBilling').addEventListener('click', () => setRole('billing'));
+document.getElementById('roleDirector').addEventListener('click', () => setRole('operations_director'));
+document.querySelectorAll('.nav button').forEach(b => b.addEventListener('click', () => navigateTo(b.dataset.page)));
+document.querySelectorAll('[data-filter]').forEach(b => b.addEventListener('click', () => filterQueue(b.dataset.filter)));
+document.getElementById('assignIsolation').addEventListener('click', assignIsolation);
+document.getElementById('assignProcedure').addEventListener('click', assignProcedure);
+document.getElementById('assignImaging').addEventListener('click', assignImaging);
+document.getElementById('insuranceCode').addEventListener('input', e => editInsurance(e.target.value));
+document.getElementById('verifyInsurance').addEventListener('click', verifyInsurance);
+document.getElementById('authKey').addEventListener('input', e => editAuth(e.target.value));
+document.getElementById('requestAuth').addEventListener('click', requestAuth);
+document.getElementById('scoreRisk').addEventListener('click', scoreRisk);
+document.getElementById('painScore').addEventListener('input', e => editPain(e.target.value));
+document.getElementById('disposition').addEventListener('input', e => editDisposition(e.target.value));
+document.getElementById('saveAssessment').addEventListener('click', saveAssessment);
+document.getElementById('placeLabOrder').addEventListener('click', placeLabOrder);
+document.getElementById('releaseDiagnostics').addEventListener('click', releaseDiagnostics);
+document.getElementById('requestTransport').addEventListener('click', requestTransport);
+document.getElementById('escalateDelay').addEventListener('click', escalateDelay);
+document.getElementById('closeEscalation').addEventListener('click', closeEscalation);
+document.getElementById('finalizeHandoff').addEventListener('click', finalizeHandoff);
+document.getElementById('referralUpload').addEventListener('change', uploadReferrals);
+document.getElementById('forecastCapacity').addEventListener('click', forecastCapacity);
+document.getElementById('staffingUpload').addEventListener('change', uploadStaffing);
+document.getElementById('ackTransport').addEventListener('click', acknowledgeTransport);
+document.getElementById('reconciliationUpload').addEventListener('change', uploadReconciliation);
+document.getElementById('lockReconciliation').addEventListener('click', lockReconciliation);
+document.getElementById('diversionUpload').addEventListener('change', uploadDiversion);
+document.getElementById('resolveDiversion').addEventListener('click', resolveDiversion);
+document.getElementById('activateSurge').addEventListener('click', activateSurge);
+document.getElementById('closeSurge').addEventListener('click', closeSurge);
+document.getElementById('chargeSignoff').addEventListener('click', chargeSignoff);
+document.getElementById('directorSignoff').addEventListener('click', directorSignoff);
+document.getElementById('finalizeClearance').addEventListener('click', finalizeClearance);
+window.addEventListener('hashchange', syncPage);
+Object.defineProperty(window, '__DETOX_STATE__', {get(){return clone(S)}, configurable:true});
+loadState();
+if(!location.hash || !location.hash.match(/^#\/(command|chart|capacity|handoff|surge)$/)) location.hash = '#/command';
+S.current_page = location.hash.replace('#/','');
+render();
+saveState();
+</script>
+</body>
+</html>

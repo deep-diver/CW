@@ -1,0 +1,99 @@
+version: "1"
+name: stayflow-tier-b-model-tier-t
+description: Model Tier T blind cohort for StayFlow Concierge Tier B.
+scenario_set: all
+model_tier: T
+members:
+  - id: tier_b_t_gpt54_mini
+    provider: openai
+    model: gpt-5.4-mini
+    generator: tools/generate_blind_dsl_static_app.py
+    status: completed
+    max_output_tokens: 24000
+    variant: >
+      Model Tier T blind implementation. Build a polished commercial
+      multi-city travel concierge product UI, not a bare state dashboard.
+      Keep all DetoxBench selectors directly actionable and implement the
+      public DSL behavior exactly.
+  - id: tier_b_t_claude_sonnet46
+    provider: anthropic
+    model: claude-sonnet-4-6
+    generator: tools/generate_blind_dsl_static_app.py
+    status: completed
+    base_url: https://api.anthropic.com
+    max_output_tokens: 24000
+    variant: >
+      Model Tier T blind implementation. Build a polished commercial
+      multi-city travel concierge product UI, not a bare state dashboard.
+      Keep all DetoxBench selectors directly actionable and implement the
+      public DSL behavior exactly.
+  - id: tier_b_t_gemini_flash_latest
+    provider: google
+    model: gemini-flash-latest
+    generator: tools/generate_blind_dsl_static_app.py
+    status: completed
+    max_output_tokens: 24000
+    variant: >
+      Model Tier T blind implementation. Build a polished commercial
+      multi-city travel concierge product UI, not a bare state dashboard.
+      Keep all DetoxBench selectors directly actionable and implement the
+      public DSL behavior exactly.
+targets:
+  - target_dir: ../targets/web/stayflow_concierge/tier_b
+    contract: contract.dsl.yaml
+    public_scenarios: scenarios.public.dsl.yaml
+    private_scenarios: scenarios.private.dsl.yaml
+results:
+  evaluated_at: "2026-05-11"
+  prompt_policy: public_contract_only_no_public_or_private_scenarios
+  canonical_prompt_sha256: "51b0030844858a8b18ca8a37e06e01adf6c570f8c7f27b05dd6e65c88543693b"
+  proxy_prompt_sha256: "7cea258c2f142d21aa573ce736a1b895fe3d3e80cd804ade8814d6b2c5a315d0"
+  contract_sha256: "299d717f6aa4924da07878908671f433217d4fd9aea31242a6f5a549d77b0a6d"
+  dashboard: ../targets/web/stayflow_concierge/tier_b/reports/dashboard/index.html
+  google_tier_t_policy: gemini-flash-latest is the fixed Google T-tier model id.
+  runs:
+    - target_id: stayflow_concierge_tier_b
+      member_id: tier_b_t_gpt54_mini
+      run_subject: blind_gpt54_mini_01
+      run_id: "20260511-103130-c42ada5c"
+      passed: false
+      scenarios: 0/29
+      formal: 0/110
+      formal_ratio: 0.0
+      stepwise_ratio: 0.0814732447244409
+      contract_ratio: 1.0
+      first_failure: public_01_filter_seoul_catalog
+      failure_breakdown:
+        assertion_state_equals: 29
+      report: ../targets/web/stayflow_concierge/tier_b/cohorts/_single_blind_20260511/eval_summaries/blind_gpt54_mini_01.json
+    - target_id: stayflow_concierge_tier_b
+      member_id: tier_b_t_claude_sonnet46
+      run_subject: blind_claude_sonnet46_01
+      run_id: "20260511-103130-f9f6029d"
+      passed: false
+      scenarios: 0/29
+      formal: 0/110
+      formal_ratio: 0.0
+      stepwise_ratio: 0.0
+      contract_ratio: 0.0
+      first_failure: public_01_filter_seoul_catalog
+      failure_breakdown:
+        invalid_state_hook: 29
+      report: ../targets/web/stayflow_concierge/tier_b/cohorts/_single_blind_20260511/eval_summaries/blind_claude_sonnet46_01.json
+    - target_id: stayflow_concierge_tier_b
+      member_id: tier_b_t_gemini_flash_latest
+      run_subject: blind_gemini_flash_latest_t_01
+      run_id: "20260511-103130-fd56aa0e"
+      passed: false
+      scenarios: 19/29
+      formal: 74/110
+      formal_ratio: 0.6727272727272727
+      stepwise_ratio: 0.9474380969907285
+      contract_ratio: 1.0
+      first_failure: public_01_filter_seoul_catalog
+      failure_breakdown:
+        assertion_table_cell_equals: 4
+        assertion_state_appended_object: 4
+        assertion_table_order_equals: 1
+        assertion_state_equals: 1
+      report: ../targets/web/stayflow_concierge/tier_b/cohorts/_single_blind_20260511/eval_summaries/blind_gemini_flash_latest_t_01.json

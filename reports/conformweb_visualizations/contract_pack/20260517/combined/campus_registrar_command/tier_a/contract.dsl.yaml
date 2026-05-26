@@ -1,0 +1,461 @@
+dsl_version: "3.0.0"
+
+app:
+  id: campus_registrar_command_tier_a
+  name: Campus Registrar Command Tier A
+  capability: course_registration_planning
+  ui_ux_brief: |
+    Campus Registrar Command Tier A should look like a real university
+    registration and advising product, not a generic admin dashboard. A desktop
+    screenshot should immediately show a course catalog, weekly schedule grid,
+    credit load meter, degree audit checklist, waitlist lane, advisor override
+    panel, and student enrollment ledger. Use an academic visual language:
+    crisp white paper surfaces, campus green, registrar blue, amber academic
+    warning states, compact course chips, transcript-like tables, and a
+    timetable visualization. Avoid shopping carts, travel cards, repair
+    dispatch styling, clinical command colors, or a bare state debugger.
+
+runtime:
+  target: web
+  start_url: /#/catalog
+  state_probe:
+    kind: javascript
+    expression: window.__DETOX_STATE__
+  pages:
+    catalog:
+      path: /#/catalog
+      purpose: Course catalog filtering, selection, and schedule preview.
+    planner:
+      path: /#/planner
+      purpose: Student plan, eligibility check, and enrollment workflow.
+    audit:
+      path: /#/audit
+      purpose: Degree audit, waitlist, advisor override, and enrollment ledger.
+  session:
+    role_path: active_role
+    roles: [student, advisor]
+  persistence:
+    reload:
+      scope: local_storage
+      paths:
+        - current_page
+        - active_role
+        - courses
+        - visible_courses
+        - selected_department
+        - selected_course_id
+        - selected_course_title
+        - selected_course_credits
+        - planned_courses
+        - plan_count
+        - student_name
+        - student_id
+        - eligibility_status
+        - enrollment_status
+        - enrolled_courses
+        - enrolled_count
+        - credit_total
+        - waitlist_rows
+        - waitlist_count
+        - approval_status
+        - advisor_note
+        - validation_errors
+        - denied_count
+        - service_call_count
+        - last_action
+  services:
+    eligibility_check:
+      endpoint: /api/eligibility
+      method: GET
+      responses:
+        - id: cs_ready
+          match: {query: {course: CS-201}}
+          status: 200
+          json: {status: eligible, message: ready}
+        - id: hist_ready
+          match: {query: {course: HIST-110}}
+          status: 200
+          json: {status: eligible, message: ready}
+        - id: math_advisor
+          match: {query: {course: MATH-240}}
+          status: 200
+          json: {status: advisor_required, message: prerequisite review}
+        - id: design_full
+          match: {query: {course: DES-150}}
+          status: 200
+          json: {status: waitlist, message: studio full}
+  tables:
+    course_grid:
+      selector: '[data-testid="course-grid"]'
+      row_selector: '[data-testid="course-row"]'
+      row_id_attribute: data-course-id
+      source_path: visible_courses
+      row_id_field: id
+      columns:
+        code: {selector: '[data-col="code"]', state_field: code}
+        title: {selector: '[data-col="title"]', state_field: title}
+        department: {selector: '[data-col="department"]', state_field: department}
+        credits: {selector: '[data-col="credits"]', state_field: credits}
+        seats: {selector: '[data-col="seats"]', state_field: seats}
+    enrollment_grid:
+      selector: '[data-testid="enrollment-grid"]'
+      row_selector: '[data-testid="enrollment-row"]'
+      row_id_attribute: data-enrollment-id
+      source_path: enrolled_courses
+      row_id_field: id
+      columns:
+        code: {selector: '[data-col="code"]', state_field: code}
+        title: {selector: '[data-col="title"]', state_field: title}
+        credits: {selector: '[data-col="credits"]', state_field: credits}
+        status: {selector: '[data-col="status"]', state_field: status}
+    waitlist_grid:
+      selector: '[data-testid="waitlist-grid"]'
+      row_selector: '[data-testid="waitlist-row"]'
+      row_id_attribute: data-waitlist-id
+      source_path: waitlist_rows
+      row_id_field: id
+      columns:
+        code: {selector: '[data-col="code"]', state_field: code}
+        title: {selector: '[data-col="title"]', state_field: title}
+        position: {selector: '[data-col="position"]', state_field: position}
+        status: {selector: '[data-col="status"]', state_field: status}
+
+state:
+  initial:
+    current_page: catalog
+    active_role: student
+    courses:
+      - {id: CS-201, code: CS 201, title: Data Structures, department: cs, credits: 4, seats: open, requirement: core}
+      - {id: DES-150, code: DES 150, title: Studio Foundations, department: design, credits: 3, seats: full, requirement: arts}
+      - {id: HIST-110, code: HIST 110, title: City Archives, department: humanities, credits: 3, seats: open, requirement: elective}
+      - {id: MATH-240, code: MATH 240, title: Linear Models, department: math, credits: 4, seats: open, requirement: quantitative}
+    visible_courses:
+      - {id: CS-201, code: CS 201, title: Data Structures, department: cs, credits: 4, seats: open, requirement: core}
+      - {id: DES-150, code: DES 150, title: Studio Foundations, department: design, credits: 3, seats: full, requirement: arts}
+      - {id: HIST-110, code: HIST 110, title: City Archives, department: humanities, credits: 3, seats: open, requirement: elective}
+      - {id: MATH-240, code: MATH 240, title: Linear Models, department: math, credits: 4, seats: open, requirement: quantitative}
+    selected_department: all
+    selected_course_id: ""
+    selected_course_code: ""
+    selected_course_title: ""
+    selected_course_credits: 0
+    planned_courses: []
+    plan_count: 0
+    student_name: ""
+    student_id: ""
+    eligibility_status: unchecked
+    enrollment_status: idle
+    enrolled_courses: []
+    enrolled_count: 0
+    credit_total: 0
+    waitlist_rows: []
+    waitlist_count: 0
+    approval_status: none
+    advisor_note: ""
+    validation_errors: {}
+    denied_count: 0
+    service_call_count: 0
+    last_action: ready
+    __services.calls: []
+  schema:
+    current_page: {type: string, purpose: Active browser-visible route.}
+    active_role: {type: string, purpose: Current role, student or advisor.}
+    courses: {type: array, purpose: Registrar course catalog.}
+    visible_courses: {type: array, purpose: Filtered course catalog rows.}
+    selected_department: {type: string, purpose: Current department filter.}
+    selected_course_id: {type: string, purpose: Selected course id.}
+    selected_course_code: {type: string, purpose: Selected course code.}
+    selected_course_title: {type: string, purpose: Selected course title.}
+    selected_course_credits: {type: number, purpose: Selected course credit value.}
+    planned_courses: {type: array, purpose: Course planning rows.}
+    plan_count: {type: number, purpose: Number of planned courses.}
+    student_name: {type: string, purpose: Normalized student display name.}
+    student_id: {type: string, purpose: Registrar student id.}
+    eligibility_status: {type: string, purpose: unchecked, eligible, advisor_required, waitlist, or blocked.}
+    enrollment_status: {type: string, purpose: idle, planned, enrolled, waitlisted, or blocked.}
+    enrolled_courses: {type: array, purpose: Enrollment ledger rows.}
+    enrolled_count: {type: number, purpose: Number of enrolled courses.}
+    credit_total: {type: number, purpose: Total enrolled credits.}
+    waitlist_rows: {type: array, purpose: Waitlist ledger rows.}
+    waitlist_count: {type: number, purpose: Number of waitlist rows.}
+    approval_status: {type: string, purpose: Advisor approval status.}
+    advisor_note: {type: string, purpose: Advisor note text.}
+    validation_errors: {type: object, purpose: Public validation error map.}
+    denied_count: {type: number, purpose: Unauthorized advisor action count.}
+    service_call_count: {type: number, purpose: Eligibility service call count.}
+    last_action: {type: string, purpose: Last public action marker.}
+    __services.calls: {type: array, purpose: Evaluator service call ledger.}
+
+components:
+  reset_button:
+    kind: button
+    selector: '[data-testid="reset"]'
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_page, value: catalog}
+          - {op: equals, path: active_role, value: student}
+          - {op: equals, path: selected_department, value: all}
+          - {op: equals, path: visible_courses, value: [{id: CS-201, code: CS 201, title: Data Structures, department: cs, credits: 4, seats: open, requirement: core}, {id: DES-150, code: DES 150, title: Studio Foundations, department: design, credits: 3, seats: full, requirement: arts}, {id: HIST-110, code: HIST 110, title: City Archives, department: humanities, credits: 3, seats: open, requirement: elective}, {id: MATH-240, code: MATH 240, title: Linear Models, department: math, credits: 4, seats: open, requirement: quantitative}]}
+          - {op: equals, path: selected_course_id, value: ""}
+          - {op: equals, path: selected_course_code, value: ""}
+          - {op: equals, path: selected_course_title, value: ""}
+          - {op: equals, path: selected_course_credits, value: 0}
+          - {op: equals, path: planned_courses, value: []}
+          - {op: equals, path: plan_count, value: 0}
+          - {op: equals, path: student_name, value: ""}
+          - {op: equals, path: student_id, value: ""}
+          - {op: equals, path: eligibility_status, value: unchecked}
+          - {op: equals, path: enrollment_status, value: idle}
+          - {op: equals, path: enrolled_courses, value: []}
+          - {op: equals, path: enrolled_count, value: 0}
+          - {op: equals, path: credit_total, value: 0}
+          - {op: equals, path: waitlist_rows, value: []}
+          - {op: equals, path: waitlist_count, value: 0}
+          - {op: equals, path: approval_status, value: none}
+          - {op: equals, path: advisor_note, value: ""}
+          - {op: equals, path: validation_errors, value: {}}
+          - {op: equals, path: denied_count, value: 0}
+          - {op: equals, path: service_call_count, value: 0}
+          - {op: equals, path: last_action, value: reset}
+
+  go_catalog_button:
+    kind: button
+    selector: '[data-testid="go-catalog"]'
+    actions: {click: {navigate_to: catalog}}
+  go_planner_button:
+    kind: button
+    selector: '[data-testid="go-planner"]'
+    actions: {click: {navigate_to: planner}}
+  go_audit_button:
+    kind: button
+    selector: '[data-testid="go-audit"]'
+    actions: {click: {navigate_to: audit}}
+  role_student_button:
+    kind: button
+    selector: '[data-testid="role-student"]'
+    actions:
+      click:
+        effects:
+          - {op: equals, path: active_role, value: student}
+          - {op: equals, path: last_action, value: role_student}
+  role_advisor_button:
+    kind: button
+    selector: '[data-testid="role-advisor"]'
+    actions:
+      click:
+        effects:
+          - {op: equals, path: active_role, value: advisor}
+          - {op: equals, path: last_action, value: role_advisor}
+
+  filter_all_button:
+    kind: button
+    selector: '[data-testid="filter-all"]'
+    page: catalog
+    actions:
+      click:
+        effects:
+          - {op: equals, path: selected_department, value: all}
+          - {op: equals, path: visible_courses, value: [{id: CS-201, code: CS 201, title: Data Structures, department: cs, credits: 4, seats: open, requirement: core}, {id: DES-150, code: DES 150, title: Studio Foundations, department: design, credits: 3, seats: full, requirement: arts}, {id: HIST-110, code: HIST 110, title: City Archives, department: humanities, credits: 3, seats: open, requirement: elective}, {id: MATH-240, code: MATH 240, title: Linear Models, department: math, credits: 4, seats: open, requirement: quantitative}]}
+  filter_cs_button:
+    kind: button
+    selector: '[data-testid="filter-cs"]'
+    page: catalog
+    actions:
+      click:
+        effects:
+          - {op: equals, path: selected_department, value: cs}
+          - {op: equals_filter, path: visible_courses, source_path: courses, where: [{op: equals, field: department, value: cs}], order_by: [{field: credits, direction: desc}]}
+  filter_full_button:
+    kind: button
+    selector: '[data-testid="filter-full"]'
+    page: catalog
+    actions:
+      click:
+        effects:
+          - {op: equals, path: selected_department, value: full}
+          - {op: equals_filter, path: visible_courses, source_path: courses, where: [{op: equals, field: seats, value: full}], order_by: [{field: credits, direction: desc}]}
+
+  select_cs_button:
+    kind: button
+    selector: '[data-testid="select-CS-201"]'
+    page: catalog
+    actions:
+      click:
+        effects:
+          - {op: equals, path: selected_course_id, value: CS-201}
+          - {op: equals, path: selected_course_code, value: CS 201}
+          - {op: equals, path: selected_course_title, value: Data Structures}
+          - {op: equals, path: selected_course_credits, value: 4}
+          - {op: equals, path: eligibility_status, value: unchecked}
+          - {op: equals, path: last_action, value: select_course}
+  select_hist_button:
+    kind: button
+    selector: '[data-testid="select-HIST-110"]'
+    page: catalog
+    actions:
+      click:
+        effects:
+          - {op: equals, path: selected_course_id, value: HIST-110}
+          - {op: equals, path: selected_course_code, value: HIST 110}
+          - {op: equals, path: selected_course_title, value: City Archives}
+          - {op: equals, path: selected_course_credits, value: 3}
+          - {op: equals, path: eligibility_status, value: unchecked}
+          - {op: equals, path: last_action, value: select_course}
+  select_math_button:
+    kind: button
+    selector: '[data-testid="select-MATH-240"]'
+    page: catalog
+    actions:
+      click:
+        effects:
+          - {op: equals, path: selected_course_id, value: MATH-240}
+          - {op: equals, path: selected_course_code, value: MATH 240}
+          - {op: equals, path: selected_course_title, value: Linear Models}
+          - {op: equals, path: selected_course_credits, value: 4}
+          - {op: equals, path: eligibility_status, value: unchecked}
+          - {op: equals, path: last_action, value: select_course}
+  select_design_button:
+    kind: button
+    selector: '[data-testid="select-DES-150"]'
+    page: catalog
+    actions:
+      click:
+        effects:
+          - {op: equals, path: selected_course_id, value: DES-150}
+          - {op: equals, path: selected_course_code, value: DES 150}
+          - {op: equals, path: selected_course_title, value: Studio Foundations}
+          - {op: equals, path: selected_course_credits, value: 3}
+          - {op: equals, path: eligibility_status, value: unchecked}
+          - {op: equals, path: last_action, value: select_course}
+
+  student_name_input:
+    kind: input
+    selector: '[data-testid="student-name"]'
+    page: planner
+    actions:
+      fill:
+        effects:
+          - {op: equals_normalized, path: student_name, value_from: input.value, normalizers: [trim, collapse_whitespace]}
+  student_id_input:
+    kind: input
+    selector: '[data-testid="student-id"]'
+    page: planner
+    actions:
+      fill:
+        effects:
+          - {op: equals_normalized, path: student_id, value_from: input.value, normalizers: [trim, uppercase]}
+  advisor_note_input:
+    kind: input
+    selector: '[data-testid="advisor-note"]'
+    page: audit
+    actions:
+      fill:
+        effects:
+          - {op: equals_normalized, path: advisor_note, value_from: input.value, normalizers: [trim, collapse_whitespace]}
+
+  add_to_plan_button:
+    kind: button
+    selector: '[data-testid="add-to-plan"]'
+    page: planner
+    actions:
+      click:
+        preconditions:
+          - {op: one_of, path: selected_course_id, values: [CS-201, HIST-110, MATH-240, DES-150]}
+        rejected_when:
+          - {op: not_one_of, path: selected_course_id, values: [CS-201, HIST-110, MATH-240, DES-150]}
+        rejected_effects:
+          - {op: equals, path: enrollment_status, value: blocked}
+          - {op: equals, path: last_action, value: plan_blocked}
+        effects:
+          - {op: equals, path: enrollment_status, value: planned}
+          - {op: changed_by, path: plan_count, by: 1}
+          - {op: appended_object, path: planned_courses, value: {id: PLAN-001, code: {from_path: selected_course_code}, title: {from_path: selected_course_title}, credits: {from_path: selected_course_credits}, status: planned}}
+          - {op: equals, path: last_action, value: add_to_plan}
+
+  check_eligibility_button:
+    kind: button
+    selector: '[data-testid="check-eligibility"]'
+    page: planner
+    actions:
+      click:
+        preconditions:
+          - {op: one_of, path: selected_course_id, values: [CS-201, HIST-110, MATH-240, DES-150]}
+        effects:
+          - {op: changed_by, path: service_call_count, by: 1}
+          - {op: equals, path: eligibility_status, value: eligible}
+          - {op: equals, path: last_action, value: check_eligibility}
+
+  mark_math_review_button:
+    kind: button
+    selector: '[data-testid="mark-math-review"]'
+    page: planner
+    actions:
+      click:
+        preconditions:
+          - {op: one_of, path: selected_course_id, values: [MATH-240]}
+        effects:
+          - {op: equals, path: eligibility_status, value: advisor_required}
+          - {op: equals, path: last_action, value: advisor_required}
+  mark_design_full_button:
+    kind: button
+    selector: '[data-testid="mark-design-full"]'
+    page: planner
+    actions:
+      click:
+        preconditions:
+          - {op: one_of, path: selected_course_id, values: [DES-150]}
+        effects:
+          - {op: equals, path: eligibility_status, value: waitlist}
+          - {op: equals, path: last_action, value: course_full}
+
+  enroll_button:
+    kind: button
+    selector: '[data-testid="enroll"]'
+    page: planner
+    actions:
+      click:
+        preconditions:
+          - {op: one_of, path: eligibility_status, values: [eligible]}
+        rejected_when:
+          - {op: not_one_of, path: eligibility_status, values: [eligible]}
+        rejected_effects:
+          - {op: equals, path: enrollment_status, value: blocked}
+          - {op: equals, path: last_action, value: enrollment_blocked}
+        effects:
+          - {op: equals, path: enrollment_status, value: enrolled}
+          - {op: changed_by, path: enrolled_count, by: 1}
+          - {op: changed_by_path, path: credit_total, by_path: selected_course_credits}
+          - {op: appended_object, path: enrolled_courses, value: {id: ENR-001, code: {from_path: selected_course_code}, title: {from_path: selected_course_title}, credits: {from_path: selected_course_credits}, status: enrolled}}
+          - {op: equals, path: last_action, value: enroll}
+
+  join_waitlist_button:
+    kind: button
+    selector: '[data-testid="join-waitlist"]'
+    page: audit
+    actions:
+      click:
+        preconditions:
+          - {op: one_of, path: selected_course_id, values: [DES-150]}
+        effects:
+          - {op: equals, path: enrollment_status, value: waitlisted}
+          - {op: changed_by, path: waitlist_count, by: 1}
+          - {op: appended_object, path: waitlist_rows, value: {id: WAIT-001, code: {from_path: selected_course_code}, title: {from_path: selected_course_title}, position: 3, status: active}}
+          - {op: equals, path: last_action, value: join_waitlist}
+
+  advisor_override_button:
+    kind: button
+    selector: '[data-testid="advisor-override"]'
+    page: audit
+    actions:
+      click:
+        allowed_roles: [advisor]
+        preconditions:
+          - {op: one_of, path: eligibility_status, values: [advisor_required]}
+        effects:
+          - {op: equals, path: eligibility_status, value: eligible}
+          - {op: equals, path: approval_status, value: advisor_approved}
+          - {op: equals, path: last_action, value: advisor_override}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_advisor}

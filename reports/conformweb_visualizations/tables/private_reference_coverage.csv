@@ -1,0 +1,111 @@
+target_id,family,family_short,tier_id,tier_label,tier_name,category,contract_source,public_source,private_source,declared_in_public_contract,used_in_public_examples,used_in_private_scenarios,private_seen_in_public_examples,private_only_but_declared,private_undeclared,private_coverage_pct
+stayflow_concierge,Travel,Travel,tier_a,Tier A,Consumer,Actions,local,local,local,23,11,20,10,10,0,100.0
+stayflow_concierge,Travel,Travel,tier_a,Tier A,Consumer,State / observation paths,local,local,local,33,8,20,6,14,0,100.0
+stayflow_concierge,Travel,Travel,tier_a,Tier A,Consumer,Routes/pages,local,local,local,3,0,2,0,2,0,100.0
+stayflow_concierge,Travel,Travel,tier_a,Tier A,Consumer,Rendered tables,local,local,local,2,2,2,2,0,0,100.0
+stayflow_concierge,Travel,Travel,tier_a,Tier A,Consumer,Events,local,local,local,0,0,0,0,0,0,
+stayflow_concierge,Travel,Travel,tier_b,Tier B,Operational,Actions,local,local,local,31,23,28,22,6,0,100.0
+stayflow_concierge,Travel,Travel,tier_b,Tier B,Operational,State / observation paths,local,local,local,41,24,29,21,8,0,100.0
+stayflow_concierge,Travel,Travel,tier_b,Tier B,Operational,Routes/pages,local,local,local,4,2,2,1,1,0,100.0
+stayflow_concierge,Travel,Travel,tier_b,Tier B,Operational,Rendered tables,local,local,local,3,3,3,3,0,0,100.0
+stayflow_concierge,Travel,Travel,tier_b,Tier B,Operational,Events,local,local,local,0,0,0,0,0,0,
+stayflow_concierge,Travel,Travel,tier_c,Tier C,Regulated,Actions,local,local,local,36,33,34,33,1,0,100.0
+stayflow_concierge,Travel,Travel,tier_c,Tier C,Regulated,State / observation paths,local,local,local,57,38,27,22,5,0,100.0
+stayflow_concierge,Travel,Travel,tier_c,Tier C,Regulated,Routes/pages,local,local,local,6,1,2,1,1,0,100.0
+stayflow_concierge,Travel,Travel,tier_c,Tier C,Regulated,Rendered tables,local,local,local,6,3,3,2,1,0,100.0
+stayflow_concierge,Travel,Travel,tier_c,Tier C,Regulated,Events,local,local,local,0,0,0,0,0,0,
+stayflow_concierge,Travel,Travel,tier_d,Tier D,Release stage,Actions,local,local,local,37,33,35,33,2,0,100.0
+stayflow_concierge,Travel,Travel,tier_d,Tier D,Release stage,State / observation paths,local,local,local,62,41,31,25,6,0,100.0
+stayflow_concierge,Travel,Travel,tier_d,Tier D,Release stage,Routes/pages,local,local,local,6,1,2,1,1,0,100.0
+stayflow_concierge,Travel,Travel,tier_d,Tier D,Release stage,Rendered tables,local,local,local,7,4,4,3,1,0,100.0
+stayflow_concierge,Travel,Travel,tier_d,Tier D,Release stage,Events,local,local,local,0,0,0,0,0,0,
+freshcart_market,Grocery,Grocery,tier_a,Tier A,Consumer,Actions,local,local,local,30,15,28,15,13,0,100.0
+freshcart_market,Grocery,Grocery,tier_a,Tier A,Consumer,State / observation paths,local,local,local,23,12,16,11,5,0,100.0
+freshcart_market,Grocery,Grocery,tier_a,Tier A,Consumer,Routes/pages,local,local,local,3,0,2,0,2,0,100.0
+freshcart_market,Grocery,Grocery,tier_a,Tier A,Consumer,Rendered tables,local,local,local,2,1,1,1,0,0,100.0
+freshcart_market,Grocery,Grocery,tier_a,Tier A,Consumer,Events,local,local,local,0,0,0,0,0,0,
+freshcart_market,Grocery,Grocery,tier_b,Tier B,Operational,Actions,local,local,local,46,16,38,15,23,0,100.0
+freshcart_market,Grocery,Grocery,tier_b,Tier B,Operational,State / observation paths,local,local,local,39,16,32,15,17,0,100.0
+freshcart_market,Grocery,Grocery,tier_b,Tier B,Operational,Routes/pages,local,local,local,4,0,2,0,2,0,100.0
+freshcart_market,Grocery,Grocery,tier_b,Tier B,Operational,Rendered tables,local,local,local,2,1,1,1,0,0,100.0
+freshcart_market,Grocery,Grocery,tier_b,Tier B,Operational,Events,local,local,local,0,0,0,0,0,0,
+freshcart_market,Grocery,Grocery,tier_c,Tier C,Regulated,Actions,local,local,local,58,28,46,26,20,0,100.0
+freshcart_market,Grocery,Grocery,tier_c,Tier C,Regulated,State / observation paths,local,local,local,51,23,39,22,17,0,100.0
+freshcart_market,Grocery,Grocery,tier_c,Tier C,Regulated,Routes/pages,local,local,local,5,0,2,0,2,0,100.0
+freshcart_market,Grocery,Grocery,tier_c,Tier C,Regulated,Rendered tables,local,local,local,2,2,1,1,0,0,100.0
+freshcart_market,Grocery,Grocery,tier_c,Tier C,Regulated,Events,local,local,local,0,0,0,0,0,0,
+freshcart_market,Grocery,Grocery,tier_d,Tier D,Release stage,Actions,local,local,local,59,28,47,26,21,0,100.0
+freshcart_market,Grocery,Grocery,tier_d,Tier D,Release stage,State / observation paths,local,local,local,56,26,43,25,18,0,100.0
+freshcart_market,Grocery,Grocery,tier_d,Tier D,Release stage,Routes/pages,local,local,local,5,0,2,0,2,0,100.0
+freshcart_market,Grocery,Grocery,tier_d,Tier D,Release stage,Rendered tables,local,local,local,3,3,2,2,0,0,100.0
+freshcart_market,Grocery,Grocery,tier_d,Tier D,Release stage,Events,local,local,local,0,0,0,0,0,0,
+clinic_shift_command,Clinical Command,Clinical,tier_a,Tier A,Consumer,Actions,git:codex/clinic-shift-tier-a,git:codex/clinic-shift-tier-a,git:codex/clinic-shift-tier-a,25,16,21,15,6,0,100.0
+clinic_shift_command,Clinical Command,Clinical,tier_a,Tier A,Consumer,State / observation paths,git:codex/clinic-shift-tier-a,git:codex/clinic-shift-tier-a,git:codex/clinic-shift-tier-a,29,19,16,15,1,0,100.0
+clinic_shift_command,Clinical Command,Clinical,tier_a,Tier A,Consumer,Routes/pages,git:codex/clinic-shift-tier-a,git:codex/clinic-shift-tier-a,git:codex/clinic-shift-tier-a,3,0,3,0,3,0,100.0
+clinic_shift_command,Clinical Command,Clinical,tier_a,Tier A,Consumer,Rendered tables,git:codex/clinic-shift-tier-a,git:codex/clinic-shift-tier-a,git:codex/clinic-shift-tier-a,3,2,3,2,1,0,100.0
+clinic_shift_command,Clinical Command,Clinical,tier_a,Tier A,Consumer,Events,git:codex/clinic-shift-tier-a,git:codex/clinic-shift-tier-a,git:codex/clinic-shift-tier-a,0,0,0,0,0,0,
+clinic_shift_command,Clinical Command,Clinical,tier_b,Tier B,Operational,Actions,local,local,local,34,22,29,21,8,0,100.0
+clinic_shift_command,Clinical Command,Clinical,tier_b,Tier B,Operational,State / observation paths,local,local,local,47,21,32,19,13,0,100.0
+clinic_shift_command,Clinical Command,Clinical,tier_b,Tier B,Operational,Routes/pages,local,local,local,4,1,3,0,3,0,100.0
+clinic_shift_command,Clinical Command,Clinical,tier_b,Tier B,Operational,Rendered tables,local,local,local,6,5,5,4,1,0,100.0
+clinic_shift_command,Clinical Command,Clinical,tier_b,Tier B,Operational,Events,local,local,local,0,0,0,0,0,0,
+clinic_shift_command,Clinical Command,Clinical,tier_c,Tier C,Regulated,Actions,local,local,local,50,33,45,32,13,0,100.0
+clinic_shift_command,Clinical Command,Clinical,tier_c,Tier C,Regulated,State / observation paths,local,local,local,92,46,56,32,24,0,100.0
+clinic_shift_command,Clinical Command,Clinical,tier_c,Tier C,Regulated,Routes/pages,local,local,local,5,1,4,0,4,0,100.0
+clinic_shift_command,Clinical Command,Clinical,tier_c,Tier C,Regulated,Rendered tables,local,local,local,12,10,8,6,2,0,100.0
+clinic_shift_command,Clinical Command,Clinical,tier_c,Tier C,Regulated,Events,local,local,local,0,0,0,0,0,0,
+clinic_shift_command,Clinical Command,Clinical,tier_d,Tier D,Release stage,Actions,local,local,local,51,33,46,32,14,0,100.0
+clinic_shift_command,Clinical Command,Clinical,tier_d,Tier D,Release stage,State / observation paths,local,local,local,97,49,60,35,25,0,100.0
+clinic_shift_command,Clinical Command,Clinical,tier_d,Tier D,Release stage,Routes/pages,local,local,local,5,1,4,0,4,0,100.0
+clinic_shift_command,Clinical Command,Clinical,tier_d,Tier D,Release stage,Rendered tables,local,local,local,13,11,9,7,2,0,100.0
+clinic_shift_command,Clinical Command,Clinical,tier_d,Tier D,Release stage,Events,local,local,local,0,0,0,0,0,0,
+campus_registrar_command,Campus Registrar,Campus,tier_a,Tier A,Consumer,Actions,local,local,local,23,20,19,16,3,0,100.0
+campus_registrar_command,Campus Registrar,Campus,tier_a,Tier A,Consumer,State / observation paths,local,local,local,27,17,12,11,1,0,100.0
+campus_registrar_command,Campus Registrar,Campus,tier_a,Tier A,Consumer,Routes/pages,local,local,local,3,0,0,0,0,0,
+campus_registrar_command,Campus Registrar,Campus,tier_a,Tier A,Consumer,Rendered tables,local,local,local,3,3,2,2,0,0,100.0
+campus_registrar_command,Campus Registrar,Campus,tier_a,Tier A,Consumer,Events,local,local,local,0,0,0,0,0,0,
+campus_registrar_command,Campus Registrar,Campus,tier_c,Tier C,Regulated,Actions,local,local,local,29,26,27,26,1,0,100.0
+campus_registrar_command,Campus Registrar,Campus,tier_c,Tier C,Regulated,State / observation paths,local,local,local,64,45,38,34,4,0,100.0
+campus_registrar_command,Campus Registrar,Campus,tier_c,Tier C,Regulated,Routes/pages,local,local,local,5,2,3,2,1,0,100.0
+campus_registrar_command,Campus Registrar,Campus,tier_c,Tier C,Regulated,Rendered tables,local,local,local,10,9,7,6,1,0,100.0
+campus_registrar_command,Campus Registrar,Campus,tier_c,Tier C,Regulated,Events,local,local,local,1,0,1,0,1,0,100.0
+campus_registrar_command,Campus Registrar,Campus,tier_d,Tier D,Release stage,Actions,local,local,local,38,35,36,34,2,0,100.0
+campus_registrar_command,Campus Registrar,Campus,tier_d,Tier D,Release stage,State / observation paths,local,local,local,84,65,34,32,2,0,100.0
+campus_registrar_command,Campus Registrar,Campus,tier_d,Tier D,Release stage,Routes/pages,local,local,local,6,1,4,0,4,0,100.0
+campus_registrar_command,Campus Registrar,Campus,tier_d,Tier D,Release stage,Rendered tables,local,local,local,11,11,5,5,0,0,100.0
+campus_registrar_command,Campus Registrar,Campus,tier_d,Tier D,Release stage,Events,local,local,local,2,1,2,1,1,0,100.0
+media_campaign_launch_desk,Media Campaign,Media,tier_a,Tier A,Consumer,Actions,local,local,local,23,18,20,15,5,0,100.0
+media_campaign_launch_desk,Media Campaign,Media,tier_a,Tier A,Consumer,State / observation paths,local,local,local,27,17,11,10,1,0,100.0
+media_campaign_launch_desk,Media Campaign,Media,tier_a,Tier A,Consumer,Routes/pages,local,local,local,3,0,0,0,0,0,
+media_campaign_launch_desk,Media Campaign,Media,tier_a,Tier A,Consumer,Rendered tables,local,local,local,3,3,2,2,0,0,100.0
+media_campaign_launch_desk,Media Campaign,Media,tier_a,Tier A,Consumer,Events,local,local,local,0,0,0,0,0,0,
+media_campaign_launch_desk,Media Campaign,Media,tier_c,Tier C,Regulated,Actions,local,local,local,28,24,23,21,2,0,100.0
+media_campaign_launch_desk,Media Campaign,Media,tier_c,Tier C,Regulated,State / observation paths,local,local,local,47,37,32,32,0,0,100.0
+media_campaign_launch_desk,Media Campaign,Media,tier_c,Tier C,Regulated,Routes/pages,local,local,local,5,3,5,3,2,0,100.0
+media_campaign_launch_desk,Media Campaign,Media,tier_c,Tier C,Regulated,Rendered tables,local,local,local,7,7,5,5,0,0,100.0
+media_campaign_launch_desk,Media Campaign,Media,tier_c,Tier C,Regulated,Events,local,local,local,0,0,0,0,0,0,
+media_campaign_launch_desk,Media Campaign,Media,tier_d,Tier D,Release stage,Actions,local,local,local,40,38,38,37,1,0,100.0
+media_campaign_launch_desk,Media Campaign,Media,tier_d,Tier D,Release stage,State / observation paths,local,local,local,74,50,41,34,7,0,100.0
+media_campaign_launch_desk,Media Campaign,Media,tier_d,Tier D,Release stage,Routes/pages,local,local,local,5,2,4,2,2,0,100.0
+media_campaign_launch_desk,Media Campaign,Media,tier_d,Tier D,Release stage,Rendered tables,local,local,local,9,8,3,3,0,0,100.0
+media_campaign_launch_desk,Media Campaign,Media,tier_d,Tier D,Release stage,Events,local,local,local,0,0,0,0,0,0,
+homefix_hub,Home Services,Home,tier_a,Tier A,Consumer,Actions,local,local,local,18,17,16,15,1,0,100.0
+homefix_hub,Home Services,Home,tier_a,Tier A,Consumer,State / observation paths,local,local,local,50,13,9,7,2,0,100.0
+homefix_hub,Home Services,Home,tier_a,Tier A,Consumer,Routes/pages,local,local,local,3,0,0,0,0,0,
+homefix_hub,Home Services,Home,tier_a,Tier A,Consumer,Rendered tables,local,local,local,2,2,1,1,0,0,100.0
+homefix_hub,Home Services,Home,tier_a,Tier A,Consumer,Events,local,local,local,0,0,0,0,0,0,
+homefix_hub,Home Services,Home,tier_b,Tier B,Operational,Actions,local,local,local,24,21,19,19,0,0,100.0
+homefix_hub,Home Services,Home,tier_b,Tier B,Operational,State / observation paths,local,local,local,50,13,10,6,4,0,100.0
+homefix_hub,Home Services,Home,tier_b,Tier B,Operational,Routes/pages,local,local,local,4,0,0,0,0,0,
+homefix_hub,Home Services,Home,tier_b,Tier B,Operational,Rendered tables,local,local,local,4,3,1,0,1,0,100.0
+homefix_hub,Home Services,Home,tier_b,Tier B,Operational,Events,local,local,local,0,0,0,0,0,0,
+homefix_hub,Home Services,Home,tier_c,Tier C,Regulated,Actions,local,local,local,34,26,33,25,8,0,100.0
+homefix_hub,Home Services,Home,tier_c,Tier C,Regulated,State / observation paths,local,local,local,55,16,20,9,11,0,100.0
+homefix_hub,Home Services,Home,tier_c,Tier C,Regulated,Routes/pages,local,local,local,5,0,0,0,0,0,
+homefix_hub,Home Services,Home,tier_c,Tier C,Regulated,Rendered tables,local,local,local,6,4,3,2,1,0,100.0
+homefix_hub,Home Services,Home,tier_c,Tier C,Regulated,Events,local,local,local,0,0,0,0,0,0,
+homefix_hub,Home Services,Home,tier_d,Tier D,Release stage,Actions,local,local,local,42,32,37,30,7,0,100.0
+homefix_hub,Home Services,Home,tier_d,Tier D,Release stage,State / observation paths,local,local,local,54,19,25,12,13,0,100.0
+homefix_hub,Home Services,Home,tier_d,Tier D,Release stage,Routes/pages,local,local,local,6,0,0,0,0,0,
+homefix_hub,Home Services,Home,tier_d,Tier D,Release stage,Rendered tables,local,local,local,8,4,2,1,1,0,100.0
+homefix_hub,Home Services,Home,tier_d,Tier D,Release stage,Events,local,local,local,0,0,0,0,0,0,

@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Media Campaign Launch Desk Tier B</title>
+  <style>
+    :root{--bg:#090b10;--ink:#f6f3eb;--muted:#9fa7ad;--line:#2a3039;--panel:#111820;--panel2:#16111d;--teal:#16b3a7;--coral:#ff6255;--amber:#f1ad2c;--violet:#7b61ff;--blue:#3b8dff;--green:#68d391}
+    *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 18% 8%,rgba(22,179,167,.2),transparent 28%),radial-gradient(circle at 84% 18%,rgba(123,97,255,.22),transparent 30%),linear-gradient(180deg,#080a0f,#121012 58%,#090b10);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:0}button,input{font:inherit}button{border:1px solid #39404a;border-radius:999px;background:#151b24;color:var(--ink);padding:9px 13px;cursor:pointer}button.primary{background:var(--teal);border-color:var(--teal);color:#03110f;font-weight:900}button.coral{background:var(--coral);border-color:var(--coral);color:#160504;font-weight:900}button.violet{background:var(--violet);border-color:var(--violet);color:#fff;font-weight:900}button.warn{background:#2a2112;border-color:#805d18;color:#ffd887}input{width:100%;border:1px solid #38404b;border-radius:8px;padding:10px;background:#0c1118;color:var(--ink)}input[type=file]{padding:9px;background:#0c1118}h1,h2,h3,p{margin-top:0}h1{font-size:22px;margin-bottom:2px}h2{font-size:22px}h3{font-size:15px}small,label{color:var(--muted)}label{display:grid;gap:6px;font-size:12px;font-weight:900;text-transform:uppercase}
+    .shell{min-height:100vh;display:grid;grid-template-rows:auto 1fr}header{min-height:86px;display:grid;grid-template-columns:360px 1fr auto;gap:14px;align-items:center;padding:14px 24px;border-bottom:1px solid var(--line);background:rgba(8,10,15,.78);backdrop-filter:blur(18px)}nav,.toolbar,.rolebar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.rolebar span{font-size:11px;text-transform:uppercase;color:#b8c1c8;font-weight:900}.brand-mark{width:42px;height:42px;border-radius:50%;display:inline-grid;place-items:center;margin-right:10px;background:conic-gradient(from 210deg,var(--coral),var(--violet),var(--teal),var(--coral));color:#05070b;font-weight:1000}.brand{display:flex;align-items:center}
+    main{display:grid;grid-template-columns:minmax(760px,1.4fr) minmax(380px,.65fr);gap:16px;padding:18px 24px}.page{display:none}.page.active{display:block}.stack{display:grid;gap:14px}.metrics{grid-column:1/-1;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}.metric,.panel,.side-card{border:1px solid var(--line);border-radius:14px;background:rgba(17,24,32,.86);box-shadow:0 22px 50px rgba(0,0,0,.28);padding:13px}.metric span{display:block;font-size:10px;text-transform:uppercase;color:#9ea9b4;font-weight:900}.metric b{font-size:24px}.metric.teal{background:linear-gradient(135deg,rgba(22,179,167,.24),rgba(17,24,32,.88))}.metric.violet{background:linear-gradient(135deg,rgba(123,97,255,.28),rgba(17,24,32,.88))}.metric.amber{background:linear-gradient(135deg,rgba(241,173,44,.22),rgba(17,24,32,.88))}.metric.coral{background:linear-gradient(135deg,rgba(255,98,85,.24),rgba(17,24,32,.88))}
+    .studio-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:14px}.preview{min-height:370px;border:1px solid #34404d;border-radius:18px;overflow:hidden;background:linear-gradient(135deg,#111923,#231424);position:relative}.preview:before{content:"";position:absolute;inset:26px;border:1px solid rgba(255,255,255,.14);border-radius:12px}.preview .program{position:absolute;left:34px;right:34px;top:34px;height:190px;border-radius:14px;background:linear-gradient(135deg,var(--teal),#1b2741 50%,var(--violet));display:grid;place-items:center;font-size:38px;font-weight:1000;color:#fff;box-shadow:0 24px 80px rgba(22,179,167,.2)}.preview .wave{position:absolute;left:34px;right:34px;bottom:34px;height:82px;border-radius:14px;background:repeating-linear-gradient(90deg,rgba(255,255,255,.12) 0 8px,rgba(255,255,255,.03) 8px 18px),linear-gradient(90deg,rgba(255,98,85,.35),rgba(22,179,167,.35));}.preview .clock{position:absolute;right:48px;top:244px;color:#d8e8eb;font-size:42px;font-weight:1000;letter-spacing:.06em}
+    .page-title{display:flex;justify-content:space-between;gap:12px;align-items:start}.source-wall{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.source-card{position:relative;border:1px solid #333b47;border-radius:14px;background:#101720;min-height:138px;padding:12px;overflow:hidden}.source-card:before{content:"";position:absolute;right:-36px;top:-36px;width:120px;height:120px;border-radius:50%;background:rgba(22,179,167,.15)}.source-card.ctv:before{background:rgba(123,97,255,.2)}.source-card.display:before{background:rgba(255,98,85,.18)}.source-card h3{font-size:17px;margin-bottom:8px}.source-card .thumb{height:50px;border-radius:10px;margin-bottom:9px;background:linear-gradient(135deg,var(--teal),#142b3a)}.source-card.ctv .thumb{background:linear-gradient(135deg,var(--violet),#201a42)}.source-card.display .thumb{background:linear-gradient(135deg,var(--coral),#332019)}.source-card.audio .thumb{background:linear-gradient(135deg,var(--amber),#30250d)}.source-card.short .thumb{background:linear-gradient(135deg,var(--blue),#12243a)}
+    table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;border-bottom:1px solid #303844;padding:8px;vertical-align:top}th{font-size:10px;text-transform:uppercase;color:#95a0ac;letter-spacing:.02em}.rundown{min-height:252px;border:1px solid #34404d;border-radius:18px;background:#0d1219;padding:16px;position:relative;overflow:hidden}.rundown:before{content:"";position:absolute;left:20px;right:20px;top:122px;height:2px;background:linear-gradient(90deg,var(--teal),var(--violet),var(--coral))}.clip{position:absolute;border-radius:12px;padding:10px;color:#fff;font-size:13px;box-shadow:0 16px 50px rgba(0,0,0,.35)}.clip.open{left:36px;top:72px;width:260px;height:82px;background:var(--teal);color:#041210}.clip.ctv{left:330px;top:72px;width:170px;height:82px;background:var(--violet)}.clip.display{left:536px;top:86px;width:128px;height:58px;background:var(--coral)}
+    .work-two{display:grid;grid-template-columns:1fr 1fr;gap:14px}.side{display:grid;align-content:start;gap:12px}.dossier{border-left:5px solid var(--teal)}.gate-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.gate{border:1px solid #333b47;border-radius:12px;background:#0d1219;padding:10px;min-height:72px}.gate span{display:block;font-size:10px;text-transform:uppercase;color:#9ba5af;font-weight:900}.gate b{display:block;margin-top:5px}.summary-line{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid #303844}.pill{display:inline-flex;align-items:center;border-radius:999px;padding:3px 8px;background:rgba(22,179,167,.14);color:#7ff3e8;font-size:12px;font-weight:900}.pill.red{background:rgba(255,98,85,.16);color:#ff938a}.pill.amber{background:rgba(241,173,44,.16);color:#ffd887}.pill.green{background:rgba(104,211,145,.16);color:#9df2bd}.pill.violet{background:rgba(123,97,255,.2);color:#c8bdff}
+    @media(max-width:1100px){header{grid-template-columns:1fr}main{grid-template-columns:1fr;padding:16px}.metrics,.studio-grid,.work-two{grid-template-columns:1fr}.metrics{grid-column:auto}}
+  </style>
+</head>
+<body>
+<div class="shell">
+  <header>
+    <div class="brand">
+      <div class="brand-mark">TX</div>
+      <div>
+        <h1>Broadcast Release Switcher</h1>
+        <small>Creative sources, rundown runtime, caption gates, and transmission release</small>
+      </div>
+    </div>
+    <nav>
+      <button data-testid="go-studio">Studio</button>
+      <button data-testid="go-switcher">Switcher</button>
+      <button data-testid="go-clearance">Clearance</button>
+      <button data-testid="go-transmit">Transmit</button>
+      <button data-testid="reset" class="warn">Reset</button>
+    </nav>
+    <div class="rolebar">
+      <span id="roleBadge"></span>
+      <button data-testid="role-producer">Producer</button>
+      <button data-testid="role-scheduler">Scheduler</button>
+      <button data-testid="role-legal">Legal</button>
+      <button data-testid="role-finance">Finance</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="metrics">
+      <div class="metric teal"><span>Selected Source</span><b id="metricSource">none</b></div>
+      <div class="metric violet"><span>Runtime</span><b id="metricRuntime">0</b></div>
+      <div class="metric amber"><span>Spend</span><b id="metricSpend">0</b></div>
+      <div class="metric coral"><span>Transmission</span><b id="metricTx">idle</b></div>
+      <div class="metric"><span>Denied</span><b id="metricDenied">0</b></div>
+    </section>
+
+    <section class="stack">
+      <div id="studio" class="page">
+        <div class="page-title">
+          <div><h2>Studio Source Wall</h2><small>Filter source decks, preview creative, and move cuts into the broadcast rundown.</small></div>
+          <div class="toolbar">
+            <button data-testid="filter-broadcast-sources" class="primary">Broadcast Sources</button>
+            <button data-testid="filter-caption-risk" class="violet">Caption Risk</button>
+          </div>
+        </div>
+        <div class="studio-grid">
+          <div class="preview">
+            <div class="program" id="programTitle">NO SOURCE</div>
+            <div class="clock" id="previewClock">00:00</div>
+            <div class="wave"></div>
+          </div>
+          <div data-testid="source-wall" class="source-wall" id="sourceRows"></div>
+        </div>
+      </div>
+
+      <div id="switcher" class="page">
+        <div class="page-title">
+          <div><h2>Switcher Rundown</h2><small>Prime-clock playlist, overrun trim, split balance, and runtime lock.</small></div>
+          <div class="toolbar">
+            <button data-testid="cue-selected-source" class="primary">Cue Selected Source</button>
+            <button data-testid="flag-runtime-overrun" class="warn">Flag Overrun</button>
+            <button data-testid="trim-ctv-to-fifteen" class="violet">Trim CTV To 15s</button>
+          </div>
+        </div>
+        <div class="work-two">
+          <div class="rundown">
+            <div class="clip open">Opening Film<br>45 sec social</div>
+            <div class="clip ctv">CTV Bumper<br>trim to 15 sec</div>
+            <div class="clip display">DOOH Loop</div>
+          </div>
+          <div class="panel">
+            <h3>Rundown Rows</h3>
+            <table data-testid="rundown-grid">
+              <thead><tr><th>Title</th><th>Channel</th><th>Market</th><th>Duration</th><th>Slot</th><th>State</th></tr></thead>
+              <tbody id="rundownRows"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="clearance" class="page">
+        <div class="page-title">
+          <div><h2>Caption and Clearance Bay</h2><small>Package intake, caption/localization checks, legal approval, and finance commit.</small></div>
+          <div class="toolbar">
+            <button data-testid="mark-captions-ready" class="primary">Captions Ready</button>
+            <button data-testid="legal-approve" class="violet">Legal Approve</button>
+            <button data-testid="finance-commit" class="warn">Finance Commit</button>
+          </div>
+        </div>
+        <div class="work-two">
+          <div class="panel">
+            <h3>Outlet Package Manifest</h3>
+            <label>Delivery CSV<input data-testid="package-upload" id="packageUpload" type="file" accept=".csv,text/csv"></label>
+            <table data-testid="package-grid">
+              <thead><tr><th>Outlet</th><th>Market</th><th>Source</th><th>Status</th></tr></thead>
+              <tbody id="packageRows"></tbody>
+            </table>
+          </div>
+          <div class="panel">
+            <h3>Approval Signal Stack</h3>
+            <div id="approvalStack"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="transmit" class="page">
+        <div class="page-title">
+          <div><h2>Transmission Release</h2><small>Traffic outlets and release the final broadcast campaign transmission.</small></div>
+          <div class="toolbar">
+            <button data-testid="traffic-outlets" class="primary">Traffic Outlets</button>
+            <button data-testid="transmit-release" class="coral">Transmit Release</button>
+          </div>
+        </div>
+        <div class="work-two">
+          <div class="panel">
+            <h3>Partner Traffic Board</h3>
+            <table data-testid="partner-grid">
+              <thead><tr><th>Outlet</th><th>Market</th><th>Clock</th><th>Status</th></tr></thead>
+              <tbody id="partnerRows"></tbody>
+            </table>
+          </div>
+          <div class="panel">
+            <h3>Transmission Ledger</h3>
+            <table data-testid="transmission-grid">
+              <thead><tr><th>Campaign</th><th>Outlet</th><th>Market</th><th>Status</th></tr></thead>
+              <tbody id="transmissionRows"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>Audit Trail</h3>
+          <table data-testid="audit-grid">
+            <thead><tr><th>Event</th><th>Actor</th><th>Status</th></tr></thead>
+            <tbody id="auditRows"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <aside class="side">
+      <div class="side-card dossier">
+        <h2>Source Dossier</h2>
+        <div id="dossier"></div>
+      </div>
+      <div class="side-card">
+        <h3>Release Gates</h3>
+        <div class="gate-grid" id="gates"></div>
+      </div>
+      <div class="side-card">
+        <h3>Signal Telemetry</h3>
+        <div id="telemetry"></div>
+      </div>
+    </aside>
+  </main>
+</div>
+
+<script>
+const KEY='media-broadcast-switcher-tier-b-state';
+const sources=[
+  {id:'SRC-OPEN-45',title:'Northstar Opening Film',format:'film',channel:'social',market:'global',duration:45,clearance:'review',spend:5800},
+  {id:'SRC-CTV-30',title:'CTV Night Bumper',format:'ctv',channel:'ctv',market:'EU',duration:30,clearance:'review',spend:7200},
+  {id:'SRC-DOOH-15',title:'Transit Motion Loop',format:'dooh',channel:'display',market:'US',duration:15,clearance:'cleared',spend:3100},
+  {id:'SRC-POD-20',title:'Podcast Host Read',format:'audio',channel:'audio',market:'US',duration:20,clearance:'cleared',spend:1900},
+  {id:'SRC-CUT-09',title:'Creator Nine Second Cut',format:'short',channel:'social',market:'global',duration:9,clearance:'review',spend:2600}
+];
+const initial={current_page:'studio',active_role:'producer',sources,visible_sources:sources,current_filter:'all',selected_source_id:'',selected_source_title:'',selected_format:'',selected_market:'',selected_channel:'',selected_duration:0,selected_clearance:'',selected_spend:0,rundown_rows:[],rundown_count:0,runtime_total:0,spend_total:0,runtime_status:'idle',split_status:'none',caption_status:'missing',localization_status:'missing',legal_status:'idle',finance_status:'idle',committed_spend:0,package_rows:[],package_count:0,last_package_file:'',partner_rows:[],partner_count:0,trafficking_status:'idle',transmission_status:'idle',transmission_rows:[],transmission_count:0,audit_log:[],audit_count:0,denied_count:0,validation_errors:{},last_action:'ready'};
+let S;
+function clone(value){return JSON.parse(JSON.stringify(value))}
+function loadState(){try{S={...clone(initial),...JSON.parse(localStorage.getItem(KEY)||'{}')}}catch{S=clone(initial)}}
+function saveState(){localStorage.setItem(KEY,JSON.stringify(S))}
+function recalc(){S.rundown_count=S.rundown_rows.length;S.package_count=S.package_rows.length;S.partner_count=S.partner_rows.length;S.transmission_count=S.transmission_rows.length;S.audit_count=S.audit_log.length}
+function resetState(){localStorage.removeItem(KEY);S=clone(initial);S.last_action='reset';location.hash='#/studio';render();saveState()}
+function setPage(page){if(!['studio','switcher','clearance','transmit'].includes(page))return;S.current_page=page;S.last_action='nav_'+page;location.hash='#/'+page;render();saveState()}
+function syncPage(){const page=location.hash.replace('#/','')||'studio';if(['studio','switcher','clearance','transmit'].includes(page)){S.current_page=page;render();saveState()}}
+function setRole(role){S.active_role=role;S.last_action='role_'+role;render();saveState()}
+function deny(action){S.denied_count+=1;S.last_action=action;render();saveState()}
+function filterBroadcastSources(){S.current_filter='broadcast';S.visible_sources=[sources[0],sources[1],sources[2]];S.last_action='filter_broadcast_sources';render();saveState()}
+function filterCaptionRisk(){S.current_filter='caption_risk';S.visible_sources=[sources[0],sources[1],sources[4]];S.last_action='filter_caption_risk';render();saveState()}
+function selectSource(id){const src=sources.find(s=>s.id===id);if(!src)return;S.current_page='switcher';S.selected_source_id=src.id;S.selected_source_title=src.title;S.selected_format=src.format;S.selected_market=src.market;S.selected_channel=src.channel;S.selected_duration=src.duration;S.selected_clearance=src.clearance;S.selected_spend=src.spend;if(id==='SRC-CTV-30')S.localization_status='missing';S.last_action='select_source';location.hash='#/switcher';render();saveState()}
+function cueSelectedSource(){if(!S.selected_source_id)return;S.rundown_rows=[...S.rundown_rows,{id:S.selected_source_id,title:S.selected_source_title,channel:S.selected_channel,market:S.selected_market,duration:S.selected_duration,slot:'prime_clock',state:'cued'}];S.runtime_total+=Number(S.selected_duration||0);S.spend_total+=Number(S.selected_spend||0);S.runtime_status='building';S.last_action='cue_selected_source';recalc();render();saveState()}
+function flagRuntimeOverrun(){S.runtime_status='overrun';S.last_action='flag_runtime_overrun';render();saveState()}
+function trimCtvToFifteen(){S.rundown_rows=S.rundown_rows.map(row=>row.id==='SRC-CTV-30'?{...row,duration:15,state:'trimmed'}:row);S.runtime_total=60;S.runtime_status='locked';S.split_status='balanced';S.last_action='trim_ctv_to_fifteen';render();saveState()}
+function parseCsv(text){const lines=text.trim().split(/\r?\n/).filter(Boolean);if(lines.length<2)return[];const headers=lines[0].split(',').map(h=>h.trim());return lines.slice(1).map(line=>{const values=line.split(',').map(v=>v.trim());const row={};headers.forEach((h,i)=>row[h]=values[i]||'');return row})}
+async function uploadPackage(event){const file=event.target.files&&event.target.files[0];if(!file)return;const text=await file.text();S.package_rows=parseCsv(text);S.last_package_file=file.name;S.last_action='upload_package';recalc();render();saveState()}
+function markCaptionsReady(){if(S.active_role!=='scheduler'){deny('unauthorized_scheduler');return}S.caption_status='ready';S.localization_status='ready';S.last_action='mark_captions_ready';render();saveState()}
+function legalApprove(){if(S.active_role!=='legal'){deny('unauthorized_legal');return}S.legal_status='approved';S.audit_log=[...S.audit_log,{id:'AUD-LEGAL',event:'legal_clearance',actor:'legal',status:'approved'}];S.last_action='legal_approve';recalc();render();saveState()}
+function financeCommit(){if(S.active_role!=='finance'){deny('unauthorized_finance');return}if(S.spend_total<=0)return;S.finance_status='committed';S.committed_spend=S.spend_total;S.last_action='finance_commit';render();saveState()}
+function trafficOutlets(){if(S.active_role!=='scheduler'){deny('unauthorized_scheduler');return}if(S.package_count<1)return;S.partner_rows=[...S.partner_rows,{id:'TRAF-BRIGHTBEAM',outlet:'BrightBeam DSP',market:'global',clock:'prime_clock',status:'trafficked'}];S.trafficking_status='trafficked';S.last_action='traffic_outlets';recalc();render();saveState()}
+function transmitRelease(){if(S.active_role!=='scheduler'){deny('unauthorized_scheduler');return}const ready=S.runtime_status==='locked'&&S.caption_status==='ready'&&S.localization_status==='ready'&&S.legal_status==='approved'&&S.finance_status==='committed'&&S.partner_count>0;if(!ready){S.transmission_status='blocked';S.last_action='transmission_blocked';render();saveState();return}S.transmission_status='transmitted';S.transmission_rows=[...S.transmission_rows,{id:'TX-001',campaign:'Northstar Broadcast Release',outlet:'BrightBeam DSP',market:'global',status:'transmitted'}];S.audit_log=[...S.audit_log,{id:'AUD-TX',event:'transmission_release',actor:'scheduler',status:'transmitted'}];S.last_action='transmit_release';recalc();render();saveState()}
+function pill(value){const cls=value==='review'||value==='missing'||value==='overrun'||value==='blocked'?'red':value==='building'||value==='idle'?'amber':value==='ready'||value==='approved'||value==='committed'||value==='locked'||value==='trafficked'||value==='transmitted'?'green':'violet';return '<span class="pill '+cls+'">'+value+'</span>'}
+function cardClass(src){return src.format==='ctv'?'ctv':src.format==='dooh'?'display':src.format==='audio'?'audio':src.format==='short'?'short':''}
+function renderSources(){document.getElementById('sourceRows').innerHTML=S.visible_sources.map(src=>`<div class="source-card ${cardClass(src)}" data-testid="source-row" data-source-id="${src.id}"><div class="thumb"></div><h3 data-col="title">${src.title}</h3><div><span data-col="format">${src.format}</span> · <span data-col="channel">${src.channel}</span> · <span data-col="market">${src.market}</span></div><div style="display:flex;gap:8px;margin:8px 0"><span data-col="duration">${src.duration}</span>s ${pill(src.clearance)} <span data-col="clearance" style="display:none">${src.clearance}</span><span data-col="spend" style="display:none">${src.spend}</span></div><button data-testid="select-${src.id}" class="primary">Load Source</button></div>`).join('')}
+function rows(id,data,rowTest,attr,cols,empty){document.getElementById(id).innerHTML=data.length?data.map(row=>`<tr data-testid="${rowTest}" ${attr}="${row.id}">${cols.map(col=>`<td data-col="${col}">${row[col]??''}</td>`).join('')}</tr>`).join(''):`<tr><td colspan="${cols.length}"><small>${empty}</small></td></tr>`}
+function renderSide(){document.getElementById('dossier').innerHTML=S.selected_source_id?[
+  ['Source',S.selected_source_title],['Format',S.selected_format],['Channel',S.selected_channel],['Market',S.selected_market],['Duration',S.selected_duration+' sec'],['Clearance',pill(S.selected_clearance)]
+].map(([a,b])=>`<div class="summary-line"><span>${a}</span><b>${b}</b></div>`).join(''):'<small>No source loaded.</small>';
+const gates=[['Runtime',S.runtime_status],['Captions',S.caption_status],['Localization',S.localization_status],['Legal',S.legal_status],['Finance',S.finance_status],['Traffic',S.trafficking_status],['Transmit',S.transmission_status],['Split',S.split_status]];
+document.getElementById('gates').innerHTML=gates.map(([a,b])=>`<div class="gate"><span>${a}</span><b>${pill(String(b))}</b></div>`).join('');
+document.getElementById('telemetry').innerHTML=[['Rundown rows',S.rundown_count],['Runtime total',S.runtime_total],['Spend total',S.spend_total],['Committed',S.committed_spend],['Packages',S.package_count],['Partners',S.partner_count],['Audit',S.audit_count],['Last action',S.last_action]].map(([a,b])=>`<div class="summary-line"><span>${a}</span><b>${b}</b></div>`).join('');
+document.getElementById('approvalStack').innerHTML=[['Captions',S.caption_status],['Localization',S.localization_status],['Legal',S.legal_status],['Finance',S.finance_status],['Package file',S.last_package_file||'none']].map(([a,b])=>`<div class="summary-line"><span>${a}</span><b>${b}</b></div>`).join('');
+}
+function renderMetrics(){document.getElementById('roleBadge').textContent='Role '+S.active_role;document.getElementById('metricSource').textContent=S.selected_source_id||'none';document.getElementById('metricRuntime').textContent=String(S.runtime_total);document.getElementById('metricSpend').textContent=String(S.spend_total);document.getElementById('metricTx').textContent=S.transmission_status;document.getElementById('metricDenied').textContent=String(S.denied_count);document.getElementById('programTitle').textContent=S.selected_source_title||'NO SOURCE';document.getElementById('previewClock').textContent=S.runtime_total?String(Math.floor(S.runtime_total/60)).padStart(2,'0')+':'+String(S.runtime_total%60).padStart(2,'0'):'00:00'}
+function render(){document.querySelectorAll('.page').forEach(page=>page.classList.toggle('active',page.id===S.current_page));renderSources();rows('rundownRows',S.rundown_rows,'rundown-row','data-rundown-id',['title','channel','market','duration','slot','state'],'No sources cued.');rows('packageRows',S.package_rows,'package-row','data-package-id',['outlet','market','source','status'],'No package rows.');rows('partnerRows',S.partner_rows,'partner-row','data-partner-id',['outlet','market','clock','status'],'No partner traffic.');rows('transmissionRows',S.transmission_rows,'transmission-row','data-transmission-id',['campaign','outlet','market','status'],'No transmissions.');rows('auditRows',S.audit_log,'audit-row','data-audit-id',['event','actor','status'],'No audit events.');renderMetrics();renderSide();window.__DETOX_STATE__=clone(S);saveState()}
+document.addEventListener('click',event=>{const id=event.target.dataset.testid;if(!id)return;if(id==='reset')return resetState();if(id==='go-studio')return setPage('studio');if(id==='go-switcher')return setPage('switcher');if(id==='go-clearance')return setPage('clearance');if(id==='go-transmit')return setPage('transmit');if(id==='role-producer')return setRole('producer');if(id==='role-scheduler')return setRole('scheduler');if(id==='role-legal')return setRole('legal');if(id==='role-finance')return setRole('finance');if(id==='filter-broadcast-sources')return filterBroadcastSources();if(id==='filter-caption-risk')return filterCaptionRisk();if(id.startsWith('select-SRC-'))return selectSource(id.replace('select-',''));if(id==='cue-selected-source')return cueSelectedSource();if(id==='flag-runtime-overrun')return flagRuntimeOverrun();if(id==='trim-ctv-to-fifteen')return trimCtvToFifteen();if(id==='mark-captions-ready')return markCaptionsReady();if(id==='legal-approve')return legalApprove();if(id==='finance-commit')return financeCommit();if(id==='traffic-outlets')return trafficOutlets();if(id==='transmit-release')return transmitRelease()});
+document.getElementById('packageUpload').addEventListener('change',uploadPackage);
+window.addEventListener('hashchange',syncPage);
+loadState();
+if(!location.hash||!location.hash.match(/^#\/(studio|switcher|clearance|transmit)$/))location.hash='#/'+(S.current_page||'studio');
+syncPage();
+</script>
+</body>
+</html>

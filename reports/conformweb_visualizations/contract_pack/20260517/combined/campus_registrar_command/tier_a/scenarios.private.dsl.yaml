@@ -1,0 +1,141 @@
+dsl_version: "3.0.0"
+visibility: private
+tier_weights:
+  smoke: 1
+  core: 2
+  validation: 3
+  service: 4
+  permission: 4
+  persistence: 5
+  journey: 6
+
+scenarios:
+  - id: private_01_history_enrollment_credit_total
+    tier: journey
+    steps:
+      - do: reset_button.click
+      - do: select_hist_button.click
+      - do: go_planner_button.click
+      - do: check_eligibility_button.click
+      - do: enroll_button.click
+        expect:
+          - {op: equals, path: enrollment_status, value: enrolled}
+          - {op: equals, path: credit_total, value: 3}
+      - table: enrollment_grid
+        expect_order: [ENR-001]
+        expect_row_count: 1
+        expect_rows:
+          - id: ENR-001
+            cells: {code: "HIST 110", title: "City Archives", credits: "3", status: enrolled}
+
+  - id: private_02_math_override_then_enroll
+    tier: journey
+    steps:
+      - do: reset_button.click
+      - do: select_math_button.click
+      - do: go_planner_button.click
+      - do: mark_math_review_button.click
+      - do: go_audit_button.click
+      - do: role_advisor_button.click
+      - do: advisor_note_input.fill
+        input: {value: "  prerequisite cleared  "}
+      - do: advisor_override_button.click
+      - do: go_planner_button.click
+      - do: enroll_button.click
+        expect:
+          - {op: equals, path: advisor_note, value: "prerequisite cleared"}
+          - {op: equals, path: approval_status, value: advisor_approved}
+          - {op: equals, path: credit_total, value: 4}
+
+  - id: private_03_filter_full_course
+    tier: smoke
+    steps:
+      - do: reset_button.click
+      - do: filter_full_button.click
+      - table: course_grid
+        expect_order: [DES-150]
+        expect_row_count: 1
+        expect_rows:
+          - id: DES-150
+            cells: {code: "DES 150", seats: full}
+
+  - id: private_04_selection_survives_navigation
+    tier: core
+    steps:
+      - do: reset_button.click
+      - do: select_cs_button.click
+      - do: go_planner_button.click
+      - do: go_catalog_button.click
+      - do: go_planner_button.click
+        expect:
+          - {op: equals, path: selected_course_title, value: "Data Structures"}
+
+  - id: private_05_eligibility_call_count_twice
+    tier: service
+    steps:
+      - do: reset_button.click
+      - do: select_cs_button.click
+      - do: go_planner_button.click
+      - do: check_eligibility_button.click
+      - do: check_eligibility_button.click
+        expect:
+          - {op: equals, path: service_call_count, value: 2}
+
+  - id: private_06_student_cannot_override
+    tier: permission
+    steps:
+      - do: reset_button.click
+      - do: select_math_button.click
+      - do: go_planner_button.click
+      - do: mark_math_review_button.click
+      - do: go_audit_button.click
+      - do: advisor_override_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: denied_count, value: 1}
+          - {op: equals, path: eligibility_status, value: advisor_required}
+
+  - id: private_07_waitlist_persists_after_reload
+    tier: persistence
+    steps:
+      - do: reset_button.click
+      - do: select_design_button.click
+      - do: go_planner_button.click
+      - do: mark_design_full_button.click
+      - do: go_audit_button.click
+      - do: join_waitlist_button.click
+      - browser: reload
+        expect:
+          - {op: equals, path: waitlist_count, value: 1}
+          - {op: equals, path: enrollment_status, value: waitlisted}
+
+  - id: private_08_student_id_uppercase
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: go_planner_button.click
+      - do: student_id_input.fill
+        input: {value: "  st-9090  "}
+        expect:
+          - {op: equals, path: student_id, value: ST-9090}
+
+  - id: private_09_add_to_plan_without_selection_blocks
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: go_planner_button.click
+      - do: add_to_plan_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: enrollment_status, value: blocked}
+          - {op: equals, path: last_action, value: plan_blocked}
+
+  - id: private_10_selected_course_persists_reload
+    tier: persistence
+    steps:
+      - do: reset_button.click
+      - do: select_math_button.click
+      - browser: reload
+        expect:
+          - {op: equals, path: selected_course_id, value: MATH-240}
+          - {op: equals, path: selected_course_title, value: "Linear Models"}

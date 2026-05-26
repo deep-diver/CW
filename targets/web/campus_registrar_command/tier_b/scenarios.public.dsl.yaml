@@ -1,0 +1,268 @@
+dsl_version: "3.0.0"
+visibility: public
+tier_weights:
+  smoke: 1
+  core: 2
+  validation: 3
+  upload: 4
+  permission: 4
+  persistence: 5
+  journey: 6
+
+scenarios:
+  - id: public_01_filter_at_risk_queue
+    tier: smoke
+    difficulty: B
+    steps:
+      - do: reset_button.click
+      - do: filter_at_risk_button.click
+        expect:
+          - {op: equals, path: current_filter, value: at_risk}
+          - {op: equals, path: last_action, value: filter_at_risk}
+      - table: student_queue
+        expect_order: [REG-410, REG-318, REG-225]
+        expect_row_count: 3
+        expect_rows:
+          - id: REG-410
+            cells: {name: "Nora Singh", risk: red, hold: financial}
+          - id: REG-318
+            cells: {status: studio_waitlist, credits_completed: 76}
+
+  - id: public_02_select_nora_and_plan_capstone
+    tier: core
+    difficulty: B
+    steps:
+      - do: reset_button.click
+      - do: select_nora_button.click
+        expect:
+          - {op: equals, path: selected_student_id, value: REG-410}
+          - {op: equals, path: selected_student_hold, value: financial}
+          - {op: equals, path: current_page, value: matrix}
+      - do: filter_capstone_sections_button.click
+      - table: section_matrix
+        expect_order: [SEC-CS-401, SEC-INT-450]
+        expect_row_count: 2
+      - do: select_cs401_button.click
+      - do: add_selected_section_button.click
+        expect:
+          - {op: equals, path: plan_count, value: 1}
+          - {op: equals, path: planned_credit_total, value: 4}
+          - {op: equals, path: petition_status, value: open}
+      - table: plan_grid
+        expect_order: [SEC-CS-401]
+        expect_rows:
+          - id: SEC-CS-401
+            cells: {code: "CS 401", slot: "MW 09:00", status: planned}
+
+  - id: public_03_detect_and_resolve_time_conflict
+    tier: validation
+    difficulty: B
+    steps:
+      - do: reset_button.click
+      - do: select_nora_button.click
+      - do: select_cs401_button.click
+      - do: add_selected_section_button.click
+      - do: select_math342_button.click
+      - do: add_selected_section_button.click
+        expect:
+          - {op: equals, path: plan_count, value: 2}
+          - {op: equals, path: planned_credit_total, value: 8}
+      - do: detect_conflict_button.click
+        expect:
+          - {op: equals, path: conflict_status, value: conflict}
+          - {op: equals, path: conflict_count, value: 1}
+      - do: remove_math_conflict_button.click
+        expect:
+          - {op: equals, path: conflict_status, value: resolved}
+          - {op: equals, path: conflict_count, value: 0}
+          - {op: equals, path: planned_credit_total, value: 4}
+      - table: plan_grid
+        expect_order: [SEC-CS-401]
+
+  - id: public_04_transfer_upload_projects_credit_rows
+    tier: upload
+    difficulty: B
+    steps:
+      - do: reset_button.click
+      - do: go_petitions_button.click
+      - do: transfer_upload_input.upload
+        input:
+          file:
+            name: transfer-public.csv
+            mime_type: text/csv
+            content: |
+              id,source,course,credits,status
+              TR-1,North College,Discrete Math,3,accepted
+              TR-2,Metro Online,Writing Lab,2,review
+          rows:
+            - {id: TR-1, source: North College, course: Discrete Math, credits: "3", status: accepted}
+            - {id: TR-2, source: Metro Online, course: Writing Lab, credits: "2", status: review}
+        expect:
+          - {op: equals, path: transfer_count, value: 2}
+          - {op: equals, path: last_transfer_file, value: transfer-public.csv}
+          - {op: equals, path: last_action, value: upload_transfer}
+      - table: transfer_grid
+        expect_order: [TR-1, TR-2]
+        expect_rows:
+          - id: TR-1
+            cells: {source: North College, course: Discrete Math, status: accepted}
+
+  - id: public_05_student_cannot_clear_financial_hold
+    tier: permission
+    difficulty: B
+    steps:
+      - do: reset_button.click
+      - do: select_nora_button.click
+      - do: go_petitions_button.click
+      - do: finance_clear_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: financial_hold_status, value: uncleared}
+          - {op: equals, path: denied_count, value: 1}
+          - {op: equals, path: last_action, value: unauthorized_bursar}
+
+  - id: public_06_bursar_clears_hold
+    tier: permission
+    difficulty: B
+    steps:
+      - do: reset_button.click
+      - do: select_nora_button.click
+      - do: go_petitions_button.click
+      - do: role_bursar_button.click
+      - do: finance_clear_button.click
+        expect:
+          - {op: equals, path: active_role, value: bursar}
+          - {op: equals, path: financial_hold_status, value: cleared}
+          - {op: equals, path: billing_status, value: cleared}
+
+  - id: public_07_advisor_approves_petition_note
+    tier: permission
+    difficulty: B
+    steps:
+      - do: reset_button.click
+      - do: select_nora_button.click
+      - do: select_cs401_button.click
+      - do: add_selected_section_button.click
+      - do: go_petitions_button.click
+      - do: petition_note_input.fill
+        input: {value: "  capstone exception checked   by advisor  "}
+        expect:
+          - {op: equals, path: petition_note, value: "capstone exception checked by advisor"}
+      - do: role_advisor_button.click
+      - do: advisor_approve_button.click
+        expect:
+          - {op: equals, path: advisor_status, value: approved}
+          - {op: equals, path: petition_status, value: advisor_approved}
+          - {op: equals, path: audit_count, value: 1}
+      - table: audit_grid
+        expect_order: [AUD-ADVISOR]
+        expect_rows:
+          - id: AUD-ADVISOR
+            cells: {event: advisor_approval, actor: advisor, status: approved}
+
+  - id: public_08_registrar_release_requires_role
+    tier: permission
+    difficulty: B
+    steps:
+      - do: reset_button.click
+      - do: select_nora_button.click
+      - do: select_cs401_button.click
+      - do: add_selected_section_button.click
+      - do: go_clearance_button.click
+      - do: registrar_release_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: clearance_status, value: idle}
+          - {op: equals, path: denied_count, value: 1}
+          - {op: equals, path: last_action, value: unauthorized_registrar}
+
+  - id: public_09_full_clearance_release_workflow
+    tier: journey
+    difficulty: B
+    steps:
+      - do: reset_button.click
+      - do: select_nora_button.click
+      - do: select_cs401_button.click
+      - do: add_selected_section_button.click
+      - do: go_petitions_button.click
+      - do: role_bursar_button.click
+      - do: finance_clear_button.click
+      - do: role_advisor_button.click
+      - do: advisor_approve_button.click
+      - do: go_clearance_button.click
+      - do: role_registrar_button.click
+      - do: registrar_release_button.click
+        expect:
+          - {op: equals, path: clearance_status, value: released}
+          - {op: equals, path: registrar_status, value: released}
+          - {op: equals, path: release_count, value: 1}
+          - {op: equals, path: audit_count, value: 2}
+      - table: clearance_grid
+        expect_order: [REL-001]
+        expect_rows:
+          - id: REL-001
+            cells: {student: "Nora Singh", section: "CS 401", role: registrar, status: released}
+
+  - id: public_10_studio_waitlist_branch
+    tier: core
+    difficulty: B
+    steps:
+      - do: reset_button.click
+      - do: select_mateo_button.click
+      - do: select_des310_button.click
+      - do: add_selected_section_button.click
+      - do: go_petitions_button.click
+      - do: join_studio_waitlist_button.click
+        expect:
+          - {op: equals, path: waitlist_count, value: 1}
+          - {op: equals, path: petition_status, value: waitlisted}
+      - table: waitlist_grid
+        expect_order: [WAIT-DES-310]
+        expect_rows:
+          - id: WAIT-DES-310
+            cells: {student: "Mateo Lee", section: "DES 310", position: 4, status: active}
+
+  - id: public_11_browser_history_between_workspaces
+    tier: persistence
+    difficulty: B
+    steps:
+      - do: reset_button.click
+      - do: go_matrix_button.click
+        expect:
+          - {op: equals, path: current_page, value: matrix}
+      - do: go_petitions_button.click
+      - do: go_clearance_button.click
+      - browser: back
+        expect_page: petitions
+        expect:
+          - {op: equals, path: current_page, value: petitions}
+      - browser: back
+        expect_page: matrix
+        expect:
+          - {op: equals, path: current_page, value: matrix}
+
+  - id: public_12_release_persists_after_reload
+    tier: persistence
+    difficulty: B
+    steps:
+      - do: reset_button.click
+      - do: select_nora_button.click
+      - do: select_cs401_button.click
+      - do: add_selected_section_button.click
+      - do: go_petitions_button.click
+      - do: role_bursar_button.click
+      - do: finance_clear_button.click
+      - do: role_advisor_button.click
+      - do: advisor_approve_button.click
+      - do: go_clearance_button.click
+      - do: role_registrar_button.click
+      - do: registrar_release_button.click
+      - browser: reload
+        expect_page: clearance
+        expect:
+          - {op: equals, path: current_page, value: clearance}
+          - {op: equals, path: active_role, value: registrar}
+          - {op: equals, path: clearance_status, value: released}
+          - {op: equals, path: release_count, value: 1}
+      - table: clearance_grid
+        expect_order: [REL-001]

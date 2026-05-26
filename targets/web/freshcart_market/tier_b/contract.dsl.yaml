@@ -1,0 +1,1029 @@
+dsl_version: "3.0.0"
+
+app:
+  id: greencart_premium
+  name: GreenCart Premium
+  capability: gourmet_food_marketplace
+
+x-derived:
+  derive_cart_count: &derive_cart_count
+    op: equals_length
+    path: cart_count
+    source_path: cart_items
+  derive_cart_subtotal: &derive_cart_subtotal
+    op: equals_sum
+    path: cart_subtotal
+    source_path: cart_items
+    field: line_total
+  derive_greenfarm_count: &derive_greenfarm_count
+    op: equals_count_where
+    path: greenfarm_count
+    source_path: cart_items
+    where:
+      - {op: equals, field: vendor, value: GreenFarm}
+  derive_oceancatch_count: &derive_oceancatch_count
+    op: equals_count_where
+    path: oceancatch_count
+    source_path: cart_items
+    where:
+      - {op: equals, field: vendor, value: OceanCatch}
+  derive_delivery_fee: &derive_delivery_fee
+    op: equals_piecewise_linear
+    path: delivery_fee
+    cases:
+      - when: [{op: relation, path: cart_subtotal, operator: ">=", value: 50000}]
+        formula: {constant: 0}
+      - when: [{op: relation, path: cart_subtotal, operator: ">=", value: 30000}]
+        formula: {constant: 1000}
+      - when: [{op: relation, path: cart_subtotal, operator: ">=", value: 15000}]
+        formula: {constant: 2500}
+    default: {constant: 3000}
+  derive_order_total: &derive_order_total
+    op: equals_linear
+    path: order_total
+    terms:
+      - {path: cart_subtotal}
+      - {path: delivery_fee}
+      - {path: express_surcharge}
+      - {path: gift_wrap_fee}
+      - {path: coupon_credit, multiplier: -1}
+      - {path: loyalty_credit, multiplier: -1}
+  derive_service_call_count: &derive_service_call_count
+    op: equals_length
+    path: service_call_count
+    source_path: __services.calls
+  derive_coupon_call_count: &derive_coupon_call_count
+    op: equals_count_where
+    path: coupon_call_count
+    source_path: __services.calls
+    where:
+      - {op: equals, field: service, value: coupon_validate}
+  derive_loyalty_call_count: &derive_loyalty_call_count
+    op: equals_count_where
+    path: loyalty_call_count
+    source_path: __services.calls
+    where:
+      - {op: equals, field: service, value: loyalty_redeem}
+  derive_audit_count: &derive_audit_count
+    op: equals_length
+    path: audit_count
+    source_path: order_audit
+
+runtime:
+  target: web
+  start_url: /#/market
+
+  state_probe:
+    kind: javascript
+    expression: window.__DETOX_STATE__
+
+  pages:
+    market:
+      path: /#/market
+      purpose: Vendor-based product catalog with add-to-basket actions.
+    basket:
+      path: /#/basket
+      purpose: Basket review with preparation options and item removal.
+    checkout:
+      path: /#/checkout
+      purpose: Coupon, loyalty, delivery slot, express/gift-wrap, and payment.
+    orders:
+      path: /#/orders
+      purpose: Order history, fulfillment checklist, staff operations.
+
+  session:
+    role_path: active_role
+    roles: [customer, staff]
+
+  persistence:
+    reload:
+      scope: local_storage
+      paths:
+        - current_page
+        - active_role
+        - products
+        - current_vendor
+        - visible_products
+        - cart_items
+        - cart_count
+        - cart_subtotal
+        - greenfarm_count
+        - oceancatch_count
+        - delivery_fee
+        - order_total
+        - express_enabled
+        - express_surcharge
+        - gift_wrap_enabled
+        - gift_wrap_fee
+        - coupon_code
+        - coupon_credit
+        - coupon_status
+        - service_call_count
+        - coupon_call_count
+        - loyalty_points
+        - loyalty_credit
+        - loyalty_call_count
+        - delivery_slot
+        - customer_name
+        - customer_phone
+        - validation_errors
+        - order_placed
+        - order_id
+        - order_history
+        - fulfillment_verified
+        - fulfillment_packed
+        - fulfillment_dispatched
+        - checklist_count
+        - order_audit
+        - audit_count
+        - last_action
+
+  services:
+    coupon_validate:
+      endpoint: /api/coupon
+      method: GET
+      responses:
+        - id: green15
+          match:
+            query:
+              code: GREEN15
+          status: 200
+          json:
+            valid: true
+            credit: 2000
+            status: applied
+        - id: welcome10
+          match:
+            query:
+              code: WELCOME10
+          status: 200
+          json:
+            valid: true
+            credit: 4000
+            status: applied
+        - id: invalid
+          match:
+            query:
+              code: BADCODE
+          status: 200
+          json:
+            valid: false
+            credit: 0
+            status: rejected
+    loyalty_redeem:
+      endpoint: /api/loyalty
+      method: GET
+      responses:
+        - id: redeem
+          match:
+            query:
+              action: REDEEM
+          status: 200
+          json:
+            points_used: 5000
+            credit: 5000
+            status: redeemed
+
+  tables:
+    product_grid:
+      selector: '[data-testid="product-grid"]'
+      row_selector: '[data-testid="product-row"]'
+      row_id_attribute: data-product-id
+      source_path: visible_products
+      row_id_field: id
+      columns:
+        name:
+          selector: '[data-col="name"]'
+          state_field: name
+        vendor:
+          selector: '[data-col="vendor"]'
+          state_field: vendor
+        price:
+          selector: '[data-col="price"]'
+          state_field: price
+        unit:
+          selector: '[data-col="unit"]'
+          state_field: unit
+    basket_grid:
+      selector: '[data-testid="basket-grid"]'
+      row_selector: '[data-testid="basket-row"]'
+      row_id_attribute: data-item-id
+      source_path: cart_items
+      row_id_field: product_id
+      columns:
+        name:
+          selector: '[data-col="name"]'
+          state_field: name
+        quantity:
+          selector: '[data-col="quantity"]'
+          state_field: quantity
+        unit_price:
+          selector: '[data-col="unit-price"]'
+          state_field: unit_price
+        line_total:
+          selector: '[data-col="line-total"]'
+          state_field: line_total
+        preparation:
+          selector: '[data-col="preparation"]'
+          state_field: preparation
+
+state:
+  initial:
+    current_page: market
+    active_role: customer
+    products:
+      - {id: GC-ARG-01, name: "Baby Arugula", vendor: GreenFarm, price: 3100, unit: "150g"}
+      - {id: GC-TOM-01, name: "Heirloom Tomatoes", vendor: GreenFarm, price: 4200, unit: "500g"}
+      - {id: GC-AVO-01, name: "Hass Avocados", vendor: GreenFarm, price: 6500, unit: "3pc"}
+      - {id: GC-YGT-01, name: "Greek Yogurt", vendor: DairyPure, price: 4500, unit: "500g"}
+      - {id: GC-BTR-01, name: "Artisan Butter", vendor: DairyPure, price: 6800, unit: "250g"}
+      - {id: GC-SHR-01, name: "Pacific Shrimp", vendor: OceanCatch, price: 12500, unit: "300g"}
+      - {id: GC-TUN-01, name: "Yellowfin Tuna", vendor: OceanCatch, price: 15800, unit: "200g"}
+      - {id: GC-OLV-01, name: "Kalamata Olives", vendor: PantryPlus, price: 5400, unit: "200g"}
+      - {id: GC-HON-01, name: "Wildflower Honey", vendor: PantryPlus, price: 7200, unit: "350g"}
+      - {id: GC-RIC-01, name: "Organic Brown Rice", vendor: PantryPlus, price: 8900, unit: "3kg"}
+    current_vendor: all
+    visible_products:
+      - {id: GC-ARG-01, name: "Baby Arugula", vendor: GreenFarm, price: 3100, unit: "150g"}
+      - {id: GC-TOM-01, name: "Heirloom Tomatoes", vendor: GreenFarm, price: 4200, unit: "500g"}
+      - {id: GC-AVO-01, name: "Hass Avocados", vendor: GreenFarm, price: 6500, unit: "3pc"}
+      - {id: GC-YGT-01, name: "Greek Yogurt", vendor: DairyPure, price: 4500, unit: "500g"}
+      - {id: GC-BTR-01, name: "Artisan Butter", vendor: DairyPure, price: 6800, unit: "250g"}
+      - {id: GC-SHR-01, name: "Pacific Shrimp", vendor: OceanCatch, price: 12500, unit: "300g"}
+      - {id: GC-TUN-01, name: "Yellowfin Tuna", vendor: OceanCatch, price: 15800, unit: "200g"}
+      - {id: GC-OLV-01, name: "Kalamata Olives", vendor: PantryPlus, price: 5400, unit: "200g"}
+      - {id: GC-HON-01, name: "Wildflower Honey", vendor: PantryPlus, price: 7200, unit: "350g"}
+      - {id: GC-RIC-01, name: "Organic Brown Rice", vendor: PantryPlus, price: 8900, unit: "3kg"}
+    cart_items: []
+    cart_count: 0
+    cart_subtotal: 0
+    greenfarm_count: 0
+    oceancatch_count: 0
+    delivery_fee: 0
+    order_total: 0
+    express_enabled: false
+    express_surcharge: 0
+    gift_wrap_enabled: false
+    gift_wrap_fee: 0
+    coupon_code: ""
+    coupon_credit: 0
+    coupon_status: idle
+    service_call_count: 0
+    coupon_call_count: 0
+    loyalty_points: 12000
+    loyalty_credit: 0
+    loyalty_call_count: 0
+    delivery_slot: ""
+    customer_name: ""
+    customer_phone: ""
+    validation_errors: {}
+    order_placed: false
+    order_id: ""
+    order_history: []
+    fulfillment_verified: false
+    fulfillment_packed: false
+    fulfillment_dispatched: false
+    checklist_count: 0
+    order_audit: []
+    audit_count: 0
+    last_action: ""
+    __services.calls: []
+
+  schema:
+    current_page: {type: string, purpose: "Active route page."}
+    active_role: {type: string, purpose: "Current user role: customer or staff."}
+    products: {type: array, purpose: "Full product catalog."}
+    current_vendor: {type: string, purpose: "Active vendor filter."}
+    visible_products: {type: array, purpose: "Filtered product list."}
+    cart_items: {type: array, purpose: "Items in basket with quantity and preparation."}
+    cart_count: {type: number, purpose: "Derived: count of cart_items."}
+    cart_subtotal: {type: number, purpose: "Derived: sum of cart_items.line_total."}
+    greenfarm_count: {type: number, purpose: "Derived: GreenFarm items in cart."}
+    oceancatch_count: {type: number, purpose: "Derived: OceanCatch items in cart."}
+    delivery_fee: {type: number, purpose: "Derived: 4-tier piecewise by subtotal."}
+    order_total: {type: number, purpose: "Derived: subtotal + fee + extras - discounts."}
+    express_enabled: {type: boolean, purpose: "Express delivery toggle."}
+    express_surcharge: {type: number, purpose: "Express surcharge: 2500 or 0."}
+    gift_wrap_enabled: {type: boolean, purpose: "Gift wrap toggle."}
+    gift_wrap_fee: {type: number, purpose: "Gift wrap fee: 1500 or 0."}
+    coupon_code: {type: string, purpose: "Entered coupon code."}
+    coupon_credit: {type: number, purpose: "Credit from applied coupon."}
+    coupon_status: {type: string, purpose: "idle, applied, or rejected."}
+    service_call_count: {type: number, purpose: "Derived: total service calls."}
+    coupon_call_count: {type: number, purpose: "Derived: coupon service calls."}
+    loyalty_points: {type: number, purpose: "Available loyalty points."}
+    loyalty_credit: {type: number, purpose: "Credit from redeemed points."}
+    loyalty_call_count: {type: number, purpose: "Derived: loyalty service calls."}
+    delivery_slot: {type: string, purpose: "Selected delivery time slot."}
+    customer_name: {type: string, purpose: "Customer name."}
+    customer_phone: {type: string, purpose: "Customer phone."}
+    validation_errors: {type: object, purpose: "Field-level validation errors."}
+    order_placed: {type: boolean, purpose: "Whether current order placed."}
+    order_id: {type: string, purpose: "ID of placed order."}
+    order_history: {type: array, purpose: "Past orders."}
+    fulfillment_verified: {type: boolean, purpose: "Agent: fulfillment verified."}
+    fulfillment_packed: {type: boolean, purpose: "Agent: order packed."}
+    fulfillment_dispatched: {type: boolean, purpose: "Agent: order dispatched."}
+    checklist_count: {type: number, purpose: "Agent: completed checklist steps."}
+    order_audit: {type: array, purpose: "Audit trail for order operations."}
+    audit_count: {type: number, purpose: "Derived: count of audit records."}
+    last_action: {type: string, purpose: "Last user action label."}
+    __services.calls: {type: array, purpose: "Evaluator service call ledger."}
+
+components:
+  reset_button:
+    kind: button
+    selector: '[data-testid="reset"]'
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_page, value: market}
+          - {op: equals, path: active_role, value: customer}
+          - {op: equals, path: current_vendor, value: all}
+          - {op: equals, path: visible_products, value: [{id: GC-ARG-01, name: "Baby Arugula", vendor: GreenFarm, price: 3100, unit: "150g"}, {id: GC-TOM-01, name: "Heirloom Tomatoes", vendor: GreenFarm, price: 4200, unit: "500g"}, {id: GC-AVO-01, name: "Hass Avocados", vendor: GreenFarm, price: 6500, unit: "3pc"}, {id: GC-YGT-01, name: "Greek Yogurt", vendor: DairyPure, price: 4500, unit: "500g"}, {id: GC-BTR-01, name: "Artisan Butter", vendor: DairyPure, price: 6800, unit: "250g"}, {id: GC-SHR-01, name: "Pacific Shrimp", vendor: OceanCatch, price: 12500, unit: "300g"}, {id: GC-TUN-01, name: "Yellowfin Tuna", vendor: OceanCatch, price: 15800, unit: "200g"}, {id: GC-OLV-01, name: "Kalamata Olives", vendor: PantryPlus, price: 5400, unit: "200g"}, {id: GC-HON-01, name: "Wildflower Honey", vendor: PantryPlus, price: 7200, unit: "350g"}, {id: GC-RIC-01, name: "Organic Brown Rice", vendor: PantryPlus, price: 8900, unit: "3kg"}]}
+          - {op: equals, path: cart_items, value: []}
+          - {op: equals, path: cart_count, value: 0}
+          - {op: equals, path: cart_subtotal, value: 0}
+          - {op: equals, path: greenfarm_count, value: 0}
+          - {op: equals, path: oceancatch_count, value: 0}
+          - {op: equals, path: delivery_fee, value: 0}
+          - {op: equals, path: express_enabled, value: false}
+          - {op: equals, path: express_surcharge, value: 0}
+          - {op: equals, path: gift_wrap_enabled, value: false}
+          - {op: equals, path: gift_wrap_fee, value: 0}
+          - {op: equals, path: coupon_code, value: ""}
+          - {op: equals, path: coupon_credit, value: 0}
+          - {op: equals, path: coupon_status, value: idle}
+          - {op: equals, path: service_call_count, value: 0}
+          - {op: equals, path: coupon_call_count, value: 0}
+          - {op: equals, path: loyalty_points, value: 12000}
+          - {op: equals, path: loyalty_credit, value: 0}
+          - {op: equals, path: loyalty_call_count, value: 0}
+          - {op: equals, path: delivery_slot, value: ""}
+          - {op: equals, path: customer_name, value: ""}
+          - {op: equals, path: customer_phone, value: ""}
+          - {op: equals, path: validation_errors, value: {}}
+          - {op: equals, path: order_placed, value: false}
+          - {op: equals, path: order_id, value: ""}
+          - {op: equals, path: order_history, value: []}
+          - {op: equals, path: fulfillment_verified, value: false}
+          - {op: equals, path: fulfillment_packed, value: false}
+          - {op: equals, path: fulfillment_dispatched, value: false}
+          - {op: equals, path: checklist_count, value: 0}
+          - {op: equals, path: order_audit, value: []}
+          - {op: equals, path: audit_count, value: 0}
+          - {op: equals, path: last_action, value: reset}
+
+  go_market_button:
+    kind: button
+    selector: '[data-testid="go-market"]'
+    actions:
+      click:
+        navigate_to: market
+        effects:
+          - {op: equals, path: current_page, value: market}
+          - {op: equals, path: last_action, value: nav_market}
+
+  go_basket_button:
+    kind: button
+    selector: '[data-testid="go-basket"]'
+    actions:
+      click:
+        navigate_to: basket
+        effects:
+          - {op: equals, path: current_page, value: basket}
+          - {op: equals, path: last_action, value: nav_basket}
+
+  go_checkout_button:
+    kind: button
+    selector: '[data-testid="go-checkout"]'
+    actions:
+      click:
+        navigate_to: checkout
+        effects:
+          - {op: equals, path: current_page, value: checkout}
+          - {op: equals, path: last_action, value: nav_checkout}
+
+  go_orders_button:
+    kind: button
+    selector: '[data-testid="go-orders"]'
+    actions:
+      click:
+        navigate_to: orders
+        effects:
+          - {op: equals, path: current_page, value: orders}
+          - {op: equals, path: last_action, value: nav_orders}
+
+  filter_all_button:
+    kind: button
+    selector: '[data-testid="filter-all"]'
+    page: market
+    actions:
+      click:
+        effects:
+          - {op: equals, path: visible_products, value: [{id: GC-ARG-01, name: "Baby Arugula", vendor: GreenFarm, price: 3100, unit: "150g"}, {id: GC-TOM-01, name: "Heirloom Tomatoes", vendor: GreenFarm, price: 4200, unit: "500g"}, {id: GC-AVO-01, name: "Hass Avocados", vendor: GreenFarm, price: 6500, unit: "3pc"}, {id: GC-YGT-01, name: "Greek Yogurt", vendor: DairyPure, price: 4500, unit: "500g"}, {id: GC-BTR-01, name: "Artisan Butter", vendor: DairyPure, price: 6800, unit: "250g"}, {id: GC-SHR-01, name: "Pacific Shrimp", vendor: OceanCatch, price: 12500, unit: "300g"}, {id: GC-TUN-01, name: "Yellowfin Tuna", vendor: OceanCatch, price: 15800, unit: "200g"}, {id: GC-OLV-01, name: "Kalamata Olives", vendor: PantryPlus, price: 5400, unit: "200g"}, {id: GC-HON-01, name: "Wildflower Honey", vendor: PantryPlus, price: 7200, unit: "350g"}, {id: GC-RIC-01, name: "Organic Brown Rice", vendor: PantryPlus, price: 8900, unit: "3kg"}]}
+          - {op: equals, path: current_vendor, value: all}
+          - {op: equals, path: last_action, value: filter_all}
+
+  filter_greenfarm_button:
+    kind: button
+    selector: '[data-testid="filter-greenfarm"]'
+    page: market
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_vendor, value: GreenFarm}
+          - {op: equals_filter, path: visible_products, source_path: products, where: [{op: equals, field: vendor, value: GreenFarm}], order_by: [{field: price, direction: asc}]}
+          - {op: equals, path: last_action, value: filter_greenfarm}
+
+  filter_dairypure_button:
+    kind: button
+    selector: '[data-testid="filter-dairypure"]'
+    page: market
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_vendor, value: DairyPure}
+          - {op: equals_filter, path: visible_products, source_path: products, where: [{op: equals, field: vendor, value: DairyPure}], order_by: [{field: price, direction: asc}]}
+          - {op: equals, path: last_action, value: filter_dairypure}
+
+  filter_oceancatch_button:
+    kind: button
+    selector: '[data-testid="filter-oceancatch"]'
+    page: market
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_vendor, value: OceanCatch}
+          - {op: equals_filter, path: visible_products, source_path: products, where: [{op: equals, field: vendor, value: OceanCatch}], order_by: [{field: price, direction: asc}]}
+          - {op: equals, path: last_action, value: filter_oceancatch}
+
+  filter_pantryplus_button:
+    kind: button
+    selector: '[data-testid="filter-pantryplus"]'
+    page: market
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_vendor, value: PantryPlus}
+          - {op: equals_filter, path: visible_products, source_path: products, where: [{op: equals, field: vendor, value: PantryPlus}], order_by: [{field: price, direction: asc}]}
+          - {op: equals, path: last_action, value: filter_pantryplus}
+
+  add_arugula_button:
+    kind: button
+    selector: '[data-testid="add-GC-ARG-01"]'
+    page: market
+    actions:
+      click:
+        effects:
+          - op: appended_object
+            path: cart_items
+            value: {product_id: "GC-ARG-01", name: "Baby Arugula", vendor: GreenFarm, quantity: 1, unit_price: 3100, line_total: 3100, preparation: standard, surcharge: 0}
+          - *derive_cart_count
+          - *derive_cart_subtotal
+          - *derive_greenfarm_count
+          - *derive_oceancatch_count
+          - *derive_delivery_fee
+          - *derive_order_total
+          - {op: equals, path: last_action, value: add_item}
+
+  add_tomato_button:
+    kind: button
+    selector: '[data-testid="add-GC-TOM-01"]'
+    page: market
+    actions:
+      click:
+        effects:
+          - op: appended_object
+            path: cart_items
+            value: {product_id: "GC-TOM-01", name: "Heirloom Tomatoes", vendor: GreenFarm, quantity: 1, unit_price: 4200, line_total: 4200, preparation: standard, surcharge: 0}
+          - *derive_cart_count
+          - *derive_cart_subtotal
+          - *derive_greenfarm_count
+          - *derive_oceancatch_count
+          - *derive_delivery_fee
+          - *derive_order_total
+          - {op: equals, path: last_action, value: add_item}
+
+  add_avocado_button:
+    kind: button
+    selector: '[data-testid="add-GC-AVO-01"]'
+    page: market
+    actions:
+      click:
+        effects:
+          - op: appended_object
+            path: cart_items
+            value: {product_id: "GC-AVO-01", name: "Hass Avocados", vendor: GreenFarm, quantity: 1, unit_price: 6500, line_total: 6500, preparation: standard, surcharge: 0}
+          - *derive_cart_count
+          - *derive_cart_subtotal
+          - *derive_greenfarm_count
+          - *derive_oceancatch_count
+          - *derive_delivery_fee
+          - *derive_order_total
+          - {op: equals, path: last_action, value: add_item}
+
+  add_yogurt_button:
+    kind: button
+    selector: '[data-testid="add-GC-YGT-01"]'
+    page: market
+    actions:
+      click:
+        effects:
+          - op: appended_object
+            path: cart_items
+            value: {product_id: "GC-YGT-01", name: "Greek Yogurt", vendor: DairyPure, quantity: 1, unit_price: 4500, line_total: 4500, preparation: standard, surcharge: 0}
+          - *derive_cart_count
+          - *derive_cart_subtotal
+          - *derive_greenfarm_count
+          - *derive_oceancatch_count
+          - *derive_delivery_fee
+          - *derive_order_total
+          - {op: equals, path: last_action, value: add_item}
+
+  add_butter_button:
+    kind: button
+    selector: '[data-testid="add-GC-BTR-01"]'
+    page: market
+    actions:
+      click:
+        effects:
+          - op: appended_object
+            path: cart_items
+            value: {product_id: "GC-BTR-01", name: "Artisan Butter", vendor: DairyPure, quantity: 1, unit_price: 6800, line_total: 6800, preparation: standard, surcharge: 0}
+          - *derive_cart_count
+          - *derive_cart_subtotal
+          - *derive_greenfarm_count
+          - *derive_oceancatch_count
+          - *derive_delivery_fee
+          - *derive_order_total
+          - {op: equals, path: last_action, value: add_item}
+
+  add_shrimp_button:
+    kind: button
+    selector: '[data-testid="add-GC-SHR-01"]'
+    page: market
+    actions:
+      click:
+        effects:
+          - op: appended_object
+            path: cart_items
+            value: {product_id: "GC-SHR-01", name: "Pacific Shrimp", vendor: OceanCatch, quantity: 1, unit_price: 12500, line_total: 12500, preparation: standard, surcharge: 0}
+          - *derive_cart_count
+          - *derive_cart_subtotal
+          - *derive_greenfarm_count
+          - *derive_oceancatch_count
+          - *derive_delivery_fee
+          - *derive_order_total
+          - {op: equals, path: last_action, value: add_item}
+
+  add_tuna_button:
+    kind: button
+    selector: '[data-testid="add-GC-TUN-01"]'
+    page: market
+    actions:
+      click:
+        effects:
+          - op: appended_object
+            path: cart_items
+            value: {product_id: "GC-TUN-01", name: "Yellowfin Tuna", vendor: OceanCatch, quantity: 1, unit_price: 15800, line_total: 15800, preparation: standard, surcharge: 0}
+          - *derive_cart_count
+          - *derive_cart_subtotal
+          - *derive_greenfarm_count
+          - *derive_oceancatch_count
+          - *derive_delivery_fee
+          - *derive_order_total
+          - {op: equals, path: last_action, value: add_item}
+
+  add_olives_button:
+    kind: button
+    selector: '[data-testid="add-GC-OLV-01"]'
+    page: market
+    actions:
+      click:
+        effects:
+          - op: appended_object
+            path: cart_items
+            value: {product_id: "GC-OLV-01", name: "Kalamata Olives", vendor: PantryPlus, quantity: 1, unit_price: 5400, line_total: 5400, preparation: standard, surcharge: 0}
+          - *derive_cart_count
+          - *derive_cart_subtotal
+          - *derive_greenfarm_count
+          - *derive_oceancatch_count
+          - *derive_delivery_fee
+          - *derive_order_total
+          - {op: equals, path: last_action, value: add_item}
+
+  add_honey_button:
+    kind: button
+    selector: '[data-testid="add-GC-HON-01"]'
+    page: market
+    actions:
+      click:
+        effects:
+          - op: appended_object
+            path: cart_items
+            value: {product_id: "GC-HON-01", name: "Wildflower Honey", vendor: PantryPlus, quantity: 1, unit_price: 7200, line_total: 7200, preparation: standard, surcharge: 0}
+          - *derive_cart_count
+          - *derive_cart_subtotal
+          - *derive_greenfarm_count
+          - *derive_oceancatch_count
+          - *derive_delivery_fee
+          - *derive_order_total
+          - {op: equals, path: last_action, value: add_item}
+
+  add_rice_button:
+    kind: button
+    selector: '[data-testid="add-GC-RIC-01"]'
+    page: market
+    actions:
+      click:
+        effects:
+          - op: appended_object
+            path: cart_items
+            value: {product_id: "GC-RIC-01", name: "Organic Brown Rice", vendor: PantryPlus, quantity: 1, unit_price: 8900, line_total: 8900, preparation: standard, surcharge: 0}
+          - *derive_cart_count
+          - *derive_cart_subtotal
+          - *derive_greenfarm_count
+          - *derive_oceancatch_count
+          - *derive_delivery_fee
+          - *derive_order_total
+          - {op: equals, path: last_action, value: add_item}
+
+  prep_sashimi_tuna_button:
+    kind: button
+    selector: '[data-testid="prep-sashimi-GC-TUN-01"]'
+    page: basket
+    actions:
+      click:
+        preconditions:
+          - {op: relation, path: cart_count, operator: ">=", value: 1}
+        effects:
+          - {op: updated_first_where, path: cart_items, where: [{op: equals, field: product_id, value: "GC-TUN-01"}], updates: {preparation: sashimi, surcharge: 2000, line_total: 17800}}
+          - *derive_cart_subtotal
+          - *derive_delivery_fee
+          - *derive_order_total
+          - {op: equals, path: last_action, value: prep_sashimi}
+
+  prep_devein_shrimp_button:
+    kind: button
+    selector: '[data-testid="prep-devein-GC-SHR-01"]'
+    page: basket
+    actions:
+      click:
+        preconditions:
+          - {op: relation, path: cart_count, operator: ">=", value: 1}
+        effects:
+          - {op: updated_first_where, path: cart_items, where: [{op: equals, field: product_id, value: "GC-SHR-01"}], updates: {preparation: deveined, surcharge: 1500, line_total: 14000}}
+          - *derive_cart_subtotal
+          - *derive_delivery_fee
+          - *derive_order_total
+          - {op: equals, path: last_action, value: prep_devein}
+
+  prep_gift_honey_button:
+    kind: button
+    selector: '[data-testid="prep-gift-GC-HON-01"]'
+    page: basket
+    actions:
+      click:
+        preconditions:
+          - {op: relation, path: cart_count, operator: ">=", value: 1}
+        effects:
+          - {op: updated_first_where, path: cart_items, where: [{op: equals, field: product_id, value: "GC-HON-01"}], updates: {preparation: gift, surcharge: 1000, line_total: 8200}}
+          - *derive_cart_subtotal
+          - *derive_delivery_fee
+          - *derive_order_total
+          - {op: equals, path: last_action, value: prep_gift}
+
+  remove_avocado_button:
+    kind: button
+    selector: '[data-testid="remove-GC-AVO-01"]'
+    page: basket
+    actions:
+      click:
+        preconditions:
+          - {op: relation, path: cart_count, operator: ">=", value: 1}
+        effects:
+          - {op: removed_first_where, path: cart_items, where: [{op: equals, field: product_id, value: "GC-AVO-01"}]}
+          - *derive_cart_count
+          - *derive_cart_subtotal
+          - *derive_greenfarm_count
+          - *derive_oceancatch_count
+          - *derive_delivery_fee
+          - *derive_order_total
+          - {op: equals, path: last_action, value: remove_item}
+
+  remove_tuna_button:
+    kind: button
+    selector: '[data-testid="remove-GC-TUN-01"]'
+    page: basket
+    actions:
+      click:
+        preconditions:
+          - {op: relation, path: cart_count, operator: ">=", value: 1}
+        effects:
+          - {op: removed_first_where, path: cart_items, where: [{op: equals, field: product_id, value: "GC-TUN-01"}]}
+          - *derive_cart_count
+          - *derive_cart_subtotal
+          - *derive_greenfarm_count
+          - *derive_oceancatch_count
+          - *derive_delivery_fee
+          - *derive_order_total
+          - {op: equals, path: last_action, value: remove_item}
+
+  remove_rice_button:
+    kind: button
+    selector: '[data-testid="remove-GC-RIC-01"]'
+    page: basket
+    actions:
+      click:
+        preconditions:
+          - {op: relation, path: cart_count, operator: ">=", value: 1}
+        effects:
+          - {op: removed_first_where, path: cart_items, where: [{op: equals, field: product_id, value: "GC-RIC-01"}]}
+          - *derive_cart_count
+          - *derive_cart_subtotal
+          - *derive_greenfarm_count
+          - *derive_oceancatch_count
+          - *derive_delivery_fee
+          - *derive_order_total
+          - {op: equals, path: last_action, value: remove_item}
+
+  coupon_code_input:
+    kind: input
+    selector: '[data-testid="coupon-code"]'
+    page: checkout
+    actions:
+      fill:
+        effects:
+          - {op: equals_normalized, path: coupon_code, value_from: input.value, normalizers: [trim, uppercase]}
+          - {op: equals, path: last_action, value: edit_coupon}
+
+  apply_coupon_button:
+    kind: button
+    selector: '[data-testid="apply-coupon"]'
+    page: checkout
+    actions:
+      click:
+        preconditions:
+          - {op: relation, path: cart_count, operator: ">=", value: 1}
+          - {op: relation, path: coupon_code, operator: "!=", value: ""}
+        effects:
+          - *derive_service_call_count
+          - *derive_coupon_call_count
+          - {op: one_of, path: coupon_status, values: [applied, rejected]}
+          - *derive_order_total
+          - {op: equals, path: last_action, value: apply_coupon}
+
+  redeem_loyalty_button:
+    kind: button
+    selector: '[data-testid="redeem-loyalty"]'
+    page: checkout
+    actions:
+      click:
+        preconditions:
+          - {op: relation, path: loyalty_points, operator: ">=", value: 5000}
+          - {op: relation, path: cart_count, operator: ">=", value: 1}
+        effects:
+          - *derive_service_call_count
+          - *derive_loyalty_call_count
+          - {op: changed_by, path: loyalty_points, by: -5000}
+          - {op: changed_by, path: loyalty_credit, by: 5000}
+          - *derive_order_total
+          - {op: equals, path: last_action, value: redeem_loyalty}
+
+  enable_express_button:
+    kind: button
+    selector: '[data-testid="enable-express"]'
+    page: checkout
+    actions:
+      click:
+        preconditions:
+          - {op: relation, path: cart_count, operator: ">=", value: 1}
+          - {op: equals, path: express_enabled, value: false}
+        effects:
+          - {op: equals, path: express_enabled, value: true}
+          - {op: equals, path: express_surcharge, value: 2500}
+          - *derive_order_total
+          - {op: equals, path: last_action, value: enable_express}
+
+  disable_express_button:
+    kind: button
+    selector: '[data-testid="disable-express"]'
+    page: checkout
+    actions:
+      click:
+        preconditions:
+          - {op: equals, path: express_enabled, value: true}
+        effects:
+          - {op: equals, path: express_enabled, value: false}
+          - {op: equals, path: express_surcharge, value: 0}
+          - *derive_order_total
+          - {op: equals, path: last_action, value: disable_express}
+
+  enable_gift_wrap_button:
+    kind: button
+    selector: '[data-testid="enable-gift-wrap"]'
+    page: checkout
+    actions:
+      click:
+        preconditions:
+          - {op: relation, path: cart_count, operator: ">=", value: 1}
+          - {op: equals, path: gift_wrap_enabled, value: false}
+        effects:
+          - {op: equals, path: gift_wrap_enabled, value: true}
+          - {op: equals, path: gift_wrap_fee, value: 1500}
+          - *derive_order_total
+          - {op: equals, path: last_action, value: enable_gift_wrap}
+
+  disable_gift_wrap_button:
+    kind: button
+    selector: '[data-testid="disable-gift-wrap"]'
+    page: checkout
+    actions:
+      click:
+        preconditions:
+          - {op: equals, path: gift_wrap_enabled, value: true}
+        effects:
+          - {op: equals, path: gift_wrap_enabled, value: false}
+          - {op: equals, path: gift_wrap_fee, value: 0}
+          - *derive_order_total
+          - {op: equals, path: last_action, value: disable_gift_wrap}
+
+  slot_morning_button:
+    kind: button
+    selector: '[data-testid="slot-morning"]'
+    page: checkout
+    actions:
+      click:
+        effects:
+          - {op: equals, path: delivery_slot, value: morning}
+          - {op: equals, path: last_action, value: select_slot}
+
+  slot_afternoon_button:
+    kind: button
+    selector: '[data-testid="slot-afternoon"]'
+    page: checkout
+    actions:
+      click:
+        effects:
+          - {op: equals, path: delivery_slot, value: afternoon}
+          - {op: equals, path: last_action, value: select_slot}
+
+  slot_evening_button:
+    kind: button
+    selector: '[data-testid="slot-evening"]'
+    page: checkout
+    actions:
+      click:
+        effects:
+          - {op: equals, path: delivery_slot, value: evening}
+          - {op: equals, path: last_action, value: select_slot}
+
+  customer_name_input:
+    kind: input
+    selector: '[data-testid="customer-name"]'
+    page: checkout
+    actions:
+      fill:
+        effects:
+          - {op: equals_normalized, path: customer_name, value_from: input.value, normalizers: [trim]}
+          - {op: removed_object_fields, path: validation_errors, fields: [name]}
+          - {op: equals, path: last_action, value: edit_name}
+
+  customer_phone_input:
+    kind: input
+    selector: '[data-testid="customer-phone"]'
+    page: checkout
+    actions:
+      fill:
+        effects:
+          - {op: equals_normalized, path: customer_phone, value_from: input.value, normalizers: [trim]}
+          - {op: removed_object_fields, path: validation_errors, fields: [phone]}
+          - {op: equals, path: last_action, value: edit_phone}
+
+  place_order_button:
+    kind: button
+    selector: '[data-testid="place-order"]'
+    page: checkout
+    actions:
+      click:
+        preconditions:
+          - {op: relation, path: cart_subtotal, operator: ">=", value: 15000}
+          - {op: relation, path: cart_count, operator: ">=", value: 1}
+          - {op: relation, path: customer_name, operator: "!=", value: ""}
+          - {op: one_of, path: delivery_slot, values: [morning, afternoon, evening]}
+        rejected_when:
+          - {op: relation, path: cart_subtotal, operator: "<", value: 15000}
+        rejected_effects:
+          - {op: equals, path: order_placed, value: false}
+          - {op: updated_object_fields, path: validation_errors, updates: {minimum_order: "Minimum order 15000"}}
+          - {op: equals, path: last_action, value: reject_minimum}
+        effects:
+          - {op: equals, path: order_placed, value: true}
+          - {op: one_of, path: order_id, values: ["ORD-001", "ORD-002", "ORD-003", "ORD-004", "ORD-005"]}
+          - {op: appended_object, path: order_audit, value: {id: {after_path: audit_count}, event: placed, role: {from_path: active_role}, subtotal: {from_path: cart_subtotal}}}
+          - *derive_audit_count
+          - {op: equals, path: last_action, value: place_order}
+
+  role_customer_button:
+    kind: button
+    selector: '[data-testid="role-customer"]'
+    actions:
+      click:
+        effects:
+          - {op: equals, path: active_role, value: customer}
+          - {op: equals, path: last_action, value: role_customer}
+
+  role_staff_button:
+    kind: button
+    selector: '[data-testid="role-staff"]'
+    actions:
+      click:
+        effects:
+          - {op: equals, path: active_role, value: staff}
+          - {op: equals, path: last_action, value: role_staff}
+
+  verify_fulfillment_button:
+    kind: button
+    selector: '[data-testid="verify-fulfillment"]'
+    page: orders
+    actions:
+      click:
+        allowed_roles: [staff]
+        preconditions:
+          - {op: equals, path: fulfillment_verified, value: false}
+          - {op: equals, path: order_placed, value: true}
+        effects:
+          - {op: equals, path: fulfillment_verified, value: true}
+          - {op: changed_by, path: checklist_count, by: 1}
+          - {op: equals, path: last_action, value: verify_fulfillment}
+        unauthorized_effects:
+          - {op: equals, path: last_action, value: deny_verify}
+
+  confirm_packed_button:
+    kind: button
+    selector: '[data-testid="confirm-packed"]'
+    page: orders
+    actions:
+      click:
+        allowed_roles: [staff]
+        preconditions:
+          - {op: equals, path: fulfillment_packed, value: false}
+          - {op: equals, path: order_placed, value: true}
+        effects:
+          - {op: equals, path: fulfillment_packed, value: true}
+          - {op: changed_by, path: checklist_count, by: 1}
+          - {op: equals, path: last_action, value: confirm_packed}
+        unauthorized_effects:
+          - {op: equals, path: last_action, value: deny_packed}
+
+  confirm_dispatched_button:
+    kind: button
+    selector: '[data-testid="confirm-dispatched"]'
+    page: orders
+    actions:
+      click:
+        allowed_roles: [staff]
+        preconditions:
+          - {op: equals, path: fulfillment_dispatched, value: false}
+          - {op: equals, path: order_placed, value: true}
+        effects:
+          - {op: equals, path: fulfillment_dispatched, value: true}
+          - {op: changed_by, path: checklist_count, by: 1}
+          - {op: equals, path: last_action, value: confirm_dispatched}
+        unauthorized_effects:
+          - {op: equals, path: last_action, value: deny_dispatched}
+
+  confirm_delivery_button:
+    kind: button
+    selector: '[data-testid="confirm-delivery"]'
+    page: orders
+    actions:
+      click:
+        allowed_roles: [staff]
+        preconditions:
+          - {op: equals, path: order_placed, value: true}
+          - {op: equals, path: checklist_count, value: 3}
+        effects:
+          - {op: equals, path: last_action, value: confirm_delivery}
+          - {op: appended_object, path: order_audit, value: {id: {after_path: audit_count}, event: delivered, role: {from_path: active_role}, order: {from_path: order_id}}}
+          - *derive_audit_count
+        unauthorized_effects:
+          - {op: equals, path: last_action, value: deny_confirm_delivery}
+
+  cancel_order_button:
+    kind: button
+    selector: '[data-testid="cancel-order"]'
+    page: orders
+    actions:
+      click:
+        allowed_roles: [staff]
+        preconditions:
+          - {op: equals, path: order_placed, value: true}
+        effects:
+          - {op: equals, path: last_action, value: cancel_order}
+          - {op: appended_object, path: order_audit, value: {id: {after_path: audit_count}, event: cancelled, role: {from_path: active_role}, order: {from_path: order_id}}}
+          - *derive_audit_count
+        unauthorized_effects:
+          - {op: unchanged, path: order_audit}
+          - {op: equals, path: last_action, value: unauthorized}

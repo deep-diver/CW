@@ -1,0 +1,1023 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Media Campaign Launch Desk Tier D</title>
+  <style>
+    :root {
+      --bg: #070a12;
+      --panel: #101624;
+      --panel-2: #151d2c;
+      --ink: #f8fafc;
+      --muted: #94a3b8;
+      --line: #263247;
+      --cyan: #22d3ee;
+      --red: #fb5263;
+      --gold: #f5b942;
+      --green: #4ade80;
+      --violet: #9b8cff;
+      --white-strip: #f2f5f8;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        linear-gradient(90deg, rgba(34, 211, 238, .08) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(245, 185, 66, .06) 1px, transparent 1px),
+        var(--bg);
+      background-size: 64px 64px;
+      min-height: 100vh;
+      letter-spacing: 0;
+    }
+    button, input { font: inherit; }
+    button {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      color: var(--ink);
+      background: #182133;
+      min-height: 34px;
+      padding: 0 10px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    button:hover { border-color: var(--cyan); }
+    input[type="text"], input:not([type]) {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #09111f;
+      color: var(--ink);
+      min-height: 34px;
+      padding: 0 10px;
+      width: 100%;
+    }
+    input[type="file"] {
+      width: 100%;
+      color: var(--muted);
+      border: 1px dashed #3b4b68;
+      border-radius: 6px;
+      padding: 7px;
+      background: #0b1220;
+    }
+    .app {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr) 390px;
+      gap: 12px;
+      padding: 12px;
+      min-height: 100vh;
+    }
+    .rail, .stage, .dock { min-width: 0; }
+    .panel {
+      background: rgba(16, 22, 36, .94);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, .22);
+    }
+    .rail, .dock {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .brand {
+      padding: 14px;
+      background: linear-gradient(180deg, #111a2b, #0a101d);
+    }
+    .slate-strip {
+      background: var(--white-strip);
+      color: #08111f;
+      border-radius: 5px;
+      padding: 8px 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      font-size: 12px;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    h1, h2, h3 { margin: 0; font-weight: 800; }
+    h1 { font-size: 20px; line-height: 1.05; margin-top: 12px; }
+    h2 { font-size: 13px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+    h3 { font-size: 13px; color: var(--ink); margin: 8px 0; }
+    .muted { color: var(--muted); }
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      padding: 10px;
+    }
+    .metric {
+      background: #0b1220;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 9px;
+      min-height: 72px;
+    }
+    .metric b { display: block; font-size: 22px; line-height: 1; }
+    .metric span { color: var(--muted); font-size: 11px; text-transform: uppercase; }
+    .nav, .roles, .cluster {
+      display: grid;
+      gap: 6px;
+      padding: 10px;
+    }
+    .nav { grid-template-columns: 1fr; }
+    .roles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .active {
+      border-color: var(--cyan);
+      box-shadow: inset 0 0 0 1px rgba(34, 211, 238, .35);
+    }
+    .stage {
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+      gap: 12px;
+    }
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.3fr) minmax(320px, .7fr);
+      gap: 12px;
+      padding: 14px;
+      overflow: hidden;
+    }
+    .timeline {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .clock {
+      border: 1px solid #334155;
+      border-radius: 7px;
+      padding: 10px;
+      background: #0b1220;
+      min-height: 76px;
+    }
+    .clock strong { display: block; font-size: 17px; }
+    .clock small { color: var(--muted); }
+    .map {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 7px;
+    }
+    .tile {
+      min-height: 58px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 8px;
+      background: linear-gradient(135deg, #0d1628, #172036);
+    }
+    .tile b { display: block; color: var(--cyan); }
+    .tables {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .wide { grid-column: 1 / -1; }
+    .table-panel { padding: 10px; overflow: hidden; }
+    .table-scroll { overflow: auto; max-height: 265px; border-radius: 6px; border: 1px solid var(--line); }
+    table { width: 100%; border-collapse: collapse; min-width: 560px; background: #0b1220; }
+    th, td {
+      text-align: left;
+      border-bottom: 1px solid #1f2b3f;
+      padding: 7px 8px;
+      font-size: 12px;
+      vertical-align: middle;
+    }
+    th { color: #cbd5e1; background: #111a2b; position: sticky; top: 0; z-index: 1; }
+    td { color: #e2e8f0; }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 2px 7px;
+      border: 1px solid var(--line);
+      font-size: 11px;
+      color: var(--ink);
+      background: #111827;
+    }
+    .critical, .blocked, .open { color: var(--red); }
+    .high, .review { color: var(--gold); }
+    .cleared, .locked, .healthy, .armed, .sealed, .acknowledged, .signed { color: var(--green); }
+    .dock .panel { padding: 10px; }
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+    .two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .score-ring {
+      min-height: 170px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background:
+        conic-gradient(var(--green) calc(var(--score) * 1%), #1f2937 0),
+        #0b1220;
+      display: grid;
+      place-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .score-ring::after {
+      content: "";
+      position: absolute;
+      width: 64%;
+      height: 64%;
+      border-radius: 50%;
+      background: #0b1220;
+      border: 1px solid var(--line);
+    }
+    .score-ring b {
+      position: relative;
+      z-index: 1;
+      font-size: 42px;
+    }
+    .hint { font-size: 11px; color: var(--muted); line-height: 1.35; }
+    @media (max-width: 1180px) {
+      .app { grid-template-columns: 240px 1fr; }
+      .dock { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .hero { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 760px) {
+      .app { grid-template-columns: 1fr; }
+      .tables, .dock { grid-template-columns: 1fr; }
+      .timeline { grid-template-columns: repeat(2, 1fr); }
+      .roles, .two { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="rail">
+      <section class="panel brand">
+        <div class="slate-strip"><span>Global Premiere</span><span>Tier D</span></div>
+        <h1>Embargo Command Center</h1>
+        <p class="hint">Franchise release control for asset locks, blackout windows, delivery, beacons, escrow, and executive sealing.</p>
+      </section>
+      <section class="panel">
+        <div class="metric-grid">
+          <div class="metric"><b id="metric-readiness">0</b><span>readiness</span></div>
+          <div class="metric"><b id="metric-open">10</b><span>open blockers</span></div>
+          <div class="metric"><b id="metric-launch">idle</b><span>launch</span></div>
+          <div class="metric"><b id="metric-role">producer</b><span>role</span></div>
+        </div>
+      </section>
+      <section class="panel">
+        <div class="nav">
+          <button data-testid="go-slate">Slate</button>
+          <button data-testid="go-markets">Markets</button>
+          <button data-testid="go-traffic">Traffic</button>
+          <button data-testid="go-signals">Signals</button>
+          <button data-testid="go-seal">Seal</button>
+          <button data-testid="reset">Reset</button>
+        </div>
+      </section>
+      <section class="panel">
+        <div class="roles">
+          <button data-testid="role-producer">Producer</button>
+          <button data-testid="role-legal">Legal</button>
+          <button data-testid="role-ops">Ops</button>
+          <button data-testid="role-measurement">Measure</button>
+          <button data-testid="role-finance">Finance</button>
+          <button data-testid="role-executive">Executive</button>
+        </div>
+      </section>
+    </aside>
+
+    <main class="stage">
+      <section class="panel hero">
+        <div>
+          <div class="slate-strip"><span id="selected-title">No asset selected</span><span id="selected-version">--</span></div>
+          <div class="timeline">
+            <div class="clock"><strong id="selected-embargo">T--</strong><small>Embargo clock</small></div>
+            <div class="clock"><strong id="selected-region">global</strong><small>Primary region</small></div>
+            <div class="clock"><strong id="selected-risk">idle</strong><small>Risk band</small></div>
+            <div class="clock"><strong id="selected-clearance">idle</strong><small>Clearance</small></div>
+            <div class="clock"><strong id="launch-score">0</strong><small>Seal score</small></div>
+          </div>
+        </div>
+        <div class="map">
+          <div class="tile"><b>LON</b><span>20:00 press hold</span></div>
+          <div class="tile"><b>SEO</b><span>05:00 social drop</span></div>
+          <div class="tile"><b>LAX</b><span>18:00 trailer blast</span></div>
+          <div class="tile"><b>SYD</b><span>09:00 talent posts</span></div>
+          <div class="tile"><b>MEX</b><span>21:30 OOH sync</span></div>
+          <div class="tile"><b>PAR</b><span>21:00 premiere rail</span></div>
+        </div>
+      </section>
+
+      <section class="tables">
+        <div class="panel table-panel wide">
+          <h2>Asset Vault</h2>
+          <div class="table-scroll">
+            <table data-testid="asset-grid">
+              <thead><tr><th>Title</th><th>Format</th><th>Region</th><th>Embargo</th><th>Clearance</th><th>Risk</th><th>Version</th><th>Pick</th></tr></thead>
+              <tbody id="asset-body"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="panel table-panel">
+          <h2>Market Blackout Matrix</h2>
+          <div class="table-scroll">
+            <table data-testid="window-grid">
+              <thead><tr><th>Market</th><th>Local Time</th><th>Blackout</th><th>Owner</th><th>Status</th></tr></thead>
+              <tbody id="window-body"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="panel table-panel">
+          <h2>Partner Delivery Manifest</h2>
+          <div class="table-scroll">
+            <table data-testid="traffic-grid">
+              <thead><tr><th>Partner</th><th>Market</th><th>Format</th><th>Spend</th><th>QA</th><th>Status</th></tr></thead>
+              <tbody id="traffic-body"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="panel table-panel">
+          <h2>Measurement Beacons</h2>
+          <div class="table-scroll">
+            <table data-testid="beacon-grid">
+              <thead><tr><th>Surface</th><th>Event</th><th>Owner</th><th>Status</th></tr></thead>
+              <tbody id="beacon-body"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="panel table-panel">
+          <h2>Sentiment Watch</h2>
+          <div class="table-scroll">
+            <table data-testid="sentiment-grid">
+              <thead><tr><th>Market</th><th>Volume</th><th>Polarity</th><th>Status</th></tr></thead>
+              <tbody id="sentiment-body"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="panel table-panel">
+          <h2>Escrow Ledger</h2>
+          <div class="table-scroll">
+            <table data-testid="escrow-grid">
+              <thead><tr><th>Market</th><th>Budget</th><th>Invoice</th><th>Status</th></tr></thead>
+              <tbody id="escrow-body"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="panel table-panel">
+          <h2>Readiness Blockers</h2>
+          <div class="table-scroll">
+            <table data-testid="blocker-grid">
+              <thead><tr><th>Label</th><th>Owner</th><th>Status</th></tr></thead>
+              <tbody id="blocker-body"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="panel table-panel">
+          <h2>Launch Ledger</h2>
+          <div class="table-scroll">
+            <table data-testid="launch-grid">
+              <thead><tr><th>Slate</th><th>Markets</th><th>Status</th><th>Seal</th></tr></thead>
+              <tbody id="launch-body"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="panel table-panel">
+          <h2>Audit Trail</h2>
+          <div class="table-scroll">
+            <table data-testid="audit-grid">
+              <thead><tr><th>Event</th><th>Actor</th><th>Status</th></tr></thead>
+              <tbody id="audit-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <aside class="dock">
+      <section class="panel">
+        <h2>Slate Controls</h2>
+        <div class="cluster two">
+          <button data-testid="filter-all">All Assets</button>
+          <button data-testid="filter-embargo-risk">Embargo Risk</button>
+          <button data-testid="filter-uncleared">Uncleared</button>
+          <button data-testid="request-legal-clearance">Request Legal</button>
+        </div>
+        <div class="form-grid">
+          <input data-testid="release-code" type="text" placeholder="Release code">
+          <input data-testid="watermark-key" type="text" placeholder="Watermark key">
+          <button data-testid="lock-asset">Lock Asset</button>
+        </div>
+      </section>
+      <section class="panel">
+        <h2>Market Windows</h2>
+        <div class="form-grid">
+          <input data-testid="window-upload" type="file" accept=".csv,text/csv">
+          <button data-testid="lock-windows">Lock Windows</button>
+        </div>
+      </section>
+      <section class="panel">
+        <h2>Traffic Delivery</h2>
+        <div class="form-grid">
+          <input data-testid="traffic-upload" type="file" accept=".csv,text/csv">
+          <div class="cluster two">
+            <button data-testid="lock-delivery">Lock Delivery</button>
+            <button data-testid="ack-delivery">Ack Delivery</button>
+          </div>
+        </div>
+      </section>
+      <section class="panel">
+        <h2>Signals</h2>
+        <div class="form-grid">
+          <input data-testid="beacon-upload" type="file" accept=".csv,text/csv">
+          <button data-testid="arm-beacons">Arm Beacons</button>
+          <button data-testid="run-attribution">Run Attribution</button>
+          <input data-testid="sentiment-upload" type="file" accept=".csv,text/csv">
+          <button data-testid="clear-sentiment">Clear Sentiment</button>
+          <input data-testid="escrow-upload" type="file" accept=".csv,text/csv">
+          <button data-testid="lock-escrow">Lock Escrow</button>
+        </div>
+      </section>
+      <section class="panel">
+        <h2>Executive Seal</h2>
+        <div class="score-ring" id="score-ring" style="--score: 0"><b id="ring-score">0</b></div>
+        <div class="cluster two">
+          <button data-testid="legal-signoff">Legal Sign</button>
+          <button data-testid="ops-signoff">Ops Sign</button>
+          <button data-testid="measurement-signoff">Measure Sign</button>
+          <button data-testid="finance-signoff">Finance Sign</button>
+          <button data-testid="executive-signoff">Exec Sign</button>
+          <button data-testid="finalize-launch">Seal Launch</button>
+        </div>
+      </section>
+    </aside>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "detox_media_tier_d_state_v1";
+    const assets = [
+      {id:"A-PRE", title:"Premiere Livestream Bumper", format:"live", region:"EMEA", embargo:"T-01:30", clearance:"review", risk:"critical", version:"v5"},
+      {id:"A-RED", title:"Red Horizon Trailer", format:"trailer", region:"global", embargo:"T-06:00", clearance:"review", risk:"high", version:"v3"},
+      {id:"A-SOC", title:"Social Vertical Teasers", format:"social", region:"APAC", embargo:"T-02:00", clearance:"review", risk:"high", version:"v7"},
+      {id:"A-POD", title:"Cast Podcast Cutdown", format:"audio", region:"NA", embargo:"T-04:00", clearance:"cleared", risk:"medium", version:"v2"},
+      {id:"A-OOH", title:"Out of Home Reveal", format:"outdoor", region:"LATAM", embargo:"T-03:30", clearance:"cleared", risk:"medium", version:"v4"},
+      {id:"A-PR", title:"Press Kit Stills", format:"stills", region:"global", embargo:"T-08:00", clearance:"cleared", risk:"low", version:"v1"}
+    ];
+    const initialBlockers = [
+      {id:"B-ASSET", label:"Asset locked to release code", owner:"producer", status:"open"},
+      {id:"B-LEGAL", label:"Legal clearance and sign-off", owner:"legal", status:"open"},
+      {id:"B-WINDOWS", label:"Market blackout windows locked", owner:"ops", status:"open"},
+      {id:"B-DELIVERY", label:"Partner delivery locked and acknowledged", owner:"ops", status:"open"},
+      {id:"B-BEACONS", label:"Measurement beacons armed", owner:"measurement", status:"open"},
+      {id:"B-ATTRIBUTION", label:"Attribution health green", owner:"measurement", status:"open"},
+      {id:"B-SENTIMENT", label:"Sentiment watch cleared", owner:"measurement", status:"open"},
+      {id:"B-ESCROW", label:"Finance escrow locked", owner:"finance", status:"open"},
+      {id:"B-SIGNOFFS", label:"Four operator sign-offs captured", owner:"executive", status:"open"},
+      {id:"B-EXECUTIVE", label:"Executive seal sign-off captured", owner:"executive", status:"open"}
+    ];
+    const rightsScore = {"A-PRE": 88, "A-RED": 96, "A-SOC": 91};
+    const deep = value => JSON.parse(JSON.stringify(value));
+    function freshState() {
+      return {
+        current_page: "slate",
+        active_role: "producer",
+        assets: deep(assets),
+        visible_assets: deep(assets),
+        current_filter: "all",
+        selected_asset_id: "",
+        selected_asset_title: "",
+        selected_format: "",
+        selected_region: "",
+        selected_embargo: "",
+        selected_clearance: "",
+        selected_risk: "",
+        selected_version: "",
+        release_code: "",
+        watermark_key: "",
+        embargo_status: "idle",
+        legal_clearance_status: "idle",
+        legal_clearance_score: 0,
+        rights_call_count: 0,
+        attribution_call_count: 0,
+        service_call_count: 0,
+        window_rows: [],
+        window_count: 0,
+        open_blackout_count: 0,
+        window_status: "idle",
+        window_lock_count: 0,
+        last_window_file: "",
+        placement_rows: [],
+        placement_count: 0,
+        qa_fail_count: 0,
+        delivery_status: "idle",
+        delivery_lock_count: 0,
+        delivery_ack_status: "idle",
+        delivery_ack_count: 0,
+        last_traffic_file: "",
+        beacon_rows: [],
+        beacon_count: 0,
+        beacon_status: "idle",
+        beacon_arm_count: 0,
+        attribution_status: "idle",
+        attribution_score: 0,
+        sentiment_rows: [],
+        sentiment_count: 0,
+        negative_sentiment_count: 0,
+        sentiment_status: "idle",
+        sentiment_clear_count: 0,
+        last_sentiment_file: "",
+        escrow_rows: [],
+        escrow_count: 0,
+        unpaid_invoice_count: 0,
+        escrow_status: "idle",
+        escrow_lock_count: 0,
+        last_escrow_file: "",
+        legal_signoff_status: "idle",
+        ops_signoff_status: "idle",
+        measurement_signoff_status: "idle",
+        finance_signoff_status: "idle",
+        executive_signoff_status: "idle",
+        signoff_count: 0,
+        readiness_score: 0,
+        open_blockers: 10,
+        blocker_rows: deep(initialBlockers),
+        launch_rows: [],
+        launch_count: 0,
+        global_launch_status: "idle",
+        launch_seal_score: 0,
+        open_launch_blockers: 6,
+        launch_seal_count: 0,
+        audit_log: [],
+        audit_count: 0,
+        validation_errors: {},
+        denied_count: 0,
+        last_action: "ready",
+        "__services": {calls: []}
+      };
+    }
+    function loadState() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) return {...freshState(), ...JSON.parse(saved)};
+      } catch (_) {}
+      return freshState();
+    }
+    let S = loadState();
+
+    function normalizeUpper(value) {
+      return String(value || "").trim().replace(/\s+/g, " ").toUpperCase();
+    }
+    function setRole(role) {
+      S.active_role = role;
+      S.last_action = "role_" + role;
+      commit();
+    }
+    function deny(marker) {
+      S.denied_count += 1;
+      S.last_action = marker;
+      commit();
+    }
+    function reopenLaunch() {
+      if (S.global_launch_status === "sealed") S.global_launch_status = "open";
+    }
+    function countSigned() {
+      return [
+        S.legal_signoff_status,
+        S.ops_signoff_status,
+        S.measurement_signoff_status,
+        S.finance_signoff_status,
+        S.executive_signoff_status
+      ].filter(x => x === "signed").length;
+    }
+    function recompute() {
+      S.signoff_count = countSigned();
+      const checks = {
+        "B-ASSET": S.embargo_status === "locked",
+        "B-LEGAL": S.legal_signoff_status === "signed",
+        "B-WINDOWS": S.window_status === "locked",
+        "B-DELIVERY": S.delivery_status === "locked" && S.delivery_ack_status === "acknowledged",
+        "B-BEACONS": S.beacon_status === "armed",
+        "B-ATTRIBUTION": S.attribution_status === "healthy",
+        "B-SENTIMENT": S.sentiment_status === "cleared",
+        "B-ESCROW": S.escrow_status === "locked",
+        "B-SIGNOFFS": ["legal_signoff_status","ops_signoff_status","measurement_signoff_status","finance_signoff_status"].every(k => S[k] === "signed"),
+        "B-EXECUTIVE": S.executive_signoff_status === "signed"
+      };
+      S.blocker_rows = initialBlockers.map(row => ({...row, status: checks[row.id] ? "cleared" : "open"}));
+      const cleared = Object.values(checks).filter(Boolean).length;
+      S.open_blockers = 10 - cleared;
+      S.readiness_score = cleared * 10;
+      const launchChecks = [
+        S.global_launch_status === "sealed",
+        S.readiness_score === 100,
+        S.executive_signoff_status === "signed",
+        S.launch_count > 0,
+        S.audit_count > 0,
+        S.open_blockers === 0
+      ];
+      const launchCleared = launchChecks.filter(Boolean).length;
+      S.open_launch_blockers = 6 - launchCleared;
+      S.launch_seal_score = Math.round((launchCleared / 6) * 100);
+      if (S.global_launch_status === "sealed") {
+        S.launch_seal_score = 100;
+        S.open_launch_blockers = 0;
+      }
+      window.__DETOX_STATE__ = deep(S);
+    }
+    function commit(pushRender = true) {
+      recompute();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(S));
+      if (pushRender) render();
+    }
+    function routeTo(page, push = true) {
+      S.current_page = page;
+      if (push && location.hash !== "#/" + page) {
+        history.pushState({}, "", "#/" + page);
+      }
+      S.last_action = "nav_" + page;
+      commit();
+    }
+    function syncRouteFromHash() {
+      const page = (location.hash || "#/slate").replace("#/", "") || "slate";
+      if (["slate","markets","traffic","signals","seal"].includes(page)) {
+        S.current_page = page;
+        commit();
+      }
+    }
+    function reset() {
+      S = freshState();
+      history.pushState({}, "", "#/slate");
+      S.last_action = "reset";
+      commit();
+    }
+    function filterAssets(mode) {
+      S.current_filter = mode;
+      if (mode === "embargo_risk") {
+        const rank = {"T-01:30":1, "T-02:00":2, "T-06:00":3};
+        S.visible_assets = S.assets.filter(a => ["critical","high"].includes(a.risk)).sort((a,b) => (rank[a.embargo] || 99) - (rank[b.embargo] || 99));
+      } else if (mode === "uncleared") {
+        const rank = {"T-01:30":1, "T-02:00":2, "T-06:00":3};
+        S.visible_assets = S.assets.filter(a => a.clearance === "review").sort((a,b) => (rank[a.embargo] || 99) - (rank[b.embargo] || 99));
+      } else {
+        S.visible_assets = deep(S.assets);
+      }
+      S.last_action = mode === "all" ? "filter_all" : "filter_" + mode;
+      commit();
+    }
+    function selectAsset(id) {
+      const a = S.assets.find(row => row.id === id);
+      if (!a) return;
+      S.selected_asset_id = a.id;
+      S.selected_asset_title = a.title;
+      S.selected_format = a.format;
+      S.selected_region = a.region;
+      S.selected_embargo = a.embargo;
+      S.selected_clearance = a.clearance;
+      S.selected_risk = a.risk;
+      S.selected_version = a.version;
+      S.current_page = "markets";
+      S.last_action = "select_asset";
+      history.pushState({}, "", "#/markets");
+      commit();
+    }
+    async function requestLegal() {
+      if (S.active_role !== "legal") return deny("unauthorized_legal");
+      if (!S.selected_asset_id) return;
+      try {
+        await fetch("/api/premiere-rights?asset=" + encodeURIComponent(S.selected_asset_id));
+      } catch (_) {}
+      S.service_call_count += 1;
+      S.rights_call_count += 1;
+      S.legal_clearance_status = "cleared";
+      S.legal_clearance_score = rightsScore[S.selected_asset_id] || 90;
+      S.selected_clearance = "cleared";
+      S.assets = S.assets.map(a => a.id === S.selected_asset_id ? {...a, clearance:"cleared"} : a);
+      S.visible_assets = S.visible_assets.map(a => a.id === S.selected_asset_id ? {...a, clearance:"cleared"} : a);
+      S.last_action = "request_legal_clearance";
+      commit();
+    }
+    function lockAsset() {
+      if (S.active_role !== "producer") return deny("unauthorized_producer");
+      if (S.legal_clearance_status !== "cleared" || !S.release_code || !S.watermark_key) {
+        S.embargo_status = "blocked";
+        S.validation_errors = {...S.validation_errors, asset_lock:"Legal clearance, release code, and watermark are required"};
+        S.last_action = "asset_lock_blocked";
+        return commit();
+      }
+      S.embargo_status = "locked";
+      S.last_action = "lock_asset";
+      commit();
+    }
+    function parseCSV(text) {
+      const lines = String(text || "").trim().split(/\r?\n/).filter(Boolean);
+      if (lines.length < 2) return [];
+      const headers = lines[0].split(",").map(h => h.trim());
+      return lines.slice(1).map(line => {
+        const cells = line.split(",").map(c => c.trim());
+        const row = {};
+        headers.forEach((h, i) => {
+          const raw = cells[i] ?? "";
+          row[h] = ["spend","volume","budget"].includes(h) ? Number(raw) : raw;
+        });
+        return row;
+      });
+    }
+    function wireUpload(testid, handler) {
+      document.querySelector(`[data-testid="${testid}"]`).addEventListener("change", event => {
+        const file = event.target.files && event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => handler(file.name, parseCSV(reader.result));
+        reader.readAsText(file);
+        event.target.value = "";
+      });
+    }
+    function invalidateOps() {
+      S.ops_signoff_status = "idle";
+      S.executive_signoff_status = "idle";
+      reopenLaunch();
+    }
+    function invalidateMeasurement() {
+      S.measurement_signoff_status = "idle";
+      S.executive_signoff_status = "idle";
+      reopenLaunch();
+    }
+    function invalidateFinance() {
+      S.finance_signoff_status = "idle";
+      S.executive_signoff_status = "idle";
+      reopenLaunch();
+    }
+    function uploadWindows(name, rows) {
+      S.window_rows = rows;
+      S.window_count = rows.length;
+      S.open_blackout_count = rows.filter(r => r.status === "open").length;
+      S.last_window_file = name;
+      S.window_status = "review";
+      invalidateOps();
+      S.last_action = "upload_windows";
+      commit();
+    }
+    function lockWindows() {
+      if (S.active_role !== "ops") return deny("unauthorized_ops");
+      if (S.open_blackout_count > 0 || S.window_count === 0) {
+        S.window_status = "blocked";
+        S.last_action = "windows_blocked";
+        return commit();
+      }
+      S.window_status = "locked";
+      S.window_lock_count += 1;
+      S.last_action = "lock_windows";
+      commit();
+    }
+    function uploadTraffic(name, rows) {
+      S.placement_rows = rows;
+      S.placement_count = rows.length;
+      S.qa_fail_count = rows.filter(r => r.qa === "fail").length;
+      S.last_traffic_file = name;
+      S.delivery_status = "review";
+      S.delivery_ack_status = "idle";
+      invalidateOps();
+      S.last_action = "upload_traffic";
+      commit();
+    }
+    function lockDelivery() {
+      if (S.active_role !== "ops") return deny("unauthorized_ops");
+      if (S.qa_fail_count > 0 || S.placement_count === 0) {
+        S.delivery_status = "blocked";
+        S.last_action = "delivery_blocked";
+        return commit();
+      }
+      S.delivery_status = "locked";
+      S.delivery_lock_count += 1;
+      S.last_action = "lock_delivery";
+      commit();
+    }
+    function acknowledgeDelivery() {
+      if (S.active_role !== "ops") return deny("unauthorized_ops");
+      if (S.delivery_status !== "locked") {
+        S.delivery_ack_status = "blocked";
+        S.last_action = "ack_delivery_blocked";
+        return commit();
+      }
+      S.delivery_ack_status = "acknowledged";
+      S.delivery_ack_count += 1;
+      S.last_action = "acknowledge_delivery";
+      commit();
+    }
+    function uploadBeacons(_name, rows) {
+      S.beacon_rows = rows;
+      S.beacon_count = rows.length;
+      S.beacon_status = "review";
+      invalidateMeasurement();
+      S.last_action = "upload_beacons";
+      commit();
+    }
+    function armBeacons() {
+      if (S.active_role !== "measurement") return deny("unauthorized_measurement");
+      if (S.beacon_count < 2) {
+        S.beacon_status = "blocked";
+        S.last_action = "beacon_blocked";
+        return commit();
+      }
+      S.beacon_status = "armed";
+      S.beacon_arm_count += 1;
+      S.last_action = "arm_beacons";
+      commit();
+    }
+    async function runAttribution() {
+      if (S.active_role !== "measurement") return deny("unauthorized_measurement");
+      try {
+        await fetch("/api/attribution-health?suite=global");
+      } catch (_) {}
+      S.service_call_count += 1;
+      S.attribution_call_count += 1;
+      S.attribution_status = "healthy";
+      S.attribution_score = 94;
+      S.last_action = "run_attribution";
+      commit();
+    }
+    function uploadSentiment(name, rows) {
+      S.sentiment_rows = rows;
+      S.sentiment_count = rows.length;
+      S.negative_sentiment_count = rows.filter(r => r.polarity === "negative").length;
+      S.sentiment_status = "review";
+      S.last_sentiment_file = name;
+      invalidateMeasurement();
+      S.last_action = "upload_sentiment";
+      commit();
+    }
+    function clearSentiment() {
+      if (S.active_role !== "measurement") return deny("unauthorized_measurement");
+      if (S.negative_sentiment_count > 0) {
+        S.sentiment_status = "blocked";
+        S.last_action = "sentiment_blocked";
+        return commit();
+      }
+      S.sentiment_status = "cleared";
+      S.sentiment_clear_count += 1;
+      S.last_action = "clear_sentiment";
+      commit();
+    }
+    function uploadEscrow(name, rows) {
+      S.escrow_rows = rows;
+      S.escrow_count = rows.length;
+      S.unpaid_invoice_count = rows.filter(r => r.invoice === "unpaid").length;
+      S.escrow_status = "review";
+      S.last_escrow_file = name;
+      invalidateFinance();
+      S.last_action = "upload_escrow";
+      commit();
+    }
+    function lockEscrow() {
+      if (S.active_role !== "finance") return deny("unauthorized_finance");
+      if (S.unpaid_invoice_count > 0 || S.escrow_count === 0) {
+        S.escrow_status = "blocked";
+        S.last_action = "escrow_blocked";
+        return commit();
+      }
+      S.escrow_status = "locked";
+      S.escrow_lock_count += 1;
+      S.last_action = "lock_escrow";
+      commit();
+    }
+    function signoff(kind) {
+      const roleFor = {legal:"legal", ops:"ops", measurement:"measurement", finance:"finance", executive:"executive"};
+      const stateKey = kind + "_signoff_status";
+      const unauthorized = "unauthorized_" + kind;
+      if (S.active_role !== roleFor[kind]) return deny(unauthorized);
+      let ok = false;
+      if (kind === "legal") ok = S.embargo_status === "locked" && S.legal_clearance_status === "cleared";
+      if (kind === "ops") ok = S.window_status === "locked" && S.delivery_status === "locked" && S.delivery_ack_status === "acknowledged";
+      if (kind === "measurement") ok = S.beacon_status === "armed" && S.attribution_status === "healthy" && S.sentiment_status === "cleared";
+      if (kind === "finance") ok = S.escrow_status === "locked";
+      if (kind === "executive") ok = S.legal_signoff_status === "signed" && S.ops_signoff_status === "signed" && S.measurement_signoff_status === "signed" && S.finance_signoff_status === "signed";
+      if (!ok) {
+        S[stateKey] = "idle";
+        S.last_action = kind === "executive" ? "executive_signoff_blocked" : "signoff_blocked";
+        return commit();
+      }
+      S[stateKey] = "signed";
+      S.last_action = kind + "_signoff";
+      commit();
+    }
+    function finalizeLaunch() {
+      if (S.active_role !== "executive") return deny("unauthorized_executive");
+      if (S.executive_signoff_status !== "signed" || S.readiness_score !== 100 || S.open_blockers !== 0) {
+        S.global_launch_status = "blocked";
+        S.last_action = "launch_blocked";
+        return commit();
+      }
+      S.global_launch_status = "sealed";
+      const id = "L-1";
+      S.launch_rows.push({id, slate:S.selected_asset_title || "Premiere slate", markets:"global", status:"sealed", seal:"green"});
+      S.launch_count = S.launch_rows.length;
+      S.launch_seal_count += 1;
+      const auditId = "AU-1";
+      S.audit_log.push({id:auditId, event:"global_launch_sealed", actor:S.active_role, status:"sealed"});
+      S.audit_count = S.audit_log.length;
+      S.last_action = "finalize_launch";
+      commit();
+    }
+    function cell(value) {
+      const text = value === undefined || value === null ? "" : String(value);
+      const cls = ["critical","high","review","cleared","locked","healthy","armed","sealed","acknowledged","signed","blocked","open"].includes(text) ? ` class="${text}"` : "";
+      return `<td${cls}>${text}</td>`;
+    }
+    function renderRows(tbodyId, rows, rowTestId, attr, fields) {
+      const body = document.getElementById(tbodyId);
+      body.innerHTML = rows.map(row => {
+        const cells = fields.map(field => `<td data-col="${field}"${["critical","high","review","cleared","locked","healthy","armed","sealed","acknowledged","signed","blocked","open"].includes(String(row[field])) ? ` class="${row[field]}"` : ""}>${row[field] ?? ""}</td>`).join("");
+        return `<tr data-testid="${rowTestId}" ${attr}="${row.id}">${cells}</tr>`;
+      }).join("");
+    }
+    function render() {
+      recompute();
+      document.getElementById("metric-readiness").textContent = S.readiness_score;
+      document.getElementById("metric-open").textContent = S.open_blockers;
+      document.getElementById("metric-launch").textContent = S.global_launch_status;
+      document.getElementById("metric-role").textContent = S.active_role;
+      document.getElementById("selected-title").textContent = S.selected_asset_title || "No asset selected";
+      document.getElementById("selected-version").textContent = S.selected_version || "--";
+      document.getElementById("selected-embargo").textContent = S.selected_embargo || "T--";
+      document.getElementById("selected-region").textContent = S.selected_region || "global";
+      document.getElementById("selected-risk").textContent = S.selected_risk || "idle";
+      document.getElementById("selected-clearance").textContent = S.selected_clearance || S.legal_clearance_status;
+      document.getElementById("launch-score").textContent = S.launch_seal_score;
+      document.getElementById("ring-score").textContent = S.readiness_score;
+      document.getElementById("score-ring").style.setProperty("--score", S.readiness_score);
+      document.querySelectorAll("[data-testid^='go-']").forEach(btn => btn.classList.toggle("active", btn.dataset.testid === "go-" + S.current_page));
+      document.querySelectorAll("[data-testid^='role-']").forEach(btn => btn.classList.toggle("active", btn.dataset.testid === "role-" + S.active_role));
+      document.querySelector('[data-testid="release-code"]').value = S.release_code;
+      document.querySelector('[data-testid="watermark-key"]').value = S.watermark_key;
+      const assetBody = document.getElementById("asset-body");
+      assetBody.innerHTML = S.visible_assets.map(row => `
+        <tr data-testid="asset-row" data-asset-id="${row.id}">
+          <td data-col="title">${row.title}</td>
+          <td data-col="format">${row.format}</td>
+          <td data-col="region">${row.region}</td>
+          <td data-col="embargo">${row.embargo}</td>
+          <td data-col="clearance" class="${row.clearance}">${row.clearance}</td>
+          <td data-col="risk" class="${row.risk}">${row.risk}</td>
+          <td data-col="version">${row.version}</td>
+          <td><button data-testid="select-${row.id}">Select</button></td>
+        </tr>`).join("");
+      S.visible_assets.forEach(row => {
+        const btn = document.querySelector(`[data-testid="select-${row.id}"]`);
+        if (btn) btn.onclick = () => selectAsset(row.id);
+      });
+      renderRows("window-body", S.window_rows, "window-row", "data-window-id", ["market","local_time","blackout","owner","status"]);
+      renderRows("traffic-body", S.placement_rows, "traffic-row", "data-placement-id", ["partner","market","format","spend","qa","status"]);
+      renderRows("beacon-body", S.beacon_rows, "beacon-row", "data-beacon-id", ["surface","event","owner","status"]);
+      renderRows("sentiment-body", S.sentiment_rows, "sentiment-row", "data-sentiment-id", ["market","volume","polarity","status"]);
+      renderRows("escrow-body", S.escrow_rows, "escrow-row", "data-escrow-id", ["market","budget","invoice","status"]);
+      renderRows("blocker-body", S.blocker_rows, "blocker-row", "data-blocker-id", ["label","owner","status"]);
+      renderRows("launch-body", S.launch_rows, "launch-row", "data-launch-id", ["slate","markets","status","seal"]);
+      renderRows("audit-body", S.audit_log, "audit-row", "data-audit-id", ["event","actor","status"]);
+    }
+
+    document.querySelector('[data-testid="reset"]').onclick = reset;
+    document.querySelector('[data-testid="go-slate"]').onclick = () => routeTo("slate");
+    document.querySelector('[data-testid="go-markets"]').onclick = () => routeTo("markets");
+    document.querySelector('[data-testid="go-traffic"]').onclick = () => routeTo("traffic");
+    document.querySelector('[data-testid="go-signals"]').onclick = () => routeTo("signals");
+    document.querySelector('[data-testid="go-seal"]').onclick = () => routeTo("seal");
+    ["producer","legal","ops","measurement","finance","executive"].forEach(role => {
+      document.querySelector(`[data-testid="role-${role}"]`).onclick = () => setRole(role);
+    });
+    document.querySelector('[data-testid="filter-all"]').onclick = () => filterAssets("all");
+    document.querySelector('[data-testid="filter-embargo-risk"]').onclick = () => filterAssets("embargo_risk");
+    document.querySelector('[data-testid="filter-uncleared"]').onclick = () => filterAssets("uncleared");
+    document.querySelector('[data-testid="release-code"]').addEventListener("input", e => {
+      S.release_code = normalizeUpper(e.target.value);
+      delete S.validation_errors.release_code;
+      commit();
+    });
+    document.querySelector('[data-testid="watermark-key"]').addEventListener("input", e => {
+      S.watermark_key = normalizeUpper(e.target.value);
+      delete S.validation_errors.watermark_key;
+      commit();
+    });
+    document.querySelector('[data-testid="request-legal-clearance"]').onclick = requestLegal;
+    document.querySelector('[data-testid="lock-asset"]').onclick = lockAsset;
+    document.querySelector('[data-testid="lock-windows"]').onclick = lockWindows;
+    document.querySelector('[data-testid="lock-delivery"]').onclick = lockDelivery;
+    document.querySelector('[data-testid="ack-delivery"]').onclick = acknowledgeDelivery;
+    document.querySelector('[data-testid="arm-beacons"]').onclick = armBeacons;
+    document.querySelector('[data-testid="run-attribution"]').onclick = runAttribution;
+    document.querySelector('[data-testid="clear-sentiment"]').onclick = clearSentiment;
+    document.querySelector('[data-testid="lock-escrow"]').onclick = lockEscrow;
+    document.querySelector('[data-testid="legal-signoff"]').onclick = () => signoff("legal");
+    document.querySelector('[data-testid="ops-signoff"]').onclick = () => signoff("ops");
+    document.querySelector('[data-testid="measurement-signoff"]').onclick = () => signoff("measurement");
+    document.querySelector('[data-testid="finance-signoff"]').onclick = () => signoff("finance");
+    document.querySelector('[data-testid="executive-signoff"]').onclick = () => signoff("executive");
+    document.querySelector('[data-testid="finalize-launch"]').onclick = finalizeLaunch;
+    wireUpload("window-upload", uploadWindows);
+    wireUpload("traffic-upload", uploadTraffic);
+    wireUpload("beacon-upload", uploadBeacons);
+    wireUpload("sentiment-upload", uploadSentiment);
+    wireUpload("escrow-upload", uploadEscrow);
+    window.addEventListener("popstate", syncRouteFromHash);
+    window.addEventListener("hashchange", syncRouteFromHash);
+    if (!location.hash) history.replaceState({}, "", "#/slate");
+    syncRouteFromHash();
+    render();
+  </script>
+</body>
+</html>

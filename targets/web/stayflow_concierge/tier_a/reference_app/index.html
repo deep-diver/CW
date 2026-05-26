@@ -1,0 +1,1108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>StayFlow Concierge</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #182018;
+      --muted: #687067;
+      --paper: #fffdf6;
+      --linen: #f4eee0;
+      --sage: #5d7766;
+      --sage-dark: #2f4c3b;
+      --coral: #dc6f51;
+      --sky: #dbeaf1;
+      --gold: #c69b4e;
+      --line: #dfd5c3;
+      --shadow: 0 18px 38px rgba(57, 49, 33, 0.14);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        linear-gradient(120deg, rgba(219, 234, 241, 0.88), rgba(244, 238, 224, 0.76)),
+        url("data:image/svg+xml,%3Csvg width='1440' height='900' viewBox='0 0 1440 900' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='1440' height='900' fill='%23fffdf6'/%3E%3Cpath d='M0 118 C260 70 375 163 594 119 C827 73 939 8 1142 56 C1262 85 1359 145 1440 118 L1440 0 L0 0 Z' fill='%23dbeaf1'/%3E%3Cpath d='M0 720 C188 660 310 780 490 714 C700 637 871 648 1036 702 C1194 754 1320 741 1440 691 L1440 900 L0 900 Z' fill='%23f4eee0'/%3E%3Ccircle cx='176' cy='258' r='82' fill='%23ead8b4'/%3E%3Ccircle cx='1276' cy='270' r='116' fill='%23eec0ad'/%3E%3C/svg%3E");
+      background-size: cover;
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+    }
+
+    .app-shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    .topbar {
+      height: 74px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 0 34px;
+      background: rgba(255, 253, 246, 0.88);
+      border-bottom: 1px solid rgba(47, 76, 59, 0.16);
+      backdrop-filter: blur(18px);
+      position: sticky;
+      top: 0;
+      z-index: 5;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 220px;
+    }
+
+    .brand-mark {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 35% 35%, #fff3cd 0 18%, transparent 19%),
+        linear-gradient(135deg, var(--sage-dark), var(--sage));
+      box-shadow: inset 0 -7px 14px rgba(0, 0, 0, 0.12);
+    }
+
+    .brand strong {
+      display: block;
+      font-size: 16px;
+      letter-spacing: 0;
+    }
+
+    .brand span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .nav {
+      display: flex;
+      gap: 8px;
+      padding: 6px;
+      border-radius: 999px;
+      background: rgba(47, 76, 59, 0.08);
+    }
+
+    .nav button,
+    .role button,
+    .reset {
+      min-height: 36px;
+      padding: 0 16px;
+      border-radius: 999px;
+      color: var(--sage-dark);
+      background: transparent;
+      transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease;
+    }
+
+    .nav button.active,
+    .role button.active {
+      color: #fff;
+      background: var(--sage-dark);
+    }
+
+    .nav button:hover,
+    .role button:hover,
+    .reset:hover {
+      transform: translateY(-1px);
+      background: rgba(47, 76, 59, 0.12);
+    }
+
+    .toolbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .role {
+      display: flex;
+      gap: 4px;
+      padding: 5px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 253, 246, 0.72);
+    }
+
+    .reset {
+      border: 1px solid rgba(220, 111, 81, 0.38);
+      color: #8a3c29;
+      background: rgba(220, 111, 81, 0.08);
+    }
+
+    main {
+      padding: 34px;
+    }
+
+    .page {
+      display: none;
+      max-width: 1220px;
+      margin: 0 auto;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    .hero {
+      min-height: 230px;
+      border-radius: 28px;
+      padding: 34px;
+      color: #fff;
+      background:
+        linear-gradient(90deg, rgba(26, 43, 32, 0.88), rgba(26, 43, 32, 0.18)),
+        url("data:image/svg+xml,%3Csvg width='1200' height='420' viewBox='0 0 1200 420' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='1200' height='420' fill='%235d7766'/%3E%3Cpath d='M0 285 C155 232 276 318 430 251 C615 169 740 173 910 236 C1040 284 1124 263 1200 230 L1200 420 L0 420 Z' fill='%23dbeaf1' opacity='.85'/%3E%3Cpath d='M0 323 C144 291 260 338 400 306 C595 260 678 280 830 315 C980 349 1060 338 1200 295 L1200 420 L0 420 Z' fill='%23f4eee0'/%3E%3Ccircle cx='927' cy='92' r='56' fill='%23f3cb75'/%3E%3Cpath d='M128 240 L220 129 L298 240 Z M240 240 L350 98 L455 240 Z M820 240 L930 124 L1062 240 Z' fill='%232f4c3b' opacity='.78'/%3E%3C/svg%3E");
+      background-size: cover;
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: end;
+    }
+
+    .hero h1 {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 48px;
+      line-height: 1.02;
+      max-width: 620px;
+      margin: 0 0 14px;
+      letter-spacing: 0;
+    }
+
+    .hero p {
+      max-width: 580px;
+      margin: 0;
+      color: rgba(255, 255, 255, 0.86);
+      font-size: 16px;
+    }
+
+    .filters {
+      display: flex;
+      gap: 10px;
+      margin: 24px 0 18px;
+      flex-wrap: wrap;
+    }
+
+    .filters button,
+    .primary,
+    .secondary,
+    .action-button {
+      min-height: 42px;
+      border-radius: 12px;
+      padding: 0 17px;
+      color: #fff;
+      background: var(--sage-dark);
+      box-shadow: 0 10px 18px rgba(47, 76, 59, 0.16);
+    }
+
+    .filters button.secondary,
+    .secondary {
+      color: var(--sage-dark);
+      background: #fff;
+      border: 1px solid var(--line);
+      box-shadow: none;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.65fr);
+      gap: 22px;
+      align-items: start;
+    }
+
+    .catalog {
+      display: grid;
+      gap: 16px;
+    }
+
+    .property-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+    }
+
+    .property-card {
+      min-height: 236px;
+      border-radius: 22px;
+      overflow: hidden;
+      background: #fff;
+      border: 1px solid rgba(47, 76, 59, 0.14);
+      box-shadow: 0 12px 28px rgba(57, 49, 33, 0.12);
+      display: grid;
+      grid-template-rows: 102px 1fr;
+    }
+
+    .property-photo {
+      background-size: cover;
+      background-position: center;
+    }
+
+    .property-photo.busan {
+      background-image: linear-gradient(135deg, rgba(33, 74, 85, .2), rgba(220, 111, 81, .12)), url("data:image/svg+xml,%3Csvg width='560' height='220' viewBox='0 0 560 220' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='560' height='220' fill='%23dbeaf1'/%3E%3Cpath d='M0 148 C65 125 115 160 176 137 C260 106 318 132 374 149 C454 174 505 142 560 128 L560 220 L0 220 Z' fill='%237fb0b8'/%3E%3Cpath d='M46 148 L138 64 L230 148 Z M240 148 L334 42 L438 148 Z' fill='%232f4c3b'/%3E%3C/svg%3E");
+    }
+
+    .property-photo.seoul {
+      background-image: linear-gradient(135deg, rgba(53, 72, 122, .18), rgba(198, 155, 78, .12)), url("data:image/svg+xml,%3Csvg width='560' height='220' viewBox='0 0 560 220' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='560' height='220' fill='%23f1e8d8'/%3E%3Crect x='58' y='66' width='60' height='116' fill='%235d7766'/%3E%3Crect x='147' y='38' width='72' height='144' fill='%232f4c3b'/%3E%3Crect x='250' y='84' width='55' height='98' fill='%23dc6f51'/%3E%3Crect x='346' y='58' width='90' height='124' fill='%23778390'/%3E%3Cpath d='M0 174 C140 144 240 206 380 166 C460 143 510 154 560 138 L560 220 L0 220 Z' fill='%23dbeaf1'/%3E%3C/svg%3E");
+    }
+
+    .property-photo.kyoto {
+      background-image: linear-gradient(135deg, rgba(94, 58, 40, .12), rgba(93, 119, 102, .12)), url("data:image/svg+xml,%3Csvg width='560' height='220' viewBox='0 0 560 220' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='560' height='220' fill='%23f4eee0'/%3E%3Cpath d='M90 146 L194 78 L298 146 Z M250 150 L364 64 L478 150 Z' fill='%23a45d44'/%3E%3Crect x='112' y='146' width='164' height='48' fill='%232f4c3b'/%3E%3Crect x='280' y='150' width='178' height='44' fill='%235d7766'/%3E%3Ccircle cx='91' cy='70' r='34' fill='%23dc6f51' opacity='.7'/%3E%3C/svg%3E");
+    }
+
+    .property-body {
+      padding: 16px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .property-card h3,
+    .panel h2,
+    .panel h3 {
+      margin: 0;
+      letter-spacing: 0;
+    }
+
+    .property-meta {
+      color: var(--muted);
+      font-size: 13px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .price {
+      font-size: 28px;
+      font-weight: 750;
+      color: var(--sage-dark);
+    }
+
+    .select-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .select-row button {
+      min-height: 38px;
+      padding: 0 14px;
+      border-radius: 999px;
+      color: #fff;
+      background: var(--coral);
+    }
+
+    .panel {
+      border-radius: 22px;
+      background: rgba(255, 253, 246, 0.92);
+      border: 1px solid rgba(47, 76, 59, 0.14);
+      box-shadow: var(--shadow);
+      padding: 22px;
+    }
+
+    .quote-panel {
+      position: sticky;
+      top: 96px;
+    }
+
+    .quote-line,
+    .status-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+    }
+
+    .quote-line strong,
+    .status-line strong {
+      color: var(--ink);
+    }
+
+    .total {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      padding-top: 16px;
+    }
+
+    .total strong {
+      color: var(--sage-dark);
+      font-size: 34px;
+    }
+
+    .addons {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .addons button {
+      min-height: 52px;
+      border-radius: 14px;
+      padding: 0 12px;
+      background: #fff;
+      border: 1px solid var(--line);
+      color: var(--sage-dark);
+    }
+
+    .addons button.selected {
+      color: #fff;
+      background: var(--sage);
+    }
+
+    .checkout-layout,
+    .manage-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 0.85fr) minmax(340px, 1.15fr);
+      gap: 22px;
+      align-items: start;
+    }
+
+    .form-grid {
+      display: grid;
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    label {
+      display: grid;
+      gap: 7px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    input[type="text"],
+    input[type="email"] {
+      min-height: 46px;
+      width: 100%;
+      padding: 0 14px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      outline: none;
+    }
+
+    input:focus {
+      border-color: var(--sage);
+      box-shadow: 0 0 0 4px rgba(93, 119, 102, 0.14);
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .notice {
+      margin-top: 12px;
+      min-height: 40px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(219, 234, 241, 0.72);
+      color: var(--sage-dark);
+      font-size: 13px;
+    }
+
+    .error {
+      color: #9e3d2a;
+      font-size: 13px;
+    }
+
+    .manifest-drop {
+      display: grid;
+      gap: 12px;
+      min-height: 150px;
+      place-items: center;
+      text-align: center;
+      border-radius: 20px;
+      border: 2px dashed rgba(47, 76, 59, 0.24);
+      background: rgba(255, 255, 255, 0.7);
+      margin-top: 16px;
+      padding: 18px;
+    }
+
+    input[type="file"] {
+      width: 100%;
+      max-width: 320px;
+      min-height: 42px;
+      padding: 8px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+      background: #fff;
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    th,
+    td {
+      padding: 12px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--line);
+      font-size: 14px;
+    }
+
+    th {
+      color: var(--muted);
+      background: #f8f3e8;
+      font-weight: 650;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .audit {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .audit-item {
+      padding: 12px;
+      border-radius: 14px;
+      background: #fff;
+      border: 1px solid var(--line);
+      color: var(--muted);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 0 10px;
+      border-radius: 999px;
+      color: #fff;
+      background: var(--gold);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    @media (max-width: 920px) {
+      .topbar {
+        height: auto;
+        align-items: stretch;
+        padding: 16px;
+        flex-direction: column;
+      }
+
+      .nav,
+      .toolbar-right {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      main {
+        padding: 18px;
+      }
+
+      .hero h1 {
+        font-size: 36px;
+      }
+
+      .grid,
+      .checkout-layout,
+      .manage-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .quote-panel {
+        position: static;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true"></div>
+        <div>
+          <strong>StayFlow Concierge</strong>
+          <span>Curated stays, agent-ready booking</span>
+        </div>
+      </div>
+      <nav class="nav" aria-label="Primary">
+        <button data-testid="go-search" type="button">Discover</button>
+        <button data-testid="go-checkout" type="button">Checkout</button>
+        <button data-testid="go-manage" type="button">Concierge Desk</button>
+      </nav>
+      <div class="toolbar-right">
+        <div class="role" aria-label="Role switcher">
+          <button data-testid="role-guest" type="button">Guest</button>
+          <button data-testid="role-agent" type="button">Agent</button>
+        </div>
+        <button class="reset" data-testid="reset" type="button">Reset Trip</button>
+      </div>
+    </header>
+
+    <main>
+      <section id="page-search" class="page" aria-label="Stay discovery">
+        <div class="hero">
+          <div>
+            <span class="badge">Spring city escapes</span>
+            <h1>Book a stay that feels arranged, not assembled.</h1>
+            <p>Choose a destination, layer practical arrival services, and hand off the final confirmation to a concierge agent.</p>
+          </div>
+        </div>
+        <div class="filters">
+          <button class="secondary" data-testid="show-all-stays" type="button">All stays</button>
+          <button data-testid="filter-seoul" type="button">Seoul</button>
+          <button data-testid="filter-busan" type="button">Busan</button>
+        </div>
+        <div class="grid">
+          <div class="catalog">
+            <div class="property-grid" data-testid="property-grid"></div>
+          </div>
+          <aside class="panel quote-panel" aria-label="Trip quote">
+            <h2>Your stay plan</h2>
+            <div class="status-line"><span>Selected</span><strong data-bind="selected_property_name">None</strong></div>
+            <div class="status-line"><span>Destination</span><strong data-bind="selected_city">-</strong></div>
+            <div class="quote-line"><span>Stay subtotal</span><strong data-bind-money="stay_subtotal">$0</strong></div>
+            <div class="quote-line"><span>Add-ons</span><strong data-bind-money="addon_total">$0</strong></div>
+            <div class="quote-line"><span>Service fee</span><strong data-bind-money="service_fee">$0</strong></div>
+            <div class="quote-line"><span>Promo credit</span><strong data-bind-money="promo_credit">$0</strong></div>
+            <div class="total"><span>Total due</span><strong data-bind-money="total_due">$0</strong></div>
+            <div class="addons">
+              <button data-testid="add-breakfast" type="button">Breakfast<br>$42</button>
+              <button data-testid="add-pickup" type="button">Airport pickup<br>$55</button>
+              <button data-testid="add-flexible" type="button">Flexible cancel<br>$70</button>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section id="page-checkout" class="page" aria-label="Checkout">
+        <div class="checkout-layout">
+          <aside class="panel">
+            <span class="badge">Trip summary</span>
+            <h2 style="margin-top: 12px;">Prepare the booking hold</h2>
+            <div class="quote-line"><span>Stay</span><strong data-bind="selected_property_name">None</strong></div>
+            <div class="quote-line"><span>Package</span><strong data-bind="selected_package">-</strong></div>
+            <div class="quote-line"><span>Status</span><strong data-bind="booking_status">idle</strong></div>
+            <div class="quote-line"><span>Availability</span><strong data-bind="availability_status">idle</strong></div>
+            <div class="quote-line"><span>Promo calls</span><strong data-bind="service_call_count">0</strong></div>
+            <div class="total"><span>Total due</span><strong data-bind-money="total_due">$0</strong></div>
+          </aside>
+          <div class="panel">
+            <span class="badge">Guest details</span>
+            <h2 style="margin-top: 12px;">Primary guest and promo</h2>
+            <div class="form-grid">
+              <label>
+                Promo code
+                <input data-testid="promo-code" type="text" autocomplete="off" placeholder="STAY20">
+              </label>
+              <button class="secondary" data-testid="apply-promo" type="button">Apply promo</button>
+              <label>
+                Guest name
+                <input data-testid="guest-name" type="text" autocomplete="name" placeholder="Mina Park">
+                <span class="error" data-error="name"></span>
+              </label>
+              <label>
+                Guest email
+                <input data-testid="guest-email" type="email" autocomplete="email" placeholder="mina@example.com">
+                <span class="error" data-error="email"></span>
+              </label>
+            </div>
+            <div class="button-row">
+              <button class="primary" data-testid="validate-guest" type="button">Validate guest</button>
+              <button class="action-button" data-testid="hold-booking" type="button">Hold booking</button>
+            </div>
+            <div class="notice" data-bind-notice></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="page-manage" class="page" aria-label="Concierge desk">
+        <div class="manage-layout">
+          <div class="panel">
+            <span class="badge">Manifest</span>
+            <h2 style="margin-top: 12px;">Group guest import</h2>
+            <div class="manifest-drop">
+              <div>
+                <strong>Upload a CSV manifest</strong>
+                <p style="margin: 8px 0 0; color: var(--muted);">Columns: id, name, tier, meal</p>
+              </div>
+              <input data-testid="group-upload" type="file" accept=".csv,text/csv">
+            </div>
+            <table data-testid="guest-grid">
+              <thead>
+                <tr><th>ID</th><th>Name</th><th>Tier</th><th>Meal</th></tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <aside class="panel">
+            <span class="badge">Concierge control</span>
+            <h2 style="margin-top: 12px;">Booking command</h2>
+            <div class="status-line"><span>Current role</span><strong data-bind="active_role">guest</strong></div>
+            <div class="status-line"><span>Booking status</span><strong data-bind="booking_status">idle</strong></div>
+            <div class="status-line"><span>Denied attempts</span><strong data-bind="denied_count">0</strong></div>
+            <div class="status-line"><span>Guest rows</span><strong data-bind="group_guest_count">0</strong></div>
+            <div class="status-line"><span>Last file</span><strong data-bind="last_file">-</strong></div>
+            <div class="button-row">
+              <button class="primary" data-testid="confirm-booking" type="button">Confirm booking</button>
+            </div>
+            <div class="audit" data-testid="audit-list"></div>
+          </aside>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const storageKey = "stayflow-concierge-state-v1";
+    const initialState = {
+      current_page: "search",
+      active_role: "guest",
+      properties: [
+        { id: "SF-BUSAN-HARBOR", name: "Harbor Capsule Hotel", city: "Busan", package: "2 nights / studio", base: 320, available: true },
+        { id: "SF-SEOUL-LOFT", name: "Han River Loft", city: "Seoul", package: "2 nights / loft", base: 480, available: true },
+        { id: "SF-KYOTO-MACHIYA", name: "Machiya Garden House", city: "Kyoto", package: "2 nights / ryokan", base: 620, available: true }
+      ],
+      visible_properties: [
+        { id: "SF-BUSAN-HARBOR", name: "Harbor Capsule Hotel", city: "Busan", package: "2 nights / studio", base: 320, available: true },
+        { id: "SF-SEOUL-LOFT", name: "Han River Loft", city: "Seoul", package: "2 nights / loft", base: 480, available: true },
+        { id: "SF-KYOTO-MACHIYA", name: "Machiya Garden House", city: "Kyoto", package: "2 nights / ryokan", base: 620, available: true }
+      ],
+      current_destination: "all",
+      selected_property_id: "",
+      selected_property_name: "",
+      selected_city: "",
+      selected_package: "",
+      stay_subtotal: 0,
+      addon_total: 0,
+      breakfast: false,
+      airport_pickup: false,
+      flexible_cancel: false,
+      service_fee: 0,
+      promo_code: "",
+      promo_credit: 0,
+      total_due: 0,
+      guest_name: "",
+      guest_email: "",
+      field_errors: {},
+      error_count: 0,
+      booking_status: "idle",
+      availability_status: "idle",
+      service_call_count: 0,
+      group_guests: [],
+      group_guest_count: 0,
+      last_file: "",
+      booking_audit: [],
+      audit_count: 0,
+      denied_count: 0,
+      last_action: "ready",
+      "__services.calls": []
+    };
+
+    const persistedPaths = [
+      "current_page", "active_role", "properties", "visible_properties", "current_destination",
+      "selected_property_id", "selected_property_name", "selected_city", "selected_package",
+      "stay_subtotal", "addon_total", "breakfast", "airport_pickup", "flexible_cancel",
+      "service_fee", "promo_code", "promo_credit", "total_due", "guest_name", "guest_email",
+      "field_errors", "error_count", "booking_status", "availability_status", "service_call_count",
+      "group_guests", "group_guest_count", "last_file", "booking_audit", "audit_count",
+      "denied_count", "last_action"
+    ];
+
+    let state = restoreState();
+    window.__DETOX_STATE__ = state;
+
+    function clone(value) {
+      return JSON.parse(JSON.stringify(value));
+    }
+
+    function restoreState() {
+      const restored = clone(initialState);
+      try {
+        const raw = localStorage.getItem(storageKey);
+        if (raw) {
+          const saved = JSON.parse(raw);
+          for (const path of persistedPaths) {
+            if (Object.prototype.hasOwnProperty.call(saved, path)) {
+              restored[path] = saved[path];
+            }
+          }
+        }
+      } catch (error) {
+        localStorage.removeItem(storageKey);
+      }
+      const page = pageFromHash();
+      if (page) {
+        restored.current_page = page;
+      }
+      return restored;
+    }
+
+    function persist() {
+      const payload = {};
+      for (const path of persistedPaths) {
+        payload[path] = state[path];
+      }
+      localStorage.setItem(storageKey, JSON.stringify(payload));
+    }
+
+    function commit() {
+      state.error_count = Object.keys(state.field_errors || {}).length;
+      state.audit_count = state.booking_audit.length;
+      state.group_guest_count = state.group_guests.length;
+      state.total_due = state.stay_subtotal + state.addon_total + state.service_fee - state.promo_credit;
+      window.__DETOX_STATE__ = state;
+      persist();
+      render();
+    }
+
+    function pageFromHash() {
+      const page = (window.location.hash || "#/search").replace("#/", "");
+      return ["search", "checkout", "manage"].includes(page) ? page : "search";
+    }
+
+    function navigate(page, replace = false) {
+      state.current_page = page;
+      const url = `#/${page}`;
+      if (replace) {
+        history.replaceState({ page }, "", url);
+      } else if (window.location.hash !== url) {
+        history.pushState({ page }, "", url);
+      }
+      state.last_action = `nav_${page}`;
+      commit();
+    }
+
+    function feeFor(base) {
+      return base >= 600 ? 58 : base > 0 ? 32 : 0;
+    }
+
+    function updateFeeAndTotal() {
+      state.service_fee = feeFor(state.stay_subtotal);
+      state.total_due = state.stay_subtotal + state.addon_total + state.service_fee - state.promo_credit;
+    }
+
+    function selectProperty(id) {
+      const property = state.properties.find((item) => item.id === id);
+      if (!property) return;
+      state.selected_property_id = property.id;
+      state.selected_property_name = property.name;
+      state.selected_city = property.city;
+      state.selected_package = property.package;
+      state.stay_subtotal = property.base;
+      state.promo_credit = 0;
+      state.availability_status = "idle";
+      state.booking_status = "selected";
+      updateFeeAndTotal();
+      state.last_action = `select_${property.city.toLowerCase()}`;
+      commit();
+    }
+
+    function filterDestination(city) {
+      state.current_destination = city;
+      state.visible_properties = state.properties
+        .filter((item) => item.available && (city === "all" || item.city === city))
+        .sort((a, b) => a.base - b.base);
+      state.last_action = city === "all" ? "show_all_stays" : `filter_${city.toLowerCase()}`;
+      commit();
+    }
+
+    function addAddon(key, amount, action) {
+      if (state[key]) return;
+      state[key] = true;
+      state.addon_total += amount;
+      updateFeeAndTotal();
+      state.last_action = action;
+      commit();
+    }
+
+    async function applyPromo() {
+      if (!state.selected_property_id || !state.promo_code) return;
+      try {
+        const params = new URLSearchParams({ code: state.promo_code, property: state.selected_property_id });
+        const response = await fetch(`/api/promo?${params.toString()}`);
+        const data = response.ok ? await response.json() : { valid: false, credit: 0, status: "rejected" };
+        state.service_call_count += 1;
+        state.promo_credit = data.valid ? Number(data.credit || 0) : 0;
+        state.availability_status = data.status === "applied" ? "applied" : "rejected";
+      } catch (error) {
+        state.service_call_count += 1;
+        state.promo_credit = 0;
+        state.availability_status = "rejected";
+      }
+      updateFeeAndTotal();
+      state.last_action = "apply_promo";
+      commit();
+    }
+
+    function validateGuest() {
+      if (!state.guest_name) {
+        state.field_errors = { ...state.field_errors, name: "Guest name required" };
+        state.booking_status = "validation_failed";
+        state.last_action = "reject_guest_name";
+        commit();
+        return;
+      }
+      if (!state.guest_email) {
+        state.field_errors = { ...state.field_errors, email: "Guest email required" };
+        state.booking_status = "validation_failed";
+        state.last_action = "reject_guest_email";
+        commit();
+        return;
+      }
+      state.field_errors = {};
+      state.booking_status = "guest_validated";
+      state.last_action = "validate_guest";
+      commit();
+    }
+
+    function holdBooking() {
+      if (state.booking_status !== "guest_validated" || !state.selected_property_id) return;
+      state.booking_status = "held";
+      state.booking_audit = [
+        ...state.booking_audit,
+        { event: "held", property: state.selected_property_id, total: state.total_due }
+      ];
+      state.last_action = "hold_booking";
+      commit();
+    }
+
+    function confirmBooking() {
+      if (state.active_role !== "agent") {
+        state.denied_count += 1;
+        state.last_action = "unauthorized_confirm";
+        commit();
+        return;
+      }
+      if (state.booking_status !== "held") return;
+      state.booking_status = "confirmed";
+      state.booking_audit = [
+        ...state.booking_audit,
+        { event: "confirmed", property: state.selected_property_id, guests: state.group_guest_count }
+      ];
+      state.last_action = "confirm_booking";
+      commit();
+    }
+
+    function parseCsv(text) {
+      const lines = text.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+      if (lines.length <= 1) return [];
+      const headers = lines[0].split(",").map((cell) => cell.trim());
+      return lines.slice(1).map((line) => {
+        const cells = line.split(",").map((cell) => cell.trim());
+        const row = {};
+        headers.forEach((header, index) => {
+          row[header] = cells[index] || "";
+        });
+        return {
+          id: String(row.id || ""),
+          name: String(row.name || ""),
+          tier: String(row.tier || ""),
+          meal: String(row.meal || "")
+        };
+      });
+    }
+
+    function uploadManifest(file) {
+      if (!file) return;
+      file.text().then((text) => {
+        state.group_guests = parseCsv(text);
+        state.last_file = file.name;
+        state.last_action = "upload_group";
+        commit();
+      });
+    }
+
+    function resetState() {
+      state = clone(initialState);
+      window.__DETOX_STATE__ = state;
+      localStorage.removeItem(storageKey);
+      history.pushState({ page: "search" }, "", "#/search");
+      state.last_action = "reset";
+      commit();
+    }
+
+    function money(value) {
+      return `$${Number(value || 0).toLocaleString("en-US")}`;
+    }
+
+    function renderPropertyGrid() {
+      const grid = document.querySelector('[data-testid="property-grid"]');
+      grid.innerHTML = "";
+      for (const property of state.visible_properties) {
+        const row = document.createElement("article");
+        row.className = "property-card";
+        row.dataset.testid = "property-row";
+        row.setAttribute("data-property-id", property.id);
+        const slug = property.city.toLowerCase();
+        const buttonTestId = property.id === "SF-BUSAN-HARBOR"
+          ? "select-busan-harbor"
+          : property.id === "SF-SEOUL-LOFT"
+            ? "select-seoul-loft"
+            : "select-kyoto-machiya";
+        row.innerHTML = `
+          <div class="property-photo ${slug}"></div>
+          <div class="property-body">
+            <h3 data-col="name">${property.name}</h3>
+            <div class="property-meta">
+              <span data-col="city">${property.city}</span>
+              <span data-col="package">${property.package}</span>
+            </div>
+            <div class="select-row">
+              <span class="price">$<span data-col="base">${property.base}</span></span>
+              <button data-testid="${buttonTestId}" type="button">Select</button>
+            </div>
+          </div>
+        `;
+        row.querySelector("button").addEventListener("click", () => selectProperty(property.id));
+        grid.appendChild(row);
+      }
+    }
+
+    function renderGuestGrid() {
+      const tbody = document.querySelector('[data-testid="guest-grid"] tbody');
+      tbody.innerHTML = "";
+      for (const guest of state.group_guests) {
+        const row = document.createElement("tr");
+        row.dataset.testid = "guest-row";
+        row.setAttribute("data-guest-id", guest.id);
+        row.innerHTML = `
+          <td>${guest.id}</td>
+          <td data-col="name">${guest.name}</td>
+          <td data-col="tier">${guest.tier}</td>
+          <td data-col="meal">${guest.meal}</td>
+        `;
+        tbody.appendChild(row);
+      }
+    }
+
+    function renderAudit() {
+      const audit = document.querySelector('[data-testid="audit-list"]');
+      audit.innerHTML = state.booking_audit.length
+        ? state.booking_audit.map((item, index) => `<div class="audit-item"><strong>${index + 1}. ${item.event}</strong><br>${item.property || ""}${item.total ? ` · ${money(item.total)}` : ""}${item.guests !== undefined ? ` · ${item.guests} guests` : ""}</div>`).join("")
+        : '<div class="audit-item">No concierge events yet.</div>';
+    }
+
+    function render() {
+      document.querySelectorAll(".page").forEach((page) => page.classList.remove("active"));
+      document.querySelector(`#page-${state.current_page}`).classList.add("active");
+      document.querySelectorAll(".nav button").forEach((button) => button.classList.remove("active"));
+      document.querySelector(`[data-testid="go-${state.current_page}"]`).classList.add("active");
+      document.querySelector('[data-testid="role-guest"]').classList.toggle("active", state.active_role === "guest");
+      document.querySelector('[data-testid="role-agent"]').classList.toggle("active", state.active_role === "agent");
+
+      renderPropertyGrid();
+      renderGuestGrid();
+      renderAudit();
+
+      document.querySelectorAll("[data-bind]").forEach((node) => {
+        const path = node.getAttribute("data-bind");
+        const value = state[path];
+        node.textContent = value === "" ? "-" : String(value);
+      });
+      document.querySelectorAll("[data-bind-money]").forEach((node) => {
+        node.textContent = money(state[node.getAttribute("data-bind-money")]);
+      });
+      document.querySelector('[data-testid="promo-code"]').value = state.promo_code;
+      document.querySelector('[data-testid="guest-name"]').value = state.guest_name;
+      document.querySelector('[data-testid="guest-email"]').value = state.guest_email;
+      document.querySelector('[data-error="name"]').textContent = state.field_errors.name || "";
+      document.querySelector('[data-error="email"]').textContent = state.field_errors.email || "";
+      document.querySelector('[data-bind-notice]').textContent =
+        state.booking_status === "held"
+          ? "Booking hold is ready for an agent confirmation."
+          : state.booking_status === "confirmed"
+            ? "Booking confirmed by the concierge desk."
+            : state.booking_status === "validation_failed"
+              ? "Resolve the highlighted fields before holding this booking."
+              : `Last action: ${state.last_action}`;
+      document.querySelector('[data-testid="add-breakfast"]').classList.toggle("selected", state.breakfast);
+      document.querySelector('[data-testid="add-pickup"]').classList.toggle("selected", state.airport_pickup);
+      document.querySelector('[data-testid="add-flexible"]').classList.toggle("selected", state.flexible_cancel);
+    }
+
+    document.querySelector('[data-testid="go-search"]').addEventListener("click", () => navigate("search"));
+    document.querySelector('[data-testid="go-checkout"]').addEventListener("click", () => navigate("checkout"));
+    document.querySelector('[data-testid="go-manage"]').addEventListener("click", () => navigate("manage"));
+    document.querySelector('[data-testid="reset"]').addEventListener("click", resetState);
+    document.querySelector('[data-testid="filter-seoul"]').addEventListener("click", () => filterDestination("Seoul"));
+    document.querySelector('[data-testid="filter-busan"]').addEventListener("click", () => filterDestination("Busan"));
+    document.querySelector('[data-testid="show-all-stays"]').addEventListener("click", () => filterDestination("all"));
+    document.querySelector('[data-testid="add-breakfast"]').addEventListener("click", () => addAddon("breakfast", 42, "add_breakfast"));
+    document.querySelector('[data-testid="add-pickup"]').addEventListener("click", () => addAddon("airport_pickup", 55, "add_pickup"));
+    document.querySelector('[data-testid="add-flexible"]').addEventListener("click", () => addAddon("flexible_cancel", 70, "add_flexible"));
+    document.querySelector('[data-testid="promo-code"]').addEventListener("input", (event) => {
+      state.promo_code = event.target.value.trim().toUpperCase();
+      state.last_action = "edit_promo";
+      commit();
+    });
+    document.querySelector('[data-testid="apply-promo"]').addEventListener("click", applyPromo);
+    document.querySelector('[data-testid="guest-name"]').addEventListener("input", (event) => {
+      state.guest_name = event.target.value;
+      const { name, form, ...rest } = state.field_errors;
+      state.field_errors = rest;
+      state.last_action = "edit_guest_name";
+      commit();
+    });
+    document.querySelector('[data-testid="guest-email"]').addEventListener("input", (event) => {
+      state.guest_email = event.target.value.trim().toLowerCase();
+      const { email, form, ...rest } = state.field_errors;
+      state.field_errors = rest;
+      state.last_action = "edit_guest_email";
+      commit();
+    });
+    document.querySelector('[data-testid="validate-guest"]').addEventListener("click", validateGuest);
+    document.querySelector('[data-testid="hold-booking"]').addEventListener("click", holdBooking);
+    document.querySelector('[data-testid="group-upload"]').addEventListener("change", (event) => uploadManifest(event.target.files[0]));
+    document.querySelector('[data-testid="role-guest"]').addEventListener("click", () => {
+      state.active_role = "guest";
+      state.last_action = "role_guest";
+      commit();
+    });
+    document.querySelector('[data-testid="role-agent"]').addEventListener("click", () => {
+      state.active_role = "agent";
+      state.last_action = "role_agent";
+      commit();
+    });
+    document.querySelector('[data-testid="confirm-booking"]').addEventListener("click", confirmBooking);
+
+    window.addEventListener("hashchange", () => {
+      state.current_page = pageFromHash();
+      persist();
+      render();
+    });
+    window.addEventListener("popstate", () => {
+      state.current_page = pageFromHash();
+      persist();
+      render();
+    });
+
+    if (!window.location.hash) {
+      history.replaceState({ page: state.current_page }, "", `#/${state.current_page}`);
+    }
+    state.current_page = pageFromHash();
+    commit();
+  </script>
+</body>
+</html>

@@ -1,0 +1,542 @@
+dsl_version: "3.0.0"
+
+app:
+  id: media_campaign_launch_desk_tier_b
+  name: Media Campaign Launch Desk Tier B
+  capability: broadcast_campaign_release_switcher
+  ui_ux_brief: |
+    Media Campaign Launch Desk Tier B should look nothing like a registrar,
+    clinic, travel, or generic operations dashboard. It should read as a
+    broadcast campaign release switcher: a dark studio canvas with a large
+    campaign preview monitor, source thumbnails, rundown timeline, daypart
+    clock, captions/localization gates, package manifest intake, partner
+    trafficking board, and transmission ledger. A screenshot should make the
+    target look obviously harder than Tier A because several media-production
+    surfaces are coordinated at once. Use ink-black studio surfaces, teal
+    source controls, coral live/release accents, violet CTV markers, amber
+    clearance warnings, compact rundown strips, waveform/timeline styling, and
+    cinematic thumbnail blocks. Avoid campus paper tables, side-by-side admin
+    cards, travel booking cards, grocery checkout, clinical command colors, and
+    bare state debugging.
+
+runtime:
+  target: web
+  start_url: /#/studio
+  state_probe:
+    kind: javascript
+    expression: window.__DETOX_STATE__
+  pages:
+    studio:
+      path: /#/studio
+      purpose: Creative source wall, broadcast preview, and selected source details.
+    switcher:
+      path: /#/switcher
+      purpose: Rundown timeline, runtime balancing, split planning, and pacing lock.
+    clearance:
+      path: /#/clearance
+      purpose: Caption/localization gate, legal approval, finance commit, and package upload.
+    transmit:
+      path: /#/transmit
+      purpose: Partner trafficking board, final transmission ledger, and audit trail.
+  session:
+    role_path: active_role
+    roles: [producer, scheduler, legal, finance]
+  persistence:
+    reload:
+      scope: local_storage
+      paths:
+        - current_page
+        - active_role
+        - sources
+        - visible_sources
+        - current_filter
+        - selected_source_id
+        - selected_source_title
+        - selected_format
+        - selected_market
+        - selected_channel
+        - selected_duration
+        - selected_clearance
+        - selected_spend
+        - rundown_rows
+        - rundown_count
+        - runtime_total
+        - spend_total
+        - runtime_status
+        - split_status
+        - caption_status
+        - localization_status
+        - legal_status
+        - finance_status
+        - committed_spend
+        - package_rows
+        - package_count
+        - last_package_file
+        - partner_rows
+        - partner_count
+        - trafficking_status
+        - transmission_status
+        - transmission_rows
+        - transmission_count
+        - audit_log
+        - audit_count
+        - denied_count
+        - validation_errors
+        - last_action
+
+  tables:
+    source_wall:
+      selector: '[data-testid="source-wall"]'
+      row_selector: '[data-testid="source-row"]'
+      row_id_attribute: data-source-id
+      source_path: visible_sources
+      row_id_field: id
+      columns:
+        title: {selector: '[data-col="title"]', state_field: title}
+        format: {selector: '[data-col="format"]', state_field: format}
+        channel: {selector: '[data-col="channel"]', state_field: channel}
+        market: {selector: '[data-col="market"]', state_field: market}
+        duration: {selector: '[data-col="duration"]', state_field: duration}
+        clearance: {selector: '[data-col="clearance"]', state_field: clearance}
+        spend: {selector: '[data-col="spend"]', state_field: spend}
+    rundown_grid:
+      selector: '[data-testid="rundown-grid"]'
+      row_selector: '[data-testid="rundown-row"]'
+      row_id_attribute: data-rundown-id
+      source_path: rundown_rows
+      row_id_field: id
+      columns:
+        title: {selector: '[data-col="title"]', state_field: title}
+        channel: {selector: '[data-col="channel"]', state_field: channel}
+        market: {selector: '[data-col="market"]', state_field: market}
+        duration: {selector: '[data-col="duration"]', state_field: duration}
+        slot: {selector: '[data-col="slot"]', state_field: slot}
+        state: {selector: '[data-col="state"]', state_field: state}
+    package_grid:
+      selector: '[data-testid="package-grid"]'
+      row_selector: '[data-testid="package-row"]'
+      row_id_attribute: data-package-id
+      source_path: package_rows
+      row_id_field: id
+      columns:
+        outlet: {selector: '[data-col="outlet"]', state_field: outlet}
+        market: {selector: '[data-col="market"]', state_field: market}
+        source: {selector: '[data-col="source"]', state_field: source}
+        status: {selector: '[data-col="status"]', state_field: status}
+    partner_grid:
+      selector: '[data-testid="partner-grid"]'
+      row_selector: '[data-testid="partner-row"]'
+      row_id_attribute: data-partner-id
+      source_path: partner_rows
+      row_id_field: id
+      columns:
+        outlet: {selector: '[data-col="outlet"]', state_field: outlet}
+        market: {selector: '[data-col="market"]', state_field: market}
+        clock: {selector: '[data-col="clock"]', state_field: clock}
+        status: {selector: '[data-col="status"]', state_field: status}
+    transmission_grid:
+      selector: '[data-testid="transmission-grid"]'
+      row_selector: '[data-testid="transmission-row"]'
+      row_id_attribute: data-transmission-id
+      source_path: transmission_rows
+      row_id_field: id
+      columns:
+        campaign: {selector: '[data-col="campaign"]', state_field: campaign}
+        outlet: {selector: '[data-col="outlet"]', state_field: outlet}
+        market: {selector: '[data-col="market"]', state_field: market}
+        status: {selector: '[data-col="status"]', state_field: status}
+    audit_grid:
+      selector: '[data-testid="audit-grid"]'
+      row_selector: '[data-testid="audit-row"]'
+      row_id_attribute: data-audit-id
+      source_path: audit_log
+      row_id_field: id
+      columns:
+        event: {selector: '[data-col="event"]', state_field: event}
+        actor: {selector: '[data-col="actor"]', state_field: actor}
+        status: {selector: '[data-col="status"]', state_field: status}
+
+state:
+  initial:
+    current_page: studio
+    active_role: producer
+    sources:
+      - {id: SRC-OPEN-45, title: Northstar Opening Film, format: film, channel: social, market: global, duration: 45, clearance: review, spend: 5800}
+      - {id: SRC-CTV-30, title: CTV Night Bumper, format: ctv, channel: ctv, market: EU, duration: 30, clearance: review, spend: 7200}
+      - {id: SRC-DOOH-15, title: Transit Motion Loop, format: dooh, channel: display, market: US, duration: 15, clearance: cleared, spend: 3100}
+      - {id: SRC-POD-20, title: Podcast Host Read, format: audio, channel: audio, market: US, duration: 20, clearance: cleared, spend: 1900}
+      - {id: SRC-CUT-09, title: Creator Nine Second Cut, format: short, channel: social, market: global, duration: 9, clearance: review, spend: 2600}
+    visible_sources:
+      - {id: SRC-OPEN-45, title: Northstar Opening Film, format: film, channel: social, market: global, duration: 45, clearance: review, spend: 5800}
+      - {id: SRC-CTV-30, title: CTV Night Bumper, format: ctv, channel: ctv, market: EU, duration: 30, clearance: review, spend: 7200}
+      - {id: SRC-DOOH-15, title: Transit Motion Loop, format: dooh, channel: display, market: US, duration: 15, clearance: cleared, spend: 3100}
+      - {id: SRC-POD-20, title: Podcast Host Read, format: audio, channel: audio, market: US, duration: 20, clearance: cleared, spend: 1900}
+      - {id: SRC-CUT-09, title: Creator Nine Second Cut, format: short, channel: social, market: global, duration: 9, clearance: review, spend: 2600}
+    current_filter: all
+    selected_source_id: ""
+    selected_source_title: ""
+    selected_format: ""
+    selected_market: ""
+    selected_channel: ""
+    selected_duration: 0
+    selected_clearance: ""
+    selected_spend: 0
+    rundown_rows: []
+    rundown_count: 0
+    runtime_total: 0
+    spend_total: 0
+    runtime_status: idle
+    split_status: none
+    caption_status: missing
+    localization_status: missing
+    legal_status: idle
+    finance_status: idle
+    committed_spend: 0
+    package_rows: []
+    package_count: 0
+    last_package_file: ""
+    partner_rows: []
+    partner_count: 0
+    trafficking_status: idle
+    transmission_status: idle
+    transmission_rows: []
+    transmission_count: 0
+    audit_log: []
+    audit_count: 0
+    denied_count: 0
+    validation_errors: {}
+    last_action: ready
+  schema:
+    current_page: {type: string, purpose: Active route page.}
+    active_role: {type: string, purpose: Current broadcast release role.}
+    sources: {type: array, purpose: Master creative source deck.}
+    visible_sources: {type: array, purpose: Current source wall projection.}
+    current_filter: {type: string, purpose: Active source filter.}
+    selected_source_id: {type: string, purpose: Selected source id.}
+    selected_source_title: {type: string, purpose: Selected source title.}
+    selected_format: {type: string, purpose: Selected source format.}
+    selected_market: {type: string, purpose: Selected source market.}
+    selected_channel: {type: string, purpose: Selected source channel.}
+    selected_duration: {type: number, purpose: Selected duration seconds.}
+    selected_clearance: {type: string, purpose: Selected source clearance status.}
+    selected_spend: {type: number, purpose: Selected spend amount.}
+    rundown_rows: {type: array, purpose: Broadcast rundown rows.}
+    rundown_count: {type: number, purpose: Number of rundown rows.}
+    runtime_total: {type: number, purpose: Total runtime in seconds.}
+    spend_total: {type: number, purpose: Planned spend total.}
+    runtime_status: {type: string, purpose: idle, overrun, or locked.}
+    split_status: {type: string, purpose: none or balanced.}
+    caption_status: {type: string, purpose: missing or ready.}
+    localization_status: {type: string, purpose: missing or ready.}
+    legal_status: {type: string, purpose: idle or approved.}
+    finance_status: {type: string, purpose: idle or committed.}
+    committed_spend: {type: number, purpose: Finance committed spend.}
+    package_rows: {type: array, purpose: Uploaded outlet delivery package rows.}
+    package_count: {type: number, purpose: Number of delivery package rows.}
+    last_package_file: {type: string, purpose: Last package upload filename.}
+    partner_rows: {type: array, purpose: Trafficked partner rows.}
+    partner_count: {type: number, purpose: Number of trafficked partners.}
+    trafficking_status: {type: string, purpose: idle or trafficked.}
+    transmission_status: {type: string, purpose: idle, blocked, or transmitted.}
+    transmission_rows: {type: array, purpose: Final transmission ledger rows.}
+    transmission_count: {type: number, purpose: Number of transmission rows.}
+    audit_log: {type: array, purpose: Ordered transmission audit rows.}
+    audit_count: {type: number, purpose: Audit event count.}
+    denied_count: {type: number, purpose: Unauthorized action count.}
+    validation_errors: {type: object, purpose: Public validation errors.}
+    last_action: {type: string, purpose: Last public action marker.}
+
+x-derived:
+  rundown_count: &derive_rundown_count {op: equals_length, path: rundown_count, source_path: rundown_rows}
+  package_count: &derive_package_count {op: equals_length, path: package_count, source_path: package_rows}
+  partner_count: &derive_partner_count {op: equals_length, path: partner_count, source_path: partner_rows}
+  transmission_count: &derive_transmission_count {op: equals_length, path: transmission_count, source_path: transmission_rows}
+  audit_count: &derive_audit_count {op: equals_length, path: audit_count, source_path: audit_log}
+  committed_spend: &derive_committed_spend
+    op: equals_linear
+    path: committed_spend
+    terms:
+      - {path: spend_total}
+
+components:
+  reset_button:
+    kind: button
+    selector: '[data-testid="reset"]'
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_page, value: studio}
+          - {op: equals, path: active_role, value: producer}
+          - {op: equals, path: current_filter, value: all}
+          - {op: equals, path: visible_sources, value: [{id: SRC-OPEN-45, title: Northstar Opening Film, format: film, channel: social, market: global, duration: 45, clearance: review, spend: 5800}, {id: SRC-CTV-30, title: CTV Night Bumper, format: ctv, channel: ctv, market: EU, duration: 30, clearance: review, spend: 7200}, {id: SRC-DOOH-15, title: Transit Motion Loop, format: dooh, channel: display, market: US, duration: 15, clearance: cleared, spend: 3100}, {id: SRC-POD-20, title: Podcast Host Read, format: audio, channel: audio, market: US, duration: 20, clearance: cleared, spend: 1900}, {id: SRC-CUT-09, title: Creator Nine Second Cut, format: short, channel: social, market: global, duration: 9, clearance: review, spend: 2600}]}
+          - {op: equals, path: selected_source_id, value: ""}
+          - {op: equals, path: selected_source_title, value: ""}
+          - {op: equals, path: selected_format, value: ""}
+          - {op: equals, path: selected_market, value: ""}
+          - {op: equals, path: selected_channel, value: ""}
+          - {op: equals, path: selected_duration, value: 0}
+          - {op: equals, path: selected_clearance, value: ""}
+          - {op: equals, path: selected_spend, value: 0}
+          - {op: equals, path: rundown_rows, value: []}
+          - {op: equals, path: rundown_count, value: 0}
+          - {op: equals, path: runtime_total, value: 0}
+          - {op: equals, path: spend_total, value: 0}
+          - {op: equals, path: runtime_status, value: idle}
+          - {op: equals, path: split_status, value: none}
+          - {op: equals, path: caption_status, value: missing}
+          - {op: equals, path: localization_status, value: missing}
+          - {op: equals, path: legal_status, value: idle}
+          - {op: equals, path: finance_status, value: idle}
+          - {op: equals, path: committed_spend, value: 0}
+          - {op: equals, path: package_rows, value: []}
+          - {op: equals, path: package_count, value: 0}
+          - {op: equals, path: last_package_file, value: ""}
+          - {op: equals, path: partner_rows, value: []}
+          - {op: equals, path: partner_count, value: 0}
+          - {op: equals, path: trafficking_status, value: idle}
+          - {op: equals, path: transmission_status, value: idle}
+          - {op: equals, path: transmission_rows, value: []}
+          - {op: equals, path: transmission_count, value: 0}
+          - {op: equals, path: audit_log, value: []}
+          - {op: equals, path: audit_count, value: 0}
+          - {op: equals, path: denied_count, value: 0}
+          - {op: equals, path: validation_errors, value: {}}
+          - {op: equals, path: last_action, value: reset}
+
+  go_studio_button:
+    kind: button
+    selector: '[data-testid="go-studio"]'
+    actions: {click: {navigate_to: studio, effects: [{op: equals, path: current_page, value: studio}, {op: equals, path: last_action, value: nav_studio}]}}
+  go_switcher_button:
+    kind: button
+    selector: '[data-testid="go-switcher"]'
+    actions: {click: {navigate_to: switcher, effects: [{op: equals, path: current_page, value: switcher}, {op: equals, path: last_action, value: nav_switcher}]}}
+  go_clearance_button:
+    kind: button
+    selector: '[data-testid="go-clearance"]'
+    actions: {click: {navigate_to: clearance, effects: [{op: equals, path: current_page, value: clearance}, {op: equals, path: last_action, value: nav_clearance}]}}
+  go_transmit_button:
+    kind: button
+    selector: '[data-testid="go-transmit"]'
+    actions: {click: {navigate_to: transmit, effects: [{op: equals, path: current_page, value: transmit}, {op: equals, path: last_action, value: nav_transmit}]}}
+
+  role_producer_button:
+    kind: button
+    selector: '[data-testid="role-producer"]'
+    actions: {click: {effects: [{op: equals, path: active_role, value: producer}, {op: equals, path: last_action, value: role_producer}]}}
+  role_scheduler_button:
+    kind: button
+    selector: '[data-testid="role-scheduler"]'
+    actions: {click: {effects: [{op: equals, path: active_role, value: scheduler}, {op: equals, path: last_action, value: role_scheduler}]}}
+  role_legal_button:
+    kind: button
+    selector: '[data-testid="role-legal"]'
+    actions: {click: {effects: [{op: equals, path: active_role, value: legal}, {op: equals, path: last_action, value: role_legal}]}}
+  role_finance_button:
+    kind: button
+    selector: '[data-testid="role-finance"]'
+    actions: {click: {effects: [{op: equals, path: active_role, value: finance}, {op: equals, path: last_action, value: role_finance}]}}
+
+  filter_broadcast_sources_button:
+    kind: button
+    selector: '[data-testid="filter-broadcast-sources"]'
+    page: studio
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_filter, value: broadcast}
+          - {op: equals, path: visible_sources, value: [{id: SRC-OPEN-45, title: Northstar Opening Film, format: film, channel: social, market: global, duration: 45, clearance: review, spend: 5800}, {id: SRC-CTV-30, title: CTV Night Bumper, format: ctv, channel: ctv, market: EU, duration: 30, clearance: review, spend: 7200}, {id: SRC-DOOH-15, title: Transit Motion Loop, format: dooh, channel: display, market: US, duration: 15, clearance: cleared, spend: 3100}]}
+          - {op: equals, path: last_action, value: filter_broadcast_sources}
+  filter_caption_risk_button:
+    kind: button
+    selector: '[data-testid="filter-caption-risk"]'
+    page: studio
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_filter, value: caption_risk}
+          - {op: equals, path: visible_sources, value: [{id: SRC-OPEN-45, title: Northstar Opening Film, format: film, channel: social, market: global, duration: 45, clearance: review, spend: 5800}, {id: SRC-CTV-30, title: CTV Night Bumper, format: ctv, channel: ctv, market: EU, duration: 30, clearance: review, spend: 7200}, {id: SRC-CUT-09, title: Creator Nine Second Cut, format: short, channel: social, market: global, duration: 9, clearance: review, spend: 2600}]}
+          - {op: equals, path: last_action, value: filter_caption_risk}
+
+  select_opening_button:
+    kind: button
+    selector: '[data-testid="select-SRC-OPEN-45"]'
+    page: studio
+    actions:
+      click:
+        navigate_to: switcher
+        effects:
+          - {op: equals, path: current_page, value: switcher}
+          - {op: equals, path: selected_source_id, value: SRC-OPEN-45}
+          - {op: equals, path: selected_source_title, value: Northstar Opening Film}
+          - {op: equals, path: selected_format, value: film}
+          - {op: equals, path: selected_market, value: global}
+          - {op: equals, path: selected_channel, value: social}
+          - {op: equals, path: selected_duration, value: 45}
+          - {op: equals, path: selected_clearance, value: review}
+          - {op: equals, path: selected_spend, value: 5800}
+          - {op: equals, path: last_action, value: select_source}
+  select_ctv_button:
+    kind: button
+    selector: '[data-testid="select-SRC-CTV-30"]'
+    page: studio
+    actions:
+      click:
+        navigate_to: switcher
+        effects:
+          - {op: equals, path: current_page, value: switcher}
+          - {op: equals, path: selected_source_id, value: SRC-CTV-30}
+          - {op: equals, path: selected_source_title, value: CTV Night Bumper}
+          - {op: equals, path: selected_format, value: ctv}
+          - {op: equals, path: selected_market, value: EU}
+          - {op: equals, path: selected_channel, value: ctv}
+          - {op: equals, path: selected_duration, value: 30}
+          - {op: equals, path: selected_clearance, value: review}
+          - {op: equals, path: selected_spend, value: 7200}
+          - {op: equals, path: localization_status, value: missing}
+          - {op: equals, path: last_action, value: select_source}
+
+  cue_selected_source_button:
+    kind: button
+    selector: '[data-testid="cue-selected-source"]'
+    page: switcher
+    actions:
+      click:
+        preconditions:
+          - {op: one_of, path: selected_source_id, values: [SRC-OPEN-45, SRC-CTV-30]}
+        effects:
+          - {op: appended_object, path: rundown_rows, value: {id: {from_path: selected_source_id}, title: {from_path: selected_source_title}, channel: {from_path: selected_channel}, market: {from_path: selected_market}, duration: {from_path: selected_duration}, slot: prime_clock, state: cued}}
+          - *derive_rundown_count
+          - {op: changed_by_path, path: runtime_total, by_path: selected_duration}
+          - {op: changed_by_path, path: spend_total, by_path: selected_spend}
+          - {op: equals, path: runtime_status, value: building}
+          - {op: equals, path: last_action, value: cue_selected_source}
+  flag_runtime_overrun_button:
+    kind: button
+    selector: '[data-testid="flag-runtime-overrun"]'
+    page: switcher
+    actions:
+      click:
+        effects:
+          - {op: equals, path: runtime_status, value: overrun}
+          - {op: equals, path: last_action, value: flag_runtime_overrun}
+  trim_ctv_to_fifteen_button:
+    kind: button
+    selector: '[data-testid="trim-ctv-to-fifteen"]'
+    page: switcher
+    actions:
+      click:
+        effects:
+          - {op: updated_first_where, path: rundown_rows, where: [{op: equals, field: id, value: SRC-CTV-30}], updates: {duration: 15, state: trimmed}}
+          - {op: equals, path: runtime_total, value: 60}
+          - {op: equals, path: runtime_status, value: locked}
+          - {op: equals, path: split_status, value: balanced}
+          - {op: equals, path: last_action, value: trim_ctv_to_fifteen}
+
+  package_upload_input:
+    kind: input
+    selector: '[data-testid="package-upload"]'
+    page: clearance
+    actions:
+      upload:
+        file_schema:
+          format: csv
+          columns:
+            - {name: id, type: string}
+            - {name: outlet, type: string}
+            - {name: market, type: string}
+            - {name: source, type: string}
+            - {name: status, type: string}
+        effects:
+          - {op: equals, path: package_rows, value_from: input.rows}
+          - *derive_package_count
+          - {op: equals, path: last_package_file, value_from: input.file.name}
+          - {op: equals, path: last_action, value: upload_package}
+
+  mark_captions_ready_button:
+    kind: button
+    selector: '[data-testid="mark-captions-ready"]'
+    page: clearance
+    actions:
+      click:
+        allowed_roles: [scheduler]
+        effects:
+          - {op: equals, path: caption_status, value: ready}
+          - {op: equals, path: localization_status, value: ready}
+          - {op: equals, path: last_action, value: mark_captions_ready}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_scheduler}
+  legal_approve_button:
+    kind: button
+    selector: '[data-testid="legal-approve"]'
+    page: clearance
+    actions:
+      click:
+        allowed_roles: [legal]
+        effects:
+          - {op: equals, path: legal_status, value: approved}
+          - {op: appended_object, path: audit_log, value: {id: AUD-LEGAL, event: legal_clearance, actor: legal, status: approved}}
+          - *derive_audit_count
+          - {op: equals, path: last_action, value: legal_approve}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_legal}
+  finance_commit_button:
+    kind: button
+    selector: '[data-testid="finance-commit"]'
+    page: clearance
+    actions:
+      click:
+        allowed_roles: [finance]
+        preconditions:
+          - {op: relation, path: spend_total, operator: ">", value: 0}
+        effects:
+          - {op: equals, path: finance_status, value: committed}
+          - *derive_committed_spend
+          - {op: equals, path: last_action, value: finance_commit}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_finance}
+
+  traffic_outlets_button:
+    kind: button
+    selector: '[data-testid="traffic-outlets"]'
+    page: transmit
+    actions:
+      click:
+        allowed_roles: [scheduler]
+        preconditions:
+          - {op: relation, path: package_count, operator: ">", value: 0}
+        effects:
+          - {op: appended_object, path: partner_rows, value: {id: TRAF-BRIGHTBEAM, outlet: BrightBeam DSP, market: global, clock: prime_clock, status: trafficked}}
+          - *derive_partner_count
+          - {op: equals, path: trafficking_status, value: trafficked}
+          - {op: equals, path: last_action, value: traffic_outlets}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_scheduler}
+  transmit_release_button:
+    kind: button
+    selector: '[data-testid="transmit-release"]'
+    page: transmit
+    actions:
+      click:
+        allowed_roles: [scheduler]
+        preconditions:
+          - {op: one_of, path: runtime_status, values: [locked]}
+          - {op: one_of, path: caption_status, values: [ready]}
+          - {op: one_of, path: localization_status, values: [ready]}
+          - {op: one_of, path: legal_status, values: [approved]}
+          - {op: one_of, path: finance_status, values: [committed]}
+          - {op: relation, path: partner_count, operator: ">", value: 0}
+        effects:
+          - {op: equals, path: transmission_status, value: transmitted}
+          - {op: appended_object, path: transmission_rows, value: {id: TX-001, campaign: Northstar Broadcast Release, outlet: BrightBeam DSP, market: global, status: transmitted}}
+          - *derive_transmission_count
+          - {op: appended_object, path: audit_log, value: {id: AUD-TX, event: transmission_release, actor: scheduler, status: transmitted}}
+          - *derive_audit_count
+          - {op: equals, path: last_action, value: transmit_release}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_scheduler}

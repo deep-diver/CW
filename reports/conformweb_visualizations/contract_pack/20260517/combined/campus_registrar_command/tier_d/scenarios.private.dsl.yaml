@@ -1,0 +1,517 @@
+dsl_version: "3.0.0"
+visibility: private
+tier_weights:
+  smoke: 1
+  core: 2
+  validation: 3
+  upload: 4
+  permission: 5
+  service: 5
+  persistence: 6
+  journey: 8
+
+x-fixtures:
+  transcript_input: &transcript_input
+    file:
+      name: iona-private-transcript.csv
+      mime_type: text/csv
+      content: |
+        id,course,credits,residency,grade,status
+        TRN-CAP,CDX 498,6,6,A-,accepted
+        TRN-ETH,PHIL 410,3,0,A,accepted
+        TRN-HON,HON 390,3,3,A,accepted
+        TRN-RES,RES 440,2,2,B+,review
+    rows:
+      - {id: TRN-CAP, course: "CDX 498", credits: 6, residency: 6, grade: "A-", status: accepted}
+      - {id: TRN-ETH, course: "PHIL 410", credits: 3, residency: 0, grade: A, status: accepted}
+      - {id: TRN-HON, course: "HON 390", credits: 3, residency: 3, grade: A, status: accepted}
+      - {id: TRN-RES, course: "RES 440", credits: 2, residency: 2, grade: "B+", status: review}
+  crosswalk_input: &crosswalk_input
+    file:
+      name: iona-private-crosswalk.csv
+      mime_type: text/csv
+      content: |
+        id,requirement,transcript,credits,confidence,status
+        XW-CAP,AUD-CAPSTONE,TRN-CAP,6,high,ready
+        XW-ETH,AUD-ETHICS,TRN-ETH,3,medium,ready
+        XW-HON,AUD-HONORS,TRN-HON,3,high,ready
+        XW-RES,AUD-RESIDENCY,TRN-RES,2,review,ready
+    rows:
+      - {id: XW-CAP, requirement: AUD-CAPSTONE, transcript: TRN-CAP, credits: 6, confidence: high, status: ready}
+      - {id: XW-ETH, requirement: AUD-ETHICS, transcript: TRN-ETH, credits: 3, confidence: medium, status: ready}
+      - {id: XW-HON, requirement: AUD-HONORS, transcript: TRN-HON, credits: 3, confidence: high, status: ready}
+      - {id: XW-RES, requirement: AUD-RESIDENCY, transcript: TRN-RES, credits: 2, confidence: review, status: ready}
+  clean_reconciliation_input: &clean_reconciliation_input
+    file:
+      name: iona-private-recon-clean.csv
+      mime_type: text/csv
+      content: |
+        id,source,registrar,senate,status
+        RC-CAP,capstone,met,met,match
+        RC-RES,residency,met,met,match
+        RC-HON,honors,met,met,match
+        RC-NAME,identity,resolved,resolved,match
+    rows:
+      - {id: RC-CAP, source: capstone, registrar: met, senate: met, status: match}
+      - {id: RC-RES, source: residency, registrar: met, senate: met, status: match}
+      - {id: RC-HON, source: honors, registrar: met, senate: met, status: match}
+      - {id: RC-NAME, source: identity, registrar: resolved, senate: resolved, status: match}
+  weak_committee_input: &weak_committee_input
+    file:
+      name: weak-votes.csv
+      mime_type: text/csv
+      content: |
+        id,member,role,vote,note
+        V-01,Dean A,chair,affirm,policy ok
+        V-02,Prof Lin,faculty,affirm,crosswalk ok
+        V-03,Prof Singh,faculty,abstain,seat concern
+        V-04,Registrar Mae,registrar,oppose,records gap
+    rows:
+      - {id: V-01, member: "Dean A", role: chair, vote: affirm, note: "policy ok"}
+      - {id: V-02, member: "Prof Lin", role: faculty, vote: affirm, note: "crosswalk ok"}
+      - {id: V-03, member: "Prof Singh", role: faculty, vote: abstain, note: "seat concern"}
+      - {id: V-04, member: "Registrar Mae", role: registrar, vote: oppose, note: "records gap"}
+  strong_committee_input: &strong_committee_input
+    file:
+      name: strong-votes.csv
+      mime_type: text/csv
+      content: |
+        id,member,role,vote,note
+        V-01,Dean A,chair,affirm,policy ok
+        V-02,Prof Lin,faculty,affirm,crosswalk ok
+        V-03,Prof Singh,faculty,affirm,seat ok
+        V-04,Registrar Mae,registrar,affirm,records ok
+        V-05,Advisor Cole,advisor,abstain,observed
+    rows:
+      - {id: V-01, member: "Dean A", role: chair, vote: affirm, note: "policy ok"}
+      - {id: V-02, member: "Prof Lin", role: faculty, vote: affirm, note: "crosswalk ok"}
+      - {id: V-03, member: "Prof Singh", role: faculty, vote: affirm, note: "seat ok"}
+      - {id: V-04, member: "Registrar Mae", role: registrar, vote: affirm, note: "records ok"}
+      - {id: V-05, member: "Advisor Cole", role: advisor, vote: abstain, note: observed}
+
+scenarios:
+  - id: private_01_marek_selection_from_wave_filter
+    tier: smoke
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: filter_wave_risk_button.click
+      - do: select_marek_button.click
+        expect:
+          - {op: equals, path: selected_candidate_id, value: CAND-MAREK}
+          - {op: equals, path: selected_candidate_name, value: "Marek Holt"}
+          - {op: equals, path: selected_program, value: "Robotics Engineering BS"}
+          - {op: equals, path: selected_name_variance, value: clear}
+          - {op: equals, path: current_page, value: curriculum}
+
+  - id: private_02_browser_back_forward_keeps_selected_dossier
+    tier: persistence
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: select_iona_button.click
+      - do: go_dossier_button.click
+      - do: go_finance_button.click
+      - do: go_senate_button.click
+      - browser: back
+        expect_page: finance
+        expect:
+          - {op: equals, path: current_page, value: finance}
+          - {op: equals, path: selected_candidate_id, value: CAND-IONA}
+      - browser: back
+        expect_page: dossier
+        expect:
+          - {op: equals, path: current_page, value: dossier}
+          - {op: equals, path: selected_candidate_name, value: "Iona Rivera"}
+      - browser: forward
+        expect_page: finance
+        expect:
+          - {op: equals, path: current_page, value: finance}
+
+  - id: private_03_policy_lock_requires_registrar
+    tier: permission
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: select_iona_button.click
+      - do: policy_epoch_input.fill
+        input: {value: POLICY-2026-MAY}
+      - do: lock_policy_epoch_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: denied_count, value: 1}
+          - {op: equals, path: policy_epoch_status, value: draft}
+          - {op: equals, path: last_action, value: unauthorized_registrar}
+
+  - id: private_04_reset_cleans_deep_partial_work
+    tier: persistence
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: select_iona_button.click
+      - do: run_degree_graph_button.click
+      - do: plan_capstone_seats_button.click
+      - do: go_dossier_button.click
+      - do: transcript_upload_input.upload
+        input: *transcript_input
+      - do: reset_button.click
+        expect:
+          - {op: equals, path: selected_candidate_id, value: ""}
+          - {op: equals, path: audit_count, value: 0}
+          - {op: equals, path: plan_count, value: 0}
+          - {op: equals, path: transcript_count, value: 0}
+          - {op: equals, path: readiness_score, value: 0}
+          - {op: equals, path: last_action, value: reset}
+
+  - id: private_05_degree_plan_reload_preserves_matrix
+    tier: persistence
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: select_iona_button.click
+      - do: run_degree_graph_button.click
+      - do: plan_capstone_seats_button.click
+      - do: resolve_seat_matrix_button.click
+      - browser: reload
+        expect_page: curriculum
+        expect:
+          - {op: equals, path: plan_status, value: resolved}
+          - {op: equals, path: plan_count, value: 5}
+          - {op: equals, path: collision_count, value: 0}
+          - {op: equals, path: selected_candidate_name, value: "Iona Rivera"}
+
+  - id: private_06_uploaded_crosswalk_persists_after_reload
+    tier: persistence
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: select_iona_button.click
+      - do: go_dossier_button.click
+      - do: transcript_upload_input.upload
+        input: *transcript_input
+      - do: crosswalk_upload_input.upload
+        input: *crosswalk_input
+      - browser: reload
+        expect_page: dossier
+        expect:
+          - {op: equals, path: transcript_count, value: 4}
+          - {op: equals, path: crosswalk_count, value: 4}
+          - {op: equals, path: crosswalk_status, value: uploaded}
+      - table: crosswalk_grid
+        expect_order: [XW-CAP, XW-ETH, XW-HON, XW-RES]
+        expect_row_count: 4
+
+  - id: private_07_certify_crosswalk_unauthorized_preserves_stage
+    tier: permission
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: select_iona_button.click
+      - do: go_dossier_button.click
+      - do: transcript_upload_input.upload
+        input: *transcript_input
+      - do: crosswalk_upload_input.upload
+        input: *crosswalk_input
+      - do: role_advisor_button.click
+      - do: stage_crosswalk_button.click
+      - do: role_analyst_button.click
+      - do: certify_crosswalk_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: denied_count, value: 1}
+          - {op: equals, path: crosswalk_status, value: staged}
+
+  - id: private_08_exception_table_after_successful_certification
+    tier: journey
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: select_iona_button.click
+      - do: run_degree_graph_button.click
+      - do: plan_capstone_seats_button.click
+      - do: resolve_seat_matrix_button.click
+      - do: policy_epoch_input.fill
+        input: {value: POLICY-2026-MAY}
+      - do: role_registrar_button.click
+      - do: lock_policy_epoch_button.click
+      - do: go_dossier_button.click
+      - do: transcript_upload_input.upload
+        input: *transcript_input
+      - do: crosswalk_upload_input.upload
+        input: *crosswalk_input
+      - do: role_advisor_button.click
+      - do: stage_crosswalk_button.click
+      - do: certify_crosswalk_button.click
+      - do: assemble_exception_dossier_button.click
+      - table: exception_grid
+        expect_order: [EX-POLICY, EX-SEAT, EX-CROSS]
+        expect_row_count: 3
+        expect_rows:
+          - id: EX-CROSS
+            cells:
+              owner: advisor
+              status: attached
+
+  - id: private_09_name_variance_event_reopens_identity_gate
+    tier: service
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: select_iona_button.click
+      - do: go_finance_button.click
+      - do: role_registrar_button.click
+      - do: verify_identity_button.click
+      - do: resolve_name_variance_button.click
+      - event: name_variance_escalation
+        expect:
+          - {op: equals, path: identity_status, value: review}
+          - {op: equals, path: name_match_status, value: escalated}
+          - {op: equals, path: event_notice_count, value: 1}
+          - {op: equals, path: validation_errors, value: {identity: "Late alias review required"}}
+
+  - id: private_10_bursar_button_requires_bursar_role
+    tier: permission
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: select_iona_button.click
+      - do: go_finance_button.click
+      - do: run_bursar_bundle_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: denied_count, value: 1}
+          - {op: equals, path: finance_status, value: idle}
+
+  - id: private_11_diploma_quote_preserves_identity_service_count
+    tier: service
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: select_iona_button.click
+      - do: go_finance_button.click
+      - do: role_registrar_button.click
+      - do: verify_identity_button.click
+      - do: resolve_name_variance_button.click
+      - do: quote_diploma_lane_button.click
+        expect:
+          - {op: equals, path: service_call_count, value: 2}
+          - {op: equals, path: identity_call_count, value: 1}
+          - {op: equals, path: diploma_call_count, value: 1}
+          - {op: equals, path: diploma_lane, value: rush-audit}
+
+  - id: private_12_reconciliation_lock_requires_registrar
+    tier: permission
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: select_iona_button.click
+      - do: go_finance_button.click
+      - do: reconciliation_upload_input.upload
+        input: *clean_reconciliation_input
+      - do: lock_wave_reconciliation_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: denied_count, value: 1}
+          - {op: equals, path: reconciliation_status, value: uploaded}
+
+  - id: private_13_weak_committee_fails_quorum
+    tier: validation
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: select_iona_button.click
+      - do: go_senate_button.click
+      - do: committee_upload_input.upload
+        input: *weak_committee_input
+      - do: role_dean_button.click
+      - do: certify_committee_quorum_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: affirm_vote_count, value: 2}
+          - {op: equals, path: oppose_vote_count, value: 1}
+          - {op: equals, path: quorum_status, value: blocked}
+          - {op: equals, path: validation_errors, value: {committee: "Four affirm votes required"}}
+
+  - id: private_14_senate_docket_blocks_without_quorum
+    tier: validation
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: select_iona_button.click
+      - do: go_senate_button.click
+      - do: role_dean_button.click
+      - do: prepare_senate_docket_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: senate_docket_status, value: blocked}
+          - {op: equals, path: validation_errors, value: {senate: "Committee, reconciliation, and finance gates required"}}
+
+  - id: private_15_provost_counterseal_blocks_before_senate
+    tier: validation
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: select_iona_button.click
+      - do: go_senate_button.click
+      - do: role_provost_button.click
+      - do: provost_counterseal_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: provost_counterseal_status, value: blocked}
+          - {op: equals, path: last_action, value: provost_requires_senate}
+
+  - id: private_16_release_wave_blocks_before_counterseal
+    tier: validation
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: select_iona_button.click
+      - do: go_release_button.click
+      - do: role_registrar_button.click
+      - do: seal_commencement_wave_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: release_wave_status, value: blocked}
+          - {op: equals, path: validation_errors, value: {release: "Provost counterseal required"}}
+
+  - id: private_17_role_and_senate_page_persist_after_reload
+    tier: persistence
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: select_iona_button.click
+      - do: go_senate_button.click
+      - do: role_dean_button.click
+      - browser: reload
+        expect_page: senate
+        expect:
+          - {op: equals, path: current_page, value: senate}
+          - {op: equals, path: active_role, value: dean}
+          - {op: equals, path: selected_candidate_id, value: CAND-IONA}
+
+  - id: private_18_full_service_counts_before_senate
+    tier: service
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: select_iona_button.click
+      - do: go_finance_button.click
+      - do: role_registrar_button.click
+      - do: verify_identity_button.click
+      - do: resolve_name_variance_button.click
+      - do: quote_diploma_lane_button.click
+      - do: role_bursar_button.click
+      - do: run_bursar_bundle_button.click
+        mode: rejected
+      - do: role_registrar_button.click
+      - do: quote_diploma_lane_button.click
+        expect:
+          - {op: equals, path: service_call_count, value: 3}
+          - {op: equals, path: identity_call_count, value: 1}
+          - {op: equals, path: diploma_call_count, value: 2}
+
+  - id: private_19_manifest_publish_blocks_after_accreditation_freeze
+    tier: journey
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: select_iona_button.click
+      - do: run_degree_graph_button.click
+      - do: plan_capstone_seats_button.click
+      - do: resolve_seat_matrix_button.click
+      - do: policy_epoch_input.fill
+        input: {value: POLICY-2026-MAY}
+      - do: role_registrar_button.click
+      - do: lock_policy_epoch_button.click
+      - do: go_dossier_button.click
+      - do: transcript_upload_input.upload
+        input: *transcript_input
+      - do: crosswalk_upload_input.upload
+        input: *crosswalk_input
+      - do: role_advisor_button.click
+      - do: stage_crosswalk_button.click
+      - do: certify_crosswalk_button.click
+      - do: assemble_exception_dossier_button.click
+      - do: go_finance_button.click
+      - do: role_registrar_button.click
+      - do: verify_identity_button.click
+      - do: resolve_name_variance_button.click
+      - do: role_bursar_button.click
+      - do: run_bursar_bundle_button.click
+      - do: role_registrar_button.click
+      - do: quote_diploma_lane_button.click
+      - do: reconciliation_upload_input.upload
+        input: *clean_reconciliation_input
+      - do: lock_wave_reconciliation_button.click
+      - do: go_senate_button.click
+      - do: committee_upload_input.upload
+        input: *strong_committee_input
+      - do: role_dean_button.click
+      - do: certify_committee_quorum_button.click
+      - do: prepare_senate_docket_button.click
+      - do: role_provost_button.click
+      - do: provost_counterseal_button.click
+      - do: go_release_button.click
+      - do: role_registrar_button.click
+      - do: seal_commencement_wave_button.click
+      - event: accreditation_freeze
+      - do: publish_diploma_manifest_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: diploma_manifest_status, value: blocked}
+          - {op: equals, path: release_wave_status, value: frozen}
+          - {op: equals, path: last_action, value: manifest_requires_wave}
+
+  - id: private_20_full_release_tables_after_manifest
+    tier: journey
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: select_iona_button.click
+      - do: run_degree_graph_button.click
+      - do: plan_capstone_seats_button.click
+      - do: resolve_seat_matrix_button.click
+      - do: policy_epoch_input.fill
+        input: {value: POLICY-2026-MAY}
+      - do: role_registrar_button.click
+      - do: lock_policy_epoch_button.click
+      - do: go_dossier_button.click
+      - do: transcript_upload_input.upload
+        input: *transcript_input
+      - do: crosswalk_upload_input.upload
+        input: *crosswalk_input
+      - do: role_advisor_button.click
+      - do: stage_crosswalk_button.click
+      - do: certify_crosswalk_button.click
+      - do: assemble_exception_dossier_button.click
+      - do: go_finance_button.click
+      - do: role_registrar_button.click
+      - do: verify_identity_button.click
+      - do: resolve_name_variance_button.click
+      - do: role_bursar_button.click
+      - do: run_bursar_bundle_button.click
+      - do: role_registrar_button.click
+      - do: quote_diploma_lane_button.click
+      - do: reconciliation_upload_input.upload
+        input: *clean_reconciliation_input
+      - do: lock_wave_reconciliation_button.click
+      - do: go_senate_button.click
+      - do: committee_upload_input.upload
+        input: *strong_committee_input
+      - do: role_dean_button.click
+      - do: certify_committee_quorum_button.click
+      - do: prepare_senate_docket_button.click
+      - do: role_provost_button.click
+      - do: provost_counterseal_button.click
+      - do: go_release_button.click
+      - do: role_registrar_button.click
+      - do: seal_commencement_wave_button.click
+      - do: publish_diploma_manifest_button.click
+      - table: release_grid
+        expect_order: [REL-COMM, REL-TRANSCRIPT, REL-DIPLOMA]
+        expect_row_count: 3
+      - table: blocker_grid
+        expect_row_count: 11
+      - table: audit_log_grid
+        expect_order: [AUD-SENATE, AUD-PROVOST, AUD-WAVE]
+        expect_row_count: 3

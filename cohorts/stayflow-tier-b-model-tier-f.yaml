@@ -1,0 +1,106 @@
+version: "1"
+name: stayflow-tier-b-model-tier-f
+description: Model Tier F blind cohort for StayFlow Concierge Tier B.
+scenario_set: all
+model_tier: F
+members:
+  - id: tier_b_f_gpt54
+    provider: openai
+    model: gpt-5.4
+    generator: tools/generate_blind_dsl_static_app.py
+    status: completed
+    max_output_tokens: 24000
+    variant: >
+      Model Tier F blind implementation. Build a polished commercial
+      multi-city travel concierge product UI, not a bare state dashboard.
+      Keep all DetoxBench selectors directly actionable and implement the
+      public DSL behavior exactly.
+  - id: tier_b_f_claude_opus46
+    provider: anthropic
+    model: claude-opus-4-6
+    generator: tools/generate_blind_dsl_static_app.py
+    status: completed
+    base_url: https://api.anthropic.com
+    max_output_tokens: 24000
+    variant: >
+      Model Tier F blind implementation. Build a polished commercial
+      multi-city travel concierge product UI, not a bare state dashboard.
+      Keep all DetoxBench selectors directly actionable and implement the
+      public DSL behavior exactly.
+  - id: tier_b_f_gemini31_pro_preview
+    provider: google
+    model: gemini-3.1-pro-preview
+    generator: tools/generate_blind_dsl_static_app.py
+    status: completed_after_retry
+    max_output_tokens: 48000
+    variant: >
+      Model Tier F blind implementation. Build a polished commercial
+      multi-city travel concierge product UI, not a bare state dashboard.
+      Keep all DetoxBench selectors directly actionable and implement the
+      public DSL behavior exactly. Keep the implementation compact and avoid
+      redundant decorative markup so the three requested files fit cleanly in
+      the JSON response.
+targets:
+  - target_dir: ../targets/web/stayflow_concierge/tier_b
+    contract: contract.dsl.yaml
+    public_scenarios: scenarios.public.dsl.yaml
+    private_scenarios: scenarios.private.dsl.yaml
+results:
+  evaluated_at: "2026-05-11"
+  prompt_policy: public_contract_only_no_public_or_private_scenarios
+  canonical_prompt_sha256: "f782c401ec14a780cad99ae3ef473effe9563ca77baa016da80818d2e33d08f3"
+  gemini_retry_prompt_sha256: "ac750908426e9dac4998c99d35180b3627a61b19206cb8118a52e4a100b77739"
+  contract_sha256: "299d717f6aa4924da07878908671f433217d4fd9aea31242a6f5a549d77b0a6d"
+  dashboard: ../targets/web/stayflow_concierge/tier_b/reports/dashboard/index.html
+  generation_notes:
+    - member_id: tier_b_f_gemini31_pro_preview
+      note: Initial response was invalid/truncated JSON; rerun used larger output limit and compact-output wording.
+  runs:
+    - target_id: stayflow_concierge_tier_b
+      member_id: tier_b_f_gpt54
+      run_subject: blind_gpt54_01
+      run_id: "20260511-104746-1f9c16ed"
+      passed: false
+      scenarios: 20/29
+      formal: 78/110
+      formal_ratio: 0.7090909090909091
+      stepwise_ratio: 0.9547974043500358
+      contract_ratio: 1.0
+      first_failure: public_01_filter_seoul_catalog
+      failure_breakdown:
+        assertion_table_cell_equals: 4
+        assertion_state_appended_object: 4
+        assertion_state_unchanged: 1
+      report: ../targets/web/stayflow_concierge/tier_b/cohorts/_single_blind_20260511/eval_summaries/blind_gpt54_01.json
+    - target_id: stayflow_concierge_tier_b
+      member_id: tier_b_f_claude_opus46
+      run_subject: blind_claude_opus46_01
+      run_id: "20260511-104746-0487cde0"
+      passed: false
+      scenarios: 21/29
+      formal: 73/110
+      formal_ratio: 0.6636363636363637
+      stepwise_ratio: 0.9486610407136722
+      contract_ratio: 1.0
+      first_failure: public_05_missing_arrival_rejected
+      failure_breakdown:
+        assertion_state_updated_object_fields: 1
+        assertion_state_equals: 4
+        assertion_state_unchanged: 1
+        assertion_table_order_equals: 1
+        assertion_state_delta: 1
+      report: ../targets/web/stayflow_concierge/tier_b/cohorts/_single_blind_20260511/eval_summaries/blind_claude_opus46_01.json
+    - target_id: stayflow_concierge_tier_b
+      member_id: tier_b_f_gemini31_pro_preview
+      run_subject: blind_gemini31_pro_preview_01
+      run_id: "20260511-104746-de5b96c6"
+      passed: false
+      scenarios: 0/29
+      formal: 0/110
+      formal_ratio: 0.0
+      stepwise_ratio: 0.0814732447244409
+      contract_ratio: 1.0
+      first_failure: public_01_filter_seoul_catalog
+      failure_breakdown:
+        assertion_state_equals: 29
+      report: ../targets/web/stayflow_concierge/tier_b/cohorts/_single_blind_20260511/eval_summaries/blind_gemini31_pro_preview_01.json

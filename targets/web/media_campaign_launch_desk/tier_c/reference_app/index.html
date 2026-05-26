@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Media Campaign Launch Desk Tier C</title>
+  <style>
+    :root{
+      --paper:#f6f3ec;
+      --paper-2:#fffdfa;
+      --ink:#14151d;
+      --muted:#667085;
+      --line:#d6dce5;
+      --cobalt:#2854d8;
+      --teal:#08a6a6;
+      --magenta:#e64092;
+      --amber:#d68a00;
+      --lime:#60b044;
+      --slate:#253044;
+      --soft:#e9edf5;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:linear-gradient(180deg,#ebeef4 0,#f7f4ed 42%,#eceff5 100%);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:0}
+    button,input{font:inherit}
+    button{border:1px solid #bac4d3;background:#fff;color:var(--ink);border-radius:8px;padding:8px 11px;cursor:pointer;font-weight:800;box-shadow:0 1px 0 rgba(20,21,29,.04)}
+    button.primary{background:var(--cobalt);border-color:var(--cobalt);color:#fff}
+    button.teal{background:var(--teal);border-color:var(--teal);color:#fff}
+    button.magenta{background:var(--magenta);border-color:var(--magenta);color:#fff}
+    button.amber{background:#fff4da;border-color:#e3b85d;color:#5a3a00}
+    button.lime{background:#e9f7e6;border-color:#9bd48c;color:#1d5425}
+    h1,h2,h3,p{margin-top:0}
+    h1{font-size:22px;margin-bottom:3px}
+    h2{font-size:21px;margin-bottom:4px}
+    h3{font-size:14px;margin-bottom:8px}
+    small{color:var(--muted)}
+    label{display:grid;gap:7px;font-size:11px;text-transform:uppercase;font-weight:900;color:var(--muted)}
+    input[type=file]{width:100%;border:1px solid var(--line);border-radius:8px;background:#fff;padding:9px}
+    .shell{min-height:100vh;display:grid;grid-template-rows:auto 1fr}
+    header{display:grid;grid-template-columns:365px minmax(390px,1fr) auto;gap:14px;align-items:center;padding:14px 22px;background:rgba(255,253,250,.92);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:3;backdrop-filter:blur(16px)}
+    .brand{display:flex;gap:12px;align-items:center}
+    .brand-mark{width:42px;height:42px;border-radius:10px;background:conic-gradient(from 220deg,var(--cobalt),var(--teal),var(--magenta),var(--amber),var(--cobalt));display:grid;place-items:center;color:#fff;font-weight:1000}
+    nav,.roles,.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .roles span{font-size:11px;text-transform:uppercase;font-weight:1000;color:var(--slate)}
+    main{display:grid;grid-template-columns:minmax(790px,1.45fr) minmax(370px,.62fr);gap:16px;padding:16px 22px}
+    .metrics{grid-column:1/-1;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+    .metric{border:1px solid var(--line);border-radius:8px;background:var(--paper-2);padding:11px;min-height:76px;box-shadow:0 12px 30px rgba(31,41,55,.06)}
+    .metric span{display:block;font-size:10px;text-transform:uppercase;color:var(--muted);font-weight:900}
+    .metric b{font-size:23px;line-height:1.45;overflow-wrap:anywhere}
+    .metric.cobalt{border-top:4px solid var(--cobalt)}
+    .metric.teal{border-top:4px solid var(--teal)}
+    .metric.magenta{border-top:4px solid var(--magenta)}
+    .metric.amber{border-top:4px solid var(--amber)}
+    .metric.lime{border-top:4px solid var(--lime)}
+    .work{display:grid;gap:14px}
+    .page{display:none}
+    .page.active{display:grid;gap:13px}
+    .panel,.side-card{border:1px solid var(--line);border-radius:8px;background:rgba(255,253,250,.94);padding:13px;box-shadow:0 18px 38px rgba(31,41,55,.07)}
+    .page-head{display:flex;align-items:start;justify-content:space-between;gap:14px}
+    .two{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+    .three{display:grid;grid-template-columns:1.05fr .95fr .9fr;gap:13px}
+    table{width:100%;border-collapse:collapse;font-size:13px}
+    th,td{border-bottom:1px solid #d9dee7;text-align:left;padding:8px;vertical-align:top}
+    th{font-size:10px;text-transform:uppercase;color:#687386;letter-spacing:.02em}
+    .audience-map{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;min-height:138px}
+    .map-cell{border:1px solid #c9d1df;border-radius:8px;background:linear-gradient(180deg,#fff,#f4f7fb);padding:10px;position:relative;overflow:hidden}
+    .map-cell:after{content:"";position:absolute;right:-16px;bottom:-16px;width:72px;height:72px;border-radius:50%;background:rgba(8,166,166,.14)}
+    .map-cell.high:after{background:rgba(230,64,146,.16)}
+    .map-cell b{display:block;font-size:20px}
+    .audience-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    .audience-card{border:1px solid #cbd4e2;border-radius:8px;background:#fff;padding:12px;display:grid;gap:8px;min-height:136px;position:relative;overflow:hidden}
+    .audience-card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--cobalt)}
+    .audience-card.high:before{background:var(--magenta)}
+    .audience-card.medium:before{background:var(--teal)}
+    .audience-card h3{font-size:16px;margin:0}
+    .chip-row{display:flex;gap:6px;flex-wrap:wrap}
+    .pill{display:inline-flex;align-items:center;border-radius:999px;padding:3px 8px;background:#eef2ff;color:var(--cobalt);font-size:12px;font-weight:900}
+    .pill.teal{background:#e2f8f6;color:#006c6b}
+    .pill.magenta{background:#ffe6f1;color:#9d0f58}
+    .pill.amber{background:#fff1cf;color:#765000}
+    .pill.lime{background:#e9f7e6;color:#28612c}
+    .pill.gray{background:#edf0f5;color:#526074}
+    .mix-board{display:grid;grid-template-columns:112px 1fr;gap:10px;align-items:stretch}
+    .mix-labels{display:grid;gap:8px}
+    .mix-label{height:48px;border:1px solid #d3dae6;border-radius:8px;background:#fff;padding:8px;font-size:12px;font-weight:900}
+    .mix-bars{display:grid;gap:8px}
+    .bar{height:48px;border:1px solid #cbd4e2;border-radius:8px;background:#fff;overflow:hidden;position:relative}
+    .bar span{position:absolute;left:10px;top:13px;font-weight:1000;z-index:1}
+    .bar:before{content:"";display:block;height:100%;width:var(--w);background:linear-gradient(90deg,var(--cobalt),var(--teal))}
+    .bar.social:before{background:linear-gradient(90deg,var(--magenta),#ff9cc8)}
+    .bar.retail:before{background:linear-gradient(90deg,var(--amber),#ffd67a)}
+    .forecast{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+    .forecast-card{border:1px solid #d1d8e5;border-radius:8px;background:#fff;padding:11px}
+    .forecast-card span{display:block;font-size:10px;text-transform:uppercase;color:var(--muted);font-weight:900}
+    .forecast-card b{font-size:22px}
+    .deal-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+    .deal-card{border:1px solid #d4dbe7;border-radius:8px;background:#fff;padding:10px;min-height:84px}
+    .experiment-canvas{min-height:246px;border:1px solid #cbd4e2;border-radius:8px;background:linear-gradient(135deg,#fff 0,#f6f7fb 55%,#fff4f9 100%);position:relative;overflow:hidden;padding:14px}
+    .experiment-canvas:before{content:"";position:absolute;left:24px;right:24px;top:50%;height:1px;background:#bec8d8}
+    .cell{position:absolute;border:1px solid #c7d1e2;border-radius:8px;background:#fff;padding:10px;width:170px;min-height:82px;box-shadow:0 12px 24px rgba(31,41,55,.08)}
+    .cell.test{left:34px;top:36px;border-top:5px solid var(--magenta)}
+    .cell.holdout{right:34px;bottom:36px;border-top:5px solid var(--teal)}
+    .activate-rail{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .rail-card{border:1px solid #d2dae6;border-radius:8px;background:#fff;padding:11px;min-height:88px}
+    .side{display:grid;gap:12px;align-content:start}
+    .dossier{border-left:5px solid var(--cobalt)}
+    .summary-line{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid #d9dee7}
+    .summary-line b{text-align:right;overflow-wrap:anywhere}
+    .gate-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .gate{border:1px solid #d5dce8;border-radius:8px;background:#fff;padding:9px;min-height:70px}
+    .gate span{display:block;font-size:10px;text-transform:uppercase;color:var(--muted);font-weight:900}
+    .gate b{display:block;margin-top:5px}
+    @media(max-width:1120px){header{grid-template-columns:1fr}main{grid-template-columns:1fr}.metrics,.two,.three,.forecast,.deal-strip,.activate-rail,.audience-map,.audience-grid{grid-template-columns:1fr}.metrics{grid-column:auto}}
+  </style>
+</head>
+<body>
+<div class="shell">
+  <header>
+    <div class="brand">
+      <div class="brand-mark">MX</div>
+      <div>
+        <h1>Media Mix Control Room</h1>
+        <small>Audience opportunity, investment mix, inventory deals, experiments, and activation pacing</small>
+      </div>
+    </div>
+    <nav>
+      <button data-testid="go-audiences">Audiences</button>
+      <button data-testid="go-mix">Mix</button>
+      <button data-testid="go-deals">Deals</button>
+      <button data-testid="go-experiments">Experiments</button>
+      <button data-testid="go-activate">Activate</button>
+      <button data-testid="reset" class="amber">Reset</button>
+    </nav>
+    <div class="roles">
+      <span id="roleBadge">Role strategist</span>
+      <button data-testid="role-strategist">Strategist</button>
+      <button data-testid="role-buyer">Buyer</button>
+      <button data-testid="role-analyst">Analyst</button>
+      <button data-testid="role-finance">Finance</button>
+      <button data-testid="role-director">Director</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="metrics">
+      <div class="metric cobalt"><span>Audience</span><b id="metricAudience">none</b></div>
+      <div class="metric teal"><span>Allocation</span><b id="metricAllocation">0</b></div>
+      <div class="metric magenta"><span>Forecast</span><b id="metricForecast">idle</b></div>
+      <div class="metric amber"><span>Budget</span><b id="metricBudget">idle</b></div>
+      <div class="metric lime"><span>Activation</span><b id="metricActivation">idle</b></div>
+      <div class="metric"><span>Denied</span><b id="metricDenied">0</b></div>
+    </section>
+
+    <section class="work">
+      <div id="audiences" class="page">
+        <div class="page-head">
+          <div>
+            <h2>Audience Opportunity Portfolio</h2>
+            <small>Segment filters, reach heat cells, and audience dossier for media investment planning.</small>
+          </div>
+          <div class="toolbar">
+            <button data-testid="filter-high-intent" class="magenta">High Intent</button>
+            <button data-testid="filter-premium-video" class="teal">Premium Video</button>
+          </div>
+        </div>
+        <div class="audience-map" id="audienceMap"></div>
+        <div data-testid="audience-grid" class="audience-grid" id="audienceRows"></div>
+      </div>
+
+      <div id="mix" class="page">
+        <div class="page-head">
+          <div>
+            <h2>Omnichannel Mix Allocator</h2>
+            <small>Allocate a campaign budget across CTV, paid social, and retail media, then forecast reach.</small>
+          </div>
+          <div class="toolbar">
+            <button data-testid="create-mix" class="primary">Create Mix</button>
+            <button data-testid="rebalance-mix" class="teal">Rebalance</button>
+            <button data-testid="run-forecast" class="magenta">Run Forecast</button>
+            <button data-testid="finance-lock-budget" class="amber">Finance Lock</button>
+            <button data-testid="budget-preflight">Budget Preflight</button>
+          </div>
+        </div>
+        <div class="two">
+          <div class="panel">
+            <h3>Allocation Lanes</h3>
+            <div class="mix-board">
+              <div class="mix-labels">
+                <div class="mix-label">CTV</div>
+                <div class="mix-label">Paid Social</div>
+                <div class="mix-label">Retail Media</div>
+              </div>
+              <div class="mix-bars" id="mixBars"></div>
+            </div>
+          </div>
+          <div class="panel">
+            <h3>Reach Forecast</h3>
+            <div class="forecast">
+              <div class="forecast-card"><span>Reach</span><b id="forecastReach">0</b></div>
+              <div class="forecast-card"><span>Freq cap</span><b id="forecastFreq">0</b></div>
+              <div class="forecast-card"><span>Service calls</span><b id="forecastCalls">0</b></div>
+            </div>
+            <table data-testid="mix-grid">
+              <thead><tr><th>Channel</th><th>Weight</th><th>Budget</th><th>KPI</th><th>State</th></tr></thead>
+              <tbody id="mixRows"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="deals" class="page">
+        <div class="page-head">
+          <div>
+            <h2>Inventory Deal Room</h2>
+            <small>Upload inventory commitments, check brand-safety readiness, and approve media partners.</small>
+          </div>
+          <div class="toolbar">
+            <button data-testid="buyer-validate-deals" class="teal">Validate Deals</button>
+          </div>
+        </div>
+        <div class="three">
+          <div class="panel">
+            <h3>Inventory Intake</h3>
+            <label>Inventory CSV<input data-testid="inventory-upload" id="inventoryUpload" type="file" accept=".csv,text/csv"></label>
+          </div>
+          <div class="deal-card"><h3>Deal State</h3><b id="dealState">idle</b><p><small id="dealFile">No file loaded.</small></p></div>
+          <div class="deal-card"><h3>Brand Safety</h3><b id="safetyState">idle</b><p><small id="safetyScore">score 0</small></p></div>
+        </div>
+        <div class="panel">
+          <h3>Partner Inventory</h3>
+          <table data-testid="inventory-grid">
+            <thead><tr><th>Partner</th><th>Channel</th><th>Market</th><th>Impressions</th><th>Safety</th></tr></thead>
+            <tbody id="inventoryRows"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="experiments" class="page">
+        <div class="page-head">
+          <div>
+            <h2>Incrementality Experiment Lab</h2>
+            <small>Design holdout cells, configure lift models, and activate measurement beacons.</small>
+          </div>
+          <div class="toolbar">
+            <button data-testid="build-holdout" class="magenta">Build Holdout</button>
+            <button data-testid="activate-beacons" class="teal">Activate Beacons</button>
+          </div>
+        </div>
+        <div class="two">
+          <div class="experiment-canvas">
+            <div class="cell test"><b>Test Cell</b><br><small>90% exposed audience</small></div>
+            <div class="cell holdout"><b>Holdout Cell</b><br><small>10% suppressed audience</small></div>
+          </div>
+          <div class="panel">
+            <h3>Experiment Cells</h3>
+            <table data-testid="experiment-grid">
+              <thead><tr><th>Cell</th><th>Audience</th><th>Allocation</th><th>Measurement</th></tr></thead>
+              <tbody id="experimentRows"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="activate" class="page">
+        <div class="page-head">
+          <div>
+            <h2>Activation and Pacing Console</h2>
+            <small>Export pacing guardrails and issue the director activation launch.</small>
+          </div>
+          <div class="toolbar">
+            <button data-testid="export-guardrails" class="lime">Export Guardrails</button>
+            <button data-testid="director-launch" class="primary">Director Launch</button>
+            <button data-testid="launch-preflight">Launch Preflight</button>
+          </div>
+        </div>
+        <div class="activate-rail">
+          <div class="panel">
+            <h3>Pacing Guardrails</h3>
+            <table data-testid="guardrail-grid">
+              <thead><tr><th>Metric</th><th>Threshold</th><th>Owner</th><th>State</th></tr></thead>
+              <tbody id="guardrailRows"></tbody>
+            </table>
+          </div>
+          <div class="panel">
+            <h3>Activation Ledger</h3>
+            <table data-testid="activation-grid">
+              <thead><tr><th>Campaign</th><th>Audience</th><th>Budget</th><th>Status</th></tr></thead>
+              <tbody id="activationRows"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>Audit Trail</h3>
+          <table data-testid="audit-grid">
+            <thead><tr><th>Event</th><th>Actor</th><th>Status</th></tr></thead>
+            <tbody id="auditRows"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <aside class="side">
+      <div class="side-card dossier">
+        <h2>Planning Dossier</h2>
+        <div id="dossier"></div>
+      </div>
+      <div class="side-card">
+        <h3>Readiness Gates</h3>
+        <div class="gate-grid" id="gates"></div>
+      </div>
+      <div class="side-card">
+        <h3>Media Ledger</h3>
+        <div id="ledger"></div>
+      </div>
+    </aside>
+  </main>
+</div>
+
+<script>
+const KEY='media-mix-control-room-tier-c-state';
+const audiences=[
+  {id:'AUD-URBAN',name:'Urban Commuter Video',market:'metro',intent:'high',reach:420000,cpm:18,signal:'mobility'},
+  {id:'AUD-FAMILY',name:'Family Weekend Streamers',market:'suburban',intent:'medium',reach:510000,cpm:22,signal:'streaming'},
+  {id:'AUD-GAMER',name:'Late Night Gamers',market:'digital',intent:'high',reach:260000,cpm:14,signal:'gaming'},
+  {id:'AUD-LUX',name:'Luxury Travel Planners',market:'premium',intent:'high',reach:180000,cpm:31,signal:'travel'},
+  {id:'AUD-RETAIL',name:'Retail Basket Builders',market:'shopper',intent:'medium',reach:390000,cpm:16,signal:'commerce'}
+];
+const initial={current_page:'audiences',active_role:'strategist',audiences,visible_audiences:audiences,current_filter:'all',selected_audience_id:'',selected_audience_name:'',selected_market:'',selected_intent:'',selected_reach:0,selected_cpm:0,mix_rows:[],mix_count:0,allocation_total:0,planned_budget:0,forecast_status:'idle',reach_forecast:0,frequency_cap:0,frequency_status:'idle',budget_status:'idle',approved_budget:0,budget_key:'',inventory_rows:[],inventory_count:0,last_inventory_file:'',deal_status:'idle',brand_safety_status:'idle',brand_safety_score:0,experiment_rows:[],experiment_count:0,holdout_status:'idle',lift_model_status:'idle',beacon_status:'idle',guardrail_rows:[],guardrail_count:0,pacing_status:'idle',pacing_index:0,activation_status:'idle',activation_rows:[],activation_count:0,readiness_score:0,audit_log:[],audit_count:0,service_call_count:0,denied_count:0,validation_errors:{},last_action:'ready'};
+let S;
+function clone(value){return JSON.parse(JSON.stringify(value))}
+function loadState(){try{S={...clone(initial),...JSON.parse(localStorage.getItem(KEY)||'{}')}}catch{S=clone(initial)}}
+function saveState(){localStorage.setItem(KEY,JSON.stringify(S))}
+function recalc(){S.mix_count=S.mix_rows.length;S.inventory_count=S.inventory_rows.length;S.experiment_count=S.experiment_rows.length;S.guardrail_count=S.guardrail_rows.length;S.activation_count=S.activation_rows.length;S.audit_count=S.audit_log.length}
+function resetState(){localStorage.removeItem(KEY);S=clone(initial);S.last_action='reset';location.hash='#/audiences';render();saveState()}
+function syncPage(){const page=(location.hash||'#/audiences').replace('#/','');if(['audiences','mix','deals','experiments','activate'].includes(page)){S.current_page=page;render();saveState()}}
+function setPage(page){S.current_page=page;S.last_action='nav_'+page;location.hash='#/'+page;render();saveState()}
+function setRole(role){S.active_role=role;S.last_action='role_'+role;render();saveState()}
+function deny(action){S.denied_count+=1;S.last_action=action;render();saveState()}
+function filterHighIntent(){S.current_filter='high_intent';S.visible_audiences=[audiences[0],audiences[2],audiences[3]];S.last_action='filter_high_intent';render();saveState()}
+function filterPremiumVideo(){S.current_filter='premium_video';S.visible_audiences=[audiences[1],audiences[3]];S.last_action='filter_premium_video';render();saveState()}
+function selectAudience(id){const item=audiences.find(a=>a.id===id);if(!item)return;S.current_page='mix';S.selected_audience_id=item.id;S.selected_audience_name=item.name;S.selected_market=item.market;S.selected_intent=item.intent;S.selected_reach=item.reach;S.selected_cpm=item.cpm;S.last_action='select_audience';location.hash='#/mix';render();saveState()}
+function createMix(){if(!S.selected_audience_id)return;S.mix_rows=[{id:'MIX-CTV',channel:'CTV',weight:50,budget:62500,kpi:'completed_views',state:'planned'},{id:'MIX-SOCIAL',channel:'Paid Social',weight:30,budget:37500,kpi:'qualified_reach',state:'planned'},{id:'MIX-RETAIL',channel:'Retail Media',weight:20,budget:25000,kpi:'store_lift',state:'planned'}];S.allocation_total=100;S.planned_budget=125000;S.forecast_status='stale';S.frequency_status='idle';S.last_action='create_mix';recalc();render();saveState()}
+function rebalanceMix(){if(!S.mix_rows.length)return;S.mix_rows=[{id:'MIX-CTV',channel:'CTV',weight:45,budget:56250,kpi:'completed_views',state:'capped'},{id:'MIX-SOCIAL',channel:'Paid Social',weight:20,budget:25000,kpi:'qualified_reach',state:'reduced'},{id:'MIX-RETAIL',channel:'Retail Media',weight:35,budget:43750,kpi:'store_lift',state:'boosted'}];S.allocation_total=100;S.planned_budget=125000;S.frequency_status='balanced';S.forecast_status='stale';S.last_action='rebalance_mix';recalc();render();saveState()}
+function runForecast(){if(S.allocation_total!==100)return;S.forecast_status='forecasted';S.reach_forecast=612000;S.frequency_cap=3;S.frequency_status='balanced';S.service_call_count+=1;S.last_action='run_forecast';render();saveState()}
+function financeLockBudget(){if(S.active_role!=='finance'){deny('unauthorized_finance');return}if(S.allocation_total!==100||S.forecast_status!=='forecasted')return;S.budget_status='locked';S.approved_budget=125000;S.budget_key='FY27-AURORA-125K';upsertAudit({id:'AUD-BUDGET',event:'budget_lock',actor:'finance',status:'locked'});S.last_action='finance_lock_budget';recalc();render();saveState()}
+function budgetPreflight(){S.budget_status='idle';S.approved_budget=0;S.validation_errors={budget:'forecast_required'};S.last_action='budget_lock_blocked';render();saveState()}
+function parseCsv(text){const lines=text.trim().split(/\r?\n/).filter(Boolean);if(lines.length<2)return[];const headers=lines[0].split(',').map(h=>h.trim());return lines.slice(1).map(line=>{const values=line.split(',').map(v=>v.trim());const row={};headers.forEach((h,i)=>{const raw=values[i]||'';row[h]=h==='impressions'?Number(raw):raw});return row})}
+async function uploadInventory(event){const file=event.target.files&&event.target.files[0];if(!file)return;const text=await file.text();S.inventory_rows=parseCsv(text);S.last_inventory_file=file.name;S.deal_status='loaded';S.brand_safety_status='review';S.brand_safety_score=0;S.last_action='upload_inventory';recalc();render();saveState();event.target.value=''}
+function buyerValidateDeals(){if(S.active_role!=='buyer'){deny('unauthorized_buyer');return}if(S.inventory_count<=0)return;S.deal_status='validated';S.brand_safety_status='approved';S.brand_safety_score=94;upsertAudit({id:'AUD-DEALS',event:'deal_validation',actor:'buyer',status:'approved'});S.last_action='buyer_validate_deals';recalc();render();saveState()}
+function buildHoldout(){if(S.active_role!=='analyst'){deny('unauthorized_analyst');return}if(S.forecast_status!=='forecasted')return;const audience=S.selected_audience_name||'Urban Commuter Video';S.experiment_rows=[{id:'EXP-TEST',cell:'test',audience,allocation:90,measurement:'exposed'},{id:'EXP-HOLDOUT',cell:'holdout',audience,allocation:10,measurement:'suppressed'}];S.holdout_status='balanced';S.lift_model_status='configured';S.last_action='build_holdout';recalc();render();saveState()}
+function activateBeacons(){if(S.active_role!=='analyst'){deny('unauthorized_analyst');return}if(S.experiment_count<=0)return;S.beacon_status='live';S.service_call_count+=1;upsertAudit({id:'AUD-BEACON',event:'measurement_beacon',actor:'analyst',status:'live'});S.last_action='activate_beacons';recalc();render();saveState()}
+function exportGuardrails(){if(!['buyer','analyst'].includes(S.active_role)){deny('unauthorized_guardrails');return}S.guardrail_rows=[{id:'GRD-CPM',metric:'blended_cpm',threshold:'< 24',owner:'buyer',state:'armed'},{id:'GRD-FREQ',metric:'frequency',threshold:'<= 3',owner:'analyst',state:'armed'},{id:'GRD-PACE',metric:'daily_pacing',threshold:'92-108',owner:'buyer',state:'armed'}];S.pacing_status='monitoring';S.pacing_index=101;S.last_action='export_guardrails';recalc();render();saveState()}
+function directorLaunch(){if(S.active_role!=='director'){deny('unauthorized_director');return}const ready=S.budget_status==='locked'&&S.deal_status==='validated'&&S.beacon_status==='live'&&S.guardrail_count>0;if(!ready)return;S.activation_status='live';S.readiness_score=100;S.activation_rows=[{id:'ACT-001',campaign:'Aurora Omnichannel Flight',audience:'Urban Commuter Video',budget:125000,status:'live'}];upsertAudit({id:'AUD-LAUNCH',event:'activation_launch',actor:'director',status:'live'});S.last_action='director_launch';recalc();render();saveState()}
+function launchPreflight(){S.activation_status='blocked';S.activation_rows=[];S.validation_errors={launch:'guardrails_required'};S.last_action='launch_blocked';recalc();render();saveState()}
+function upsertAudit(row){if(!S.audit_log.some(item=>item.id===row.id))S.audit_log=[...S.audit_log,row]}
+function pill(value){const v=String(value);const cls=['live','locked','approved','validated','balanced','configured','forecasted','monitoring','armed'].includes(v)?'lime':['review','stale','idle','loaded'].includes(v)?'amber':v==='high'?'magenta':v==='medium'?'teal':'gray';return `<span class="pill ${cls}">${v}</span>`}
+function renderAudienceMap(){document.getElementById('audienceMap').innerHTML=audiences.map(a=>`<div class="map-cell ${a.intent}"><small>${a.market}</small><b>${Math.round(a.reach/1000)}K</b><span>${a.signal}</span></div>`).join('')}
+function renderAudiences(){document.getElementById('audienceRows').innerHTML=S.visible_audiences.map(a=>`<div class="audience-card ${a.intent}" data-testid="audience-row" data-audience-id="${a.id}"><h3 data-col="name">${a.name}</h3><div class="chip-row"><span class="pill" data-col="market">${a.market}</span><span class="pill ${a.intent==='high'?'magenta':'teal'}" data-col="intent">${a.intent}</span><span class="pill gray" data-col="signal">${a.signal}</span></div><div><b data-col="reach">${a.reach}</b> reach · CPM <b data-col="cpm">${a.cpm}</b></div><button data-testid="select-${a.id}" class="primary">Select Audience</button></div>`).join('')}
+function renderMixBars(){const rows=S.mix_rows.length?S.mix_rows:[{channel:'CTV',weight:0,state:'idle'},{channel:'Paid Social',weight:0,state:'idle'},{channel:'Retail Media',weight:0,state:'idle'}];document.getElementById('mixBars').innerHTML=rows.map((r,i)=>`<div class="bar ${i===1?'social':i===2?'retail':''}" style="--w:${Math.max(4,r.weight||0)}%"><span>${r.weight||0}% · ${r.state}</span></div>`).join('')}
+function rows(id,data,rowTest,attr,cols,empty){document.getElementById(id).innerHTML=data.length?data.map(row=>`<tr data-testid="${rowTest}" ${attr}="${row.id}">${cols.map(col=>`<td data-col="${col}">${row[col]??''}</td>`).join('')}</tr>`).join(''):`<tr><td colspan="${cols.length}"><small>${empty}</small></td></tr>`}
+function renderDossier(){document.getElementById('dossier').innerHTML=S.selected_audience_id?[
+  ['Audience',S.selected_audience_name],['Market',S.selected_market],['Intent',pill(S.selected_intent)],['Reach',S.selected_reach],['CPM',S.selected_cpm],['Budget key',S.budget_key||'none']
+].map(([a,b])=>`<div class="summary-line"><span>${a}</span><b>${b}</b></div>`).join(''):'<small>No audience selected.</small>'}
+function renderGates(){const gates=[['Forecast',S.forecast_status],['Budget',S.budget_status],['Deals',S.deal_status],['Brand safety',S.brand_safety_status],['Holdout',S.holdout_status],['Beacon',S.beacon_status],['Guardrails',S.guardrail_count?'armed':'idle'],['Activation',S.activation_status]];document.getElementById('gates').innerHTML=gates.map(([a,b])=>`<div class="gate"><span>${a}</span><b>${pill(b)}</b></div>`).join('')}
+function renderLedger(){document.getElementById('ledger').innerHTML=[['Mix rows',S.mix_count],['Inventory rows',S.inventory_count],['Experiment rows',S.experiment_count],['Guardrails',S.guardrail_count],['Activation rows',S.activation_count],['Audit rows',S.audit_count],['Pacing index',S.pacing_index],['Last action',S.last_action]].map(([a,b])=>`<div class="summary-line"><span>${a}</span><b>${b}</b></div>`).join('')}
+function renderMetrics(){document.getElementById('roleBadge').textContent='Role '+S.active_role;document.getElementById('metricAudience').textContent=S.selected_audience_id||'none';document.getElementById('metricAllocation').textContent=String(S.allocation_total);document.getElementById('metricForecast').textContent=S.forecast_status;document.getElementById('metricBudget').textContent=S.budget_status;document.getElementById('metricActivation').textContent=S.activation_status;document.getElementById('metricDenied').textContent=String(S.denied_count);document.getElementById('forecastReach').textContent=String(S.reach_forecast);document.getElementById('forecastFreq').textContent=String(S.frequency_cap);document.getElementById('forecastCalls').textContent=String(S.service_call_count);document.getElementById('dealState').textContent=S.deal_status;document.getElementById('dealFile').textContent=S.last_inventory_file||'No file loaded.';document.getElementById('safetyState').textContent=S.brand_safety_status;document.getElementById('safetyScore').textContent='score '+S.brand_safety_score}
+function render(){document.querySelectorAll('.page').forEach(page=>page.classList.toggle('active',page.id===S.current_page));renderAudienceMap();renderAudiences();renderMixBars();rows('mixRows',S.mix_rows,'mix-row','data-mix-id',['channel','weight','budget','kpi','state'],'No mix rows.');rows('inventoryRows',S.inventory_rows,'inventory-row','data-inventory-id',['partner','channel','market','impressions','safety'],'No inventory rows.');rows('experimentRows',S.experiment_rows,'experiment-row','data-experiment-id',['cell','audience','allocation','measurement'],'No experiment cells.');rows('guardrailRows',S.guardrail_rows,'guardrail-row','data-guardrail-id',['metric','threshold','owner','state'],'No guardrails.');rows('activationRows',S.activation_rows,'activation-row','data-activation-id',['campaign','audience','budget','status'],'No activation rows.');rows('auditRows',S.audit_log,'audit-row','data-audit-id',['event','actor','status'],'No audit events.');renderDossier();renderGates();renderLedger();renderMetrics();window.__DETOX_STATE__=clone(S);saveState()}
+document.addEventListener('click',event=>{const id=event.target.dataset.testid;if(!id)return;if(id==='reset')return resetState();if(id==='go-audiences')return setPage('audiences');if(id==='go-mix')return setPage('mix');if(id==='go-deals')return setPage('deals');if(id==='go-experiments')return setPage('experiments');if(id==='go-activate')return setPage('activate');if(id==='role-strategist')return setRole('strategist');if(id==='role-buyer')return setRole('buyer');if(id==='role-analyst')return setRole('analyst');if(id==='role-finance')return setRole('finance');if(id==='role-director')return setRole('director');if(id==='filter-high-intent')return filterHighIntent();if(id==='filter-premium-video')return filterPremiumVideo();if(id.startsWith('select-AUD-'))return selectAudience(id.replace('select-',''));if(id==='create-mix')return createMix();if(id==='rebalance-mix')return rebalanceMix();if(id==='run-forecast')return runForecast();if(id==='finance-lock-budget')return financeLockBudget();if(id==='budget-preflight')return budgetPreflight();if(id==='buyer-validate-deals')return buyerValidateDeals();if(id==='build-holdout')return buildHoldout();if(id==='activate-beacons')return activateBeacons();if(id==='export-guardrails')return exportGuardrails();if(id==='director-launch')return directorLaunch();if(id==='launch-preflight')return launchPreflight()});
+document.getElementById('inventoryUpload').addEventListener('change',uploadInventory);
+window.addEventListener('hashchange',syncPage);
+loadState();
+if(!location.hash||!location.hash.match(/^#\/(audiences|mix|deals|experiments|activate)$/))location.hash='#/'+(S.current_page||'audiences');
+syncPage();
+</script>
+</body>
+</html>

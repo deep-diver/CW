@@ -1,0 +1,882 @@
+dsl_version: "3.0.0"
+
+app:
+  id: homefix_hub_tier_d
+  name: HomeFix Hub Tier D
+  capability: storm_repair_warranty_command
+  ui_ux_brief: |
+    A storm-response and insurance command room. It should look like a premium incident command product with dark claim controls, damage heat strips, materials reconciliation, warranty gates, and sealed assurance status. It must be visually distinct from the other tiers.
+
+runtime:
+  target: web
+  start_url: /#/jobs
+
+  state_probe:
+    kind: javascript
+    expression: window.__DETOX_STATE__
+
+  pages:
+    jobs:
+      path: /#/jobs
+      purpose: Service catalog and repair intake.
+
+    booking:
+      path: /#/booking
+      purpose: Quote, schedule, and homeowner approval workspace.
+
+    dispatch:
+      path: /#/dispatch
+      purpose: Dispatcher and technician operational board.
+
+    quality:
+      path: /#/quality
+      purpose: QA, photos, permit, invoice, and completion workspace.
+
+    warranty:
+      path: /#/warranty
+      purpose: Warranty seal and post-completion assurance workspace.
+
+    visits:
+      path: /#/visits
+      purpose: Visit timeline and history.
+
+
+  session:
+    role_path: active_role
+    roles: [homeowner, pro, dispatcher, technician, quality_manager, claims_manager]
+
+  persistence:
+    reload:
+      scope: local_storage
+      paths:
+        - current_page
+        - active_role
+        - services
+        - visible_services
+        - selected_service_id
+        - selected_service_name
+        - selected_category
+        - urgency_level
+        - address
+        - customer_name
+        - selected_slot
+        - quote_status
+        - quote_amount
+        - diagnostic_fee
+        - booking_status
+        - visit_history
+        - visit_count
+        - last_action
+        - assigned_technician
+        - parts_rows
+        - parts_ready_count
+        - dispatch_status
+        - permit_rows
+        - permit_status
+        - homeowner_approval_status
+        - qa_rows
+        - qa_status
+        - invoice_status
+        - invoice_total
+        - claim_status
+        - claim_reference
+        - materials_rows
+        - material_mismatch_count
+        - materials_status
+        - warranty_status
+        - warranty_score
+        - open_warranty_blockers
+        - warranty_rows
+        - warranty_count
+        - closure_status
+        - closure_count
+        - reseal_status
+        - warranty_revision_count
+
+  services:
+    quote_estimate:
+      endpoint: /api/quote
+      method: GET
+      responses:
+        - id: leak_emergency
+          match: {query: {service: HF-LEAK, urgency: emergency}}
+          status: 200
+          json: {amount: 26800, diagnostic: 4900, status: ready}
+        - id: standard
+          match: {query: {service: HF-AC, urgency: standard}}
+          status: 200
+          json: {amount: 18900, diagnostic: 3900, status: ready}
+    insurance_preauth:
+      endpoint: /api/claim
+      method: GET
+      responses:
+        - id: approved
+          match: {query: {claim: STORM-77}}
+          status: 200
+          json: {status: approved, reference: CLM-7781}
+
+  tables:
+    service_grid:
+      selector: '[data-testid="service_grid"]'
+      row_selector: '[data-testid="service-row"]'
+      row_id_attribute: data-service-id
+      source_path: visible_services
+      row_id_field: id
+      columns:
+        name:
+          selector: '[data-col="name"]'
+          state_field: name
+        category:
+          selector: '[data-col="category"]'
+          state_field: category
+        base_price:
+          selector: '[data-col="base_price"]'
+          state_field: base_price
+        urgency:
+          selector: '[data-col="urgency"]'
+          state_field: urgency
+    visit_grid:
+      selector: '[data-testid="visit_grid"]'
+      row_selector: '[data-testid="visit-row"]'
+      row_id_attribute: data-visit-id
+      source_path: visit_history
+      row_id_field: id
+      columns:
+        service:
+          selector: '[data-col="service"]'
+          state_field: service
+        slot:
+          selector: '[data-col="slot"]'
+          state_field: slot
+        status:
+          selector: '[data-col="status"]'
+          state_field: status
+        total:
+          selector: '[data-col="total"]'
+          state_field: total
+    technician_grid:
+      selector: '[data-testid="technician_grid"]'
+      row_selector: '[data-testid="technician-row"]'
+      row_id_attribute: data-tech-id
+      source_path: technicians
+      row_id_field: id
+      columns:
+        name:
+          selector: '[data-col="name"]'
+          state_field: name
+        trade:
+          selector: '[data-col="trade"]'
+          state_field: trade
+        status:
+          selector: '[data-col="status"]'
+          state_field: status
+    parts_grid:
+      selector: '[data-testid="parts_grid"]'
+      row_selector: '[data-testid="part-row"]'
+      row_id_attribute: data-part-id
+      source_path: parts_rows
+      row_id_field: id
+      columns:
+        name:
+          selector: '[data-col="name"]'
+          state_field: name
+        status:
+          selector: '[data-col="status"]'
+          state_field: status
+    permit_grid:
+      selector: '[data-testid="permit_grid"]'
+      row_selector: '[data-testid="permit-row"]'
+      row_id_attribute: data-permit-id
+      source_path: permit_rows
+      row_id_field: id
+      columns:
+        document:
+          selector: '[data-col="document"]'
+          state_field: document
+        status:
+          selector: '[data-col="status"]'
+          state_field: status
+    qa_grid:
+      selector: '[data-testid="qa_grid"]'
+      row_selector: '[data-testid="qa-row"]'
+      row_id_attribute: data-qa-id
+      source_path: qa_rows
+      row_id_field: id
+      columns:
+        label:
+          selector: '[data-col="label"]'
+          state_field: label
+        status:
+          selector: '[data-col="status"]'
+          state_field: status
+    materials_grid:
+      selector: '[data-testid="materials_grid"]'
+      row_selector: '[data-testid="material-row"]'
+      row_id_attribute: data-material-id
+      source_path: materials_rows
+      row_id_field: id
+      columns:
+        item:
+          selector: '[data-col="item"]'
+          state_field: item
+        status:
+          selector: '[data-col="status"]'
+          state_field: status
+    warranty_grid:
+      selector: '[data-testid="warranty_grid"]'
+      row_selector: '[data-testid="warranty-row"]'
+      row_id_attribute: data-warranty-id
+      source_path: warranty_rows
+      row_id_field: id
+      columns:
+        label:
+          selector: '[data-col="label"]'
+          state_field: label
+        status:
+          selector: '[data-col="status"]'
+          state_field: status
+
+state:
+  initial:
+    current_page: jobs
+    active_role: homeowner
+    services:
+      - {id: HF-LEAK, name: "Burst pipe repair", category: plumbing, base_price: 21900, urgency: same_day}
+      - {id: HF-AC, name: "Air conditioner tune-up", category: hvac, base_price: 15000, urgency: scheduled}
+      - {id: HF-LIGHT, name: "Panel and light fix", category: electrical, base_price: 17600, urgency: scheduled}
+      - {id: HF-ROOF, name: "Storm roof patch", category: exterior, base_price: 34200, urgency: emergency}
+    visible_services:
+      - {id: HF-AC, name: "Air conditioner tune-up", category: hvac, base_price: 15000, urgency: scheduled}
+      - {id: HF-LIGHT, name: "Panel and light fix", category: electrical, base_price: 17600, urgency: scheduled}
+      - {id: HF-LEAK, name: "Burst pipe repair", category: plumbing, base_price: 21900, urgency: same_day}
+      - {id: HF-ROOF, name: "Storm roof patch", category: exterior, base_price: 34200, urgency: emergency}
+    selected_service_id: ""
+    selected_service_name: ""
+    selected_category: all
+    urgency_level: standard
+    address: ""
+    customer_name: ""
+    selected_slot: ""
+    quote_status: idle
+    quote_amount: 0
+    diagnostic_fee: 0
+    booking_status: idle
+    visit_history: []
+    visit_count: 0
+    validation_errors: {}
+    service_call_count: 0
+    denied_count: 0
+    technicians:
+      - {id: TECH-MINA, name: "Mina Cho", trade: plumbing, status: available}
+      - {id: TECH-RAUL, name: "Raul Diaz", trade: electrical, status: available}
+      - {id: TECH-JUNE, name: "June Kim", trade: hvac, status: on_call}
+    assigned_technician: ""
+    assigned_technician_name: ""
+    technician_status: idle
+    parts_rows:
+      - {id: P-VALVE, name: "Shutoff valve", required: "yes", status: needed}
+      - {id: P-SEAL, name: "Compression seal kit", required: "yes", status: needed}
+    parts_ready_count: 0
+    dispatch_status: idle
+    dispatch_count: 0
+    permit_rows: []
+    permit_count: 0
+    last_permit_file: ""
+    permit_status: idle
+    homeowner_approval_status: idle
+    qa_rows:
+      - {id: Q-PHOTO, label: "Before photos attached", status: open}
+      - {id: Q-PERMIT, label: "Permit dossier reviewed", status: open}
+      - {id: Q-PARTS, label: "Materials ready", status: open}
+    qa_ready_count: 0
+    qa_status: idle
+    invoice_status: idle
+    invoice_total: 0
+    claim_status: idle
+    claim_reference: ""
+    materials_rows: []
+    material_mismatch_count: 0
+    materials_status: idle
+    warranty_status: open
+    warranty_score: 0
+    open_warranty_blockers: 5
+    warranty_rows:
+      - {id: W-CLAIM, label: "Insurance preauth complete", status: open}
+      - {id: W-DISPATCH, label: "Crew dispatched", status: open}
+      - {id: W-MATERIALS, label: "Materials reconciled", status: open}
+      - {id: W-QA, label: "QA passed", status: open}
+      - {id: W-INVOICE, label: "Invoice issued", status: open}
+    warranty_count: 0
+    closure_status: idle
+    closure_count: 0
+    reseal_status: idle
+    warranty_revision_count: 0
+    last_action: ready
+    __services.calls: []
+
+  schema:
+    current_page: {type: string, purpose: Active route page.}
+    active_role: {type: string, purpose: Current role.}
+    services: {type: array, purpose: Home repair service catalog.}
+    visible_services: {type: array, purpose: Filtered service catalog.}
+    selected_service_id: {type: string, purpose: Selected service id.}
+    selected_service_name: {type: string, purpose: Selected service name.}
+    selected_category: {type: string, purpose: Active service category filter.}
+    urgency_level: {type: string, purpose: standard or emergency urgency.}
+    address: {type: string, purpose: Homeowner service address.}
+    customer_name: {type: string, purpose: Homeowner name.}
+    selected_slot: {type: string, purpose: Visit slot.}
+    quote_status: {type: string, purpose: idle, ready, approved, or blocked.}
+    quote_amount: {type: number, purpose: Repair quote amount.}
+    diagnostic_fee: {type: number, purpose: Diagnostic fee.}
+    booking_status: {type: string, purpose: idle, scheduled, dispatched, complete, or blocked.}
+    visit_history: {type: array, purpose: Booked visit records.}
+    visit_count: {type: number, purpose: Number of visit records.}
+    validation_errors: {type: object, purpose: Field and workflow validation errors.}
+    service_call_count: {type: number, purpose: Number of service calls.}
+    denied_count: {type: number, purpose: Unauthorized action count.}
+    technicians: {type: array, purpose: Technician roster.}
+    assigned_technician: {type: string, purpose: Assigned technician id.}
+    assigned_technician_name: {type: string, purpose: Assigned technician name.}
+    technician_status: {type: string, purpose: Technician assignment state.}
+    parts_rows: {type: array, purpose: Required parts checklist.}
+    parts_ready_count: {type: number, purpose: Count of ready parts.}
+    dispatch_status: {type: string, purpose: Dispatch workflow status.}
+    dispatch_count: {type: number, purpose: Dispatch action count.}
+    permit_rows: {type: array, purpose: Uploaded permit and photo dossier rows.}
+    permit_count: {type: number, purpose: Count of permit dossier rows.}
+    last_permit_file: {type: string, purpose: Last permit upload file.}
+    permit_status: {type: string, purpose: Permit review status.}
+    homeowner_approval_status: {type: string, purpose: Homeowner approval status.}
+    qa_rows: {type: array, purpose: QA checklist rows.}
+    qa_ready_count: {type: number, purpose: Count of cleared QA rows.}
+    qa_status: {type: string, purpose: QA workflow status.}
+    invoice_status: {type: string, purpose: Invoice workflow status.}
+    invoice_total: {type: number, purpose: Invoice total.}
+    claim_status: {type: string, purpose: Insurance claim status.}
+    claim_reference: {type: string, purpose: Insurance claim reference.}
+    materials_rows: {type: array, purpose: Materials reconciliation rows.}
+    material_mismatch_count: {type: number, purpose: Count of material mismatches.}
+    materials_status: {type: string, purpose: Materials reconciliation status.}
+    warranty_status: {type: string, purpose: Warranty seal status.}
+    warranty_score: {type: number, purpose: Warranty seal readiness score.}
+    open_warranty_blockers: {type: number, purpose: Count of open warranty blockers.}
+    warranty_rows: {type: array, purpose: Warranty readiness ledger rows.}
+    warranty_count: {type: number, purpose: Number of warranty seals.}
+    closure_status: {type: string, purpose: Homeowner post-warranty closure acknowledgement status.}
+    closure_count: {type: number, purpose: Count of customer closure acknowledgements.}
+    reseal_status: {type: string, purpose: Post-hold reseal workflow status.}
+    warranty_revision_count: {type: number, purpose: Count of warranty revision events.}
+    last_action: {type: string, purpose: Last action marker.}
+    __services.calls: {type: array, purpose: Evaluator service call ledger.}
+
+components:
+
+  reset_button:
+    kind: button
+    selector: '[data-testid="reset"]'
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_page, value: jobs}
+          - {op: equals, path: active_role, value: homeowner}
+          - {op: equals, path: selected_category, value: all}
+          - {op: equals, path: selected_service_id, value: ""}
+          - {op: equals, path: selected_service_name, value: ""}
+          - {op: equals, path: urgency_level, value: standard}
+          - {op: equals, path: address, value: ""}
+          - {op: equals, path: customer_name, value: ""}
+          - {op: equals, path: selected_slot, value: ""}
+          - {op: equals, path: quote_status, value: idle}
+          - {op: equals, path: quote_amount, value: 0}
+          - {op: equals, path: diagnostic_fee, value: 0}
+          - {op: equals, path: booking_status, value: idle}
+          - {op: equals, path: visit_history, value: []}
+          - {op: equals, path: visit_count, value: 0}
+          - {op: equals, path: validation_errors, value: {}}
+          - {op: equals, path: service_call_count, value: 0}
+          - {op: equals, path: closure_status, value: idle}
+          - {op: equals, path: closure_count, value: 0}
+          - {op: equals, path: reseal_status, value: idle}
+          - {op: equals, path: warranty_revision_count, value: 0}
+          - {op: equals, path: last_action, value: reset}
+  go_jobs_button:
+    kind: button
+    selector: '[data-testid="go-jobs"]'
+    actions: {click: {navigate_to: jobs}}
+  go_booking_button:
+    kind: button
+    selector: '[data-testid="go-booking"]'
+    actions: {click: {navigate_to: booking}}
+  go_visits_button:
+    kind: button
+    selector: '[data-testid="go-visits"]'
+    actions: {click: {navigate_to: visits}}
+  role_homeowner_button:
+    kind: button
+    selector: '[data-testid="role-homeowner"]'
+    actions: {click: {effects: [{op: equals, path: active_role, value: homeowner}, {op: equals, path: last_action, value: role_homeowner}]}}
+  role_pro_button:
+    kind: button
+    selector: '[data-testid="role-pro"]'
+    actions: {click: {effects: [{op: equals, path: active_role, value: pro}, {op: equals, path: last_action, value: role_pro}]}}
+  filter_plumbing_button:
+    kind: button
+    selector: '[data-testid="filter-plumbing"]'
+    page: jobs
+    actions:
+      click:
+        effects:
+          - {op: equals, path: selected_category, value: plumbing}
+          - {op: equals_filter, path: visible_services, source_path: services, where: [{op: equals, field: category, value: plumbing}], order_by: [{field: base_price, direction: asc}]}
+  filter_all_button:
+    kind: button
+    selector: '[data-testid="filter-all"]'
+    page: jobs
+    actions:
+      click:
+        effects:
+          - {op: equals, path: selected_category, value: all}
+  select_leak_button:
+    kind: button
+    selector: '[data-testid="select-HF-LEAK"]'
+    page: jobs
+    actions:
+      click:
+        effects:
+          - {op: equals, path: selected_service_id, value: HF-LEAK}
+          - {op: equals, path: selected_service_name, value: "Burst pipe repair"}
+          - {op: equals, path: last_action, value: select_service}
+  select_ac_button:
+    kind: button
+    selector: '[data-testid="select-HF-AC"]'
+    page: jobs
+    actions:
+      click:
+        effects:
+          - {op: equals, path: selected_service_id, value: HF-AC}
+          - {op: equals, path: selected_service_name, value: "Air conditioner tune-up"}
+          - {op: equals, path: last_action, value: select_service}
+  urgency_emergency_button:
+    kind: button
+    selector: '[data-testid="urgency-emergency"]'
+    page: booking
+    actions:
+      click:
+        effects:
+          - {op: equals, path: urgency_level, value: emergency}
+          - {op: equals, path: last_action, value: set_urgency}
+  slot_today_button:
+    kind: button
+    selector: '[data-testid="slot-today"]'
+    page: booking
+    actions:
+      click:
+        effects:
+          - {op: equals, path: selected_slot, value: today_4pm}
+          - {op: equals, path: last_action, value: select_slot}
+  address_input:
+    kind: input
+    selector: '[data-testid="address"]'
+    page: booking
+    actions:
+      fill:
+        effects:
+          - {op: equals_normalized, path: address, value_from: input.value, normalizers: [trim]}
+  customer_name_input:
+    kind: input
+    selector: '[data-testid="customer-name"]'
+    page: booking
+    actions:
+      fill:
+        effects:
+          - {op: equals_normalized, path: customer_name, value_from: input.value, normalizers: [trim]}
+  get_quote_button:
+    kind: button
+    selector: '[data-testid="get-quote"]'
+    page: booking
+    actions:
+      click:
+        preconditions:
+          - {op: one_of, path: selected_service_id, values: [HF-LEAK, HF-AC]}
+        effects:
+          - {op: equals, path: quote_status, value: ready}
+          - {op: equals_piecewise_linear, path: quote_amount, cases: [{when: [{op: one_of, path: selected_service_id, values: [HF-LEAK]}], formula: {constant: 26800}}, {when: [{op: one_of, path: selected_service_id, values: [HF-AC]}], formula: {constant: 18900}}], default: {constant: 18900}}
+          - {op: equals, path: diagnostic_fee, value: 4900}
+          - {op: changed_by, path: service_call_count, by: 1}
+          - {op: equals, path: last_action, value: get_quote}
+  approve_quote_button:
+    kind: button
+    selector: '[data-testid="approve-quote"]'
+    page: booking
+    actions:
+      click:
+        preconditions:
+          - {op: one_of, path: quote_status, values: [ready]}
+        effects:
+          - {op: equals, path: quote_status, value: approved}
+          - {op: equals, path: last_action, value: approve_quote}
+  book_visit_button:
+    kind: button
+    selector: '[data-testid="book-visit"]'
+    page: booking
+    actions:
+      click:
+        preconditions:
+          - {op: one_of, path: quote_status, values: [approved]}
+          - {op: one_of, path: selected_slot, values: [today_4pm]}
+        rejected_when:
+          - {op: not_one_of, path: selected_slot, values: [today_4pm]}
+        rejected_effects:
+          - {op: equals, path: booking_status, value: blocked}
+          - {op: equals, path: last_action, value: booking_blocked}
+        effects:
+          - {op: equals, path: booking_status, value: scheduled}
+          - {op: changed_by, path: visit_count, by: 1}
+          - {op: appended_object, path: visit_history, value: {id: VIS-001, service: {from_path: selected_service_name}, slot: today_4pm, status: scheduled, total: {from_path: quote_amount}}}
+          - {op: equals, path: last_action, value: book_visit}
+  pro_accept_button:
+    kind: button
+    selector: '[data-testid="pro-accept"]'
+    page: visits
+    actions:
+      click:
+        allowed_roles: [pro]
+        preconditions:
+          - {op: one_of, path: booking_status, values: [scheduled]}
+        rejected_when:
+          - {op: not_one_of, path: booking_status, values: [scheduled]}
+        rejected_effects:
+          - {op: unchanged, path: booking_status}
+        effects:
+          - {op: equals, path: booking_status, value: accepted}
+          - {op: equals, path: last_action, value: pro_accept}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_pro}
+
+  role_dispatcher_button:
+    kind: button
+    selector: '[data-testid="role-dispatcher"]'
+    actions: {click: {effects: [{op: equals, path: active_role, value: dispatcher}, {op: equals, path: last_action, value: role_dispatcher}]}}
+  role_technician_button:
+    kind: button
+    selector: '[data-testid="role-technician"]'
+    actions: {click: {effects: [{op: equals, path: active_role, value: technician}, {op: equals, path: last_action, value: role_technician}]}}
+  go_dispatch_button:
+    kind: button
+    selector: '[data-testid="go-dispatch"]'
+    actions: {click: {navigate_to: dispatch}}
+  assign_mina_button:
+    kind: button
+    selector: '[data-testid="assign-mina"]'
+    page: dispatch
+    actions:
+      click:
+        allowed_roles: [dispatcher]
+        preconditions:
+          - {op: one_of, path: quote_status, values: [approved]}
+        effects:
+          - {op: equals, path: assigned_technician, value: TECH-MINA}
+          - {op: equals, path: assigned_technician_name, value: "Mina Cho"}
+          - {op: equals, path: technician_status, value: assigned}
+          - {op: equals, path: last_action, value: assign_technician}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_dispatch}
+  ready_parts_button:
+    kind: button
+    selector: '[data-testid="ready-parts"]'
+    page: dispatch
+    actions:
+      click:
+        allowed_roles: [dispatcher]
+        effects:
+          - {op: equals, path: parts_rows, value: [{id: P-VALVE, name: "Shutoff valve", required: "yes", status: ready}, {id: P-SEAL, name: "Compression seal kit", required: "yes", status: ready}]}
+          - {op: equals, path: parts_ready_count, value: 2}
+          - {op: equals, path: last_action, value: ready_parts}
+  dispatch_visit_button:
+    kind: button
+    selector: '[data-testid="dispatch-visit"]'
+    page: dispatch
+    actions:
+      click:
+        allowed_roles: [dispatcher]
+        preconditions:
+          - {op: one_of, path: assigned_technician, values: [TECH-MINA]}
+          - {op: equals, path: parts_ready_count, value: 2}
+        rejected_when:
+          - {op: not_one_of, path: parts_ready_count, values: [2]}
+        rejected_effects:
+          - {op: equals, path: dispatch_status, value: blocked}
+          - {op: equals, path: last_action, value: dispatch_blocked}
+        effects:
+          - {op: equals, path: dispatch_status, value: dispatched}
+          - {op: equals, path: booking_status, value: dispatched}
+          - {op: changed_by, path: dispatch_count, by: 1}
+          - {op: equals, path: last_action, value: dispatch_visit}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_dispatch}
+
+  role_quality_manager_button:
+    kind: button
+    selector: '[data-testid="role-quality"]'
+    actions: {click: {effects: [{op: equals, path: active_role, value: quality_manager}, {op: equals, path: last_action, value: role_quality_manager}]}}
+  go_quality_button:
+    kind: button
+    selector: '[data-testid="go-quality"]'
+    actions: {click: {navigate_to: quality}}
+  permit_upload_input:
+    kind: input
+    selector: '[data-testid="permit-upload"]'
+    page: quality
+    actions:
+      upload:
+        file_schema:
+          format: csv
+          columns:
+            - {name: id, type: string}
+            - {name: document, type: string}
+            - {name: status, type: string}
+        effects:
+          - {op: equals, path: permit_rows, value_from: input.rows}
+          - {op: equals_length, path: permit_count, source_path: permit_rows}
+          - {op: equals, path: last_permit_file, value_from: input.file.name}
+          - {op: equals, path: permit_status, value: review}
+          - {op: equals, path: last_action, value: upload_permit}
+  approve_homeowner_button:
+    kind: button
+    selector: '[data-testid="approve-homeowner"]'
+    page: booking
+    actions:
+      click:
+        effects:
+          - {op: equals, path: homeowner_approval_status, value: approved}
+          - {op: equals, path: quote_status, value: approved}
+          - {op: equals, path: last_action, value: homeowner_approved}
+  pass_qa_button:
+    kind: button
+    selector: '[data-testid="pass-qa"]'
+    page: quality
+    actions:
+      click:
+        allowed_roles: [quality_manager]
+        preconditions:
+          - {op: one_of, path: dispatch_status, values: [dispatched]}
+          - {op: one_of, path: permit_status, values: [review]}
+        rejected_when:
+          - {op: not_one_of, path: dispatch_status, values: [dispatched]}
+        rejected_effects:
+          - {op: equals, path: qa_status, value: idle}
+          - {op: equals, path: qa_ready_count, value: 0}
+        effects:
+          - {op: equals, path: qa_rows, value: [{id: Q-PHOTO, label: "Before photos attached", status: cleared}, {id: Q-PERMIT, label: "Permit dossier reviewed", status: cleared}, {id: Q-PARTS, label: "Materials ready", status: cleared}]}
+          - {op: equals, path: qa_ready_count, value: 3}
+          - {op: equals, path: qa_status, value: passed}
+          - {op: equals, path: booking_status, value: complete}
+          - {op: equals, path: last_action, value: pass_qa}
+  issue_invoice_button:
+    kind: button
+    selector: '[data-testid="issue-invoice"]'
+    page: quality
+    actions:
+      click:
+        allowed_roles: [quality_manager]
+        preconditions:
+          - {op: one_of, path: qa_status, values: [passed]}
+        rejected_when:
+          - {op: not_one_of, path: qa_status, values: [passed]}
+        rejected_effects:
+          - {op: equals, path: invoice_status, value: idle}
+        effects:
+          - {op: equals, path: invoice_status, value: issued}
+          - {op: equals_linear, path: invoice_total, terms: [{path: quote_amount}, {path: diagnostic_fee}]}
+          - {op: equals, path: last_action, value: issue_invoice}
+        unauthorized_effects:
+          - {op: unchanged, path: invoice_status}
+
+  role_claims_manager_button:
+    kind: button
+    selector: '[data-testid="role-claims"]'
+    actions: {click: {effects: [{op: equals, path: active_role, value: claims_manager}, {op: equals, path: last_action, value: role_claims_manager}]}}
+  go_warranty_button:
+    kind: button
+    selector: '[data-testid="go-warranty"]'
+    actions: {click: {navigate_to: warranty}}
+  claim_code_input:
+    kind: input
+    selector: '[data-testid="claim-code"]'
+    page: warranty
+    actions:
+      fill:
+        effects:
+          - {op: equals_normalized, path: claim_reference, value_from: input.value, normalizers: [trim, uppercase]}
+  preauth_claim_button:
+    kind: button
+    selector: '[data-testid="preauth-claim"]'
+    page: warranty
+    actions:
+      click:
+        allowed_roles: [claims_manager]
+        effects:
+          - {op: equals, path: claim_status, value: approved}
+          - {op: changed_by, path: service_call_count, by: 1}
+          - {op: equals, path: last_action, value: preauth_claim}
+        unauthorized_effects:
+          - {op: unchanged, path: claim_status}
+          - {op: unchanged, path: service_call_count}
+  materials_upload_input:
+    kind: input
+    selector: '[data-testid="materials-upload"]'
+    page: warranty
+    actions:
+      upload:
+        file_schema:
+          format: csv
+          columns:
+            - {name: id, type: string}
+            - {name: item, type: string}
+            - {name: status, type: string}
+        effects:
+          - {op: equals, path: materials_rows, value_from: input.rows}
+          - {op: equals_count_where, path: material_mismatch_count, source_path: materials_rows, where: [{op: equals, field: status, value: mismatch}]}
+          - {op: equals, path: materials_status, value: review}
+          - {op: equals, path: warranty_status, value: open}
+          - {op: equals, path: last_action, value: upload_materials}
+  reconcile_materials_button:
+    kind: button
+    selector: '[data-testid="reconcile-materials"]'
+    page: warranty
+    actions:
+      click:
+        allowed_roles: [claims_manager]
+        preconditions:
+          - {op: one_of, path: material_mismatch_count, values: [0]}
+        rejected_when:
+          - {op: not_one_of, path: material_mismatch_count, values: [0]}
+        rejected_effects:
+          - {op: equals, path: materials_status, value: review}
+        effects:
+          - {op: equals, path: materials_status, value: reconciled}
+          - {op: equals, path: last_action, value: reconcile_materials}
+  seal_warranty_button:
+    kind: button
+    selector: '[data-testid="seal-warranty"]'
+    page: warranty
+    actions:
+      click:
+        allowed_roles: [claims_manager]
+        preconditions:
+          - {op: one_of, path: claim_status, values: [approved]}
+          - {op: one_of, path: dispatch_status, values: [dispatched]}
+          - {op: one_of, path: materials_status, values: [reconciled]}
+          - {op: one_of, path: qa_status, values: [passed]}
+          - {op: one_of, path: invoice_status, values: [issued]}
+        rejected_when:
+          - {op: relation, path: open_warranty_blockers, operator: ">", value: 0}
+        rejected_effects:
+          - {op: equals, path: warranty_status, value: blocked}
+          - {op: equals, path: last_action, value: warranty_blocked}
+        effects:
+          - {op: equals, path: warranty_status, value: sealed}
+          - {op: equals, path: warranty_score, value: 100}
+          - {op: equals, path: open_warranty_blockers, value: 0}
+          - {op: equals, path: warranty_rows, value: [{id: W-CLAIM, label: "Insurance preauth complete", status: cleared}, {id: W-DISPATCH, label: "Crew dispatched", status: cleared}, {id: W-MATERIALS, label: "Materials reconciled", status: cleared}, {id: W-QA, label: "QA passed", status: cleared}, {id: W-INVOICE, label: "Invoice issued", status: cleared}]}
+          - {op: changed_by, path: warranty_count, by: 1}
+          - {op: equals, path: last_action, value: seal_warranty}
+  carrier_hold_button:
+    kind: button
+    selector: '[data-testid="carrier-hold"]'
+    page: warranty
+    actions:
+      click:
+        allowed_roles: [claims_manager]
+        preconditions:
+          - {op: one_of, path: warranty_status, values: [sealed, resealed]}
+        effects:
+          - {op: equals, path: claim_status, value: review}
+          - {op: equals, path: warranty_status, value: hold}
+          - {op: equals, path: warranty_score, value: 80}
+          - {op: equals, path: open_warranty_blockers, value: 1}
+          - {op: equals, path: warranty_rows, value: [{id: W-CLAIM, label: "Insurance preauth complete", status: open}, {id: W-DISPATCH, label: "Crew dispatched", status: cleared}, {id: W-MATERIALS, label: "Materials reconciled", status: cleared}, {id: W-QA, label: "QA passed", status: cleared}, {id: W-INVOICE, label: "Invoice issued", status: cleared}]}
+          - {op: changed_by, path: warranty_revision_count, by: 1}
+          - {op: equals, path: last_action, value: carrier_hold}
+        unauthorized_effects:
+          - {op: unchanged, path: warranty_status}
+  approve_claim_recheck_button:
+    kind: button
+    selector: '[data-testid="approve-claim-recheck"]'
+    page: warranty
+    actions:
+      click:
+        allowed_roles: [claims_manager]
+        preconditions:
+          - {op: one_of, path: claim_status, values: [review]}
+        effects:
+          - {op: equals, path: claim_status, value: approved}
+          - {op: equals, path: open_warranty_blockers, value: 0}
+          - {op: equals, path: warranty_score, value: 100}
+          - {op: equals, path: warranty_rows, value: [{id: W-CLAIM, label: "Insurance preauth complete", status: cleared}, {id: W-DISPATCH, label: "Crew dispatched", status: cleared}, {id: W-MATERIALS, label: "Materials reconciled", status: cleared}, {id: W-QA, label: "QA passed", status: cleared}, {id: W-INVOICE, label: "Invoice issued", status: cleared}]}
+          - {op: equals, path: last_action, value: approve_claim_recheck}
+  customer_ack_button:
+    kind: button
+    selector: '[data-testid="customer-ack"]'
+    page: warranty
+    actions:
+      click:
+        allowed_roles: [homeowner]
+        effects:
+          - {op: equals, path: closure_status, value: acknowledged}
+          - {op: changed_by, path: closure_count, by: 1}
+          - {op: equals, path: last_action, value: customer_ack}
+        unauthorized_effects:
+          - {op: unchanged, path: closure_status}
+  reseal_warranty_button:
+    kind: button
+    selector: '[data-testid="reseal-warranty"]'
+    page: warranty
+    actions:
+      click:
+        allowed_roles: [claims_manager]
+        preconditions:
+          - {op: one_of, path: warranty_status, values: [hold]}
+          - {op: one_of, path: claim_status, values: [approved]}
+          - {op: one_of, path: materials_status, values: [reconciled]}
+          - {op: one_of, path: qa_status, values: [passed]}
+          - {op: one_of, path: invoice_status, values: [issued]}
+          - {op: one_of, path: closure_status, values: [acknowledged]}
+        rejected_when:
+          - {op: not_one_of, path: closure_status, values: [acknowledged]}
+        rejected_effects:
+          - {op: equals, path: warranty_status, value: hold}
+          - {op: equals, path: reseal_status, value: blocked}
+          - {op: equals, path: last_action, value: reseal_blocked}
+        effects:
+          - {op: equals, path: warranty_status, value: resealed}
+          - {op: equals, path: reseal_status, value: complete}
+          - {op: equals, path: warranty_score, value: 100}
+          - {op: equals, path: open_warranty_blockers, value: 0}
+          - {op: equals, path: warranty_rows, value: [{id: W-CLAIM, label: "Insurance preauth complete", status: cleared}, {id: W-DISPATCH, label: "Crew dispatched", status: cleared}, {id: W-MATERIALS, label: "Materials reconciled", status: cleared}, {id: W-QA, label: "QA passed", status: cleared}, {id: W-INVOICE, label: "Invoice issued", status: cleared}]}
+          - {op: changed_by, path: warranty_count, by: 1}
+          - {op: changed_by, path: warranty_revision_count, by: 1}
+          - {op: equals, path: last_action, value: reseal_warranty}
+  reopen_materials_button:
+    kind: button
+    selector: '[data-testid="reopen-materials"]'
+    page: warranty
+    actions:
+      click:
+        allowed_roles: [claims_manager]
+        preconditions:
+          - {op: one_of, path: warranty_status, values: [sealed, resealed]}
+        effects:
+          - {op: equals, path: materials_rows, value: [{id: MT-REOPEN, item: "Carrier audit patch", status: mismatch}]}
+          - {op: equals, path: material_mismatch_count, value: 1}
+          - {op: equals, path: materials_status, value: review}
+          - {op: equals, path: warranty_status, value: open}
+          - {op: equals, path: warranty_score, value: 80}
+          - {op: equals, path: open_warranty_blockers, value: 1}
+          - {op: equals, path: warranty_rows, value: [{id: W-CLAIM, label: "Insurance preauth complete", status: cleared}, {id: W-DISPATCH, label: "Crew dispatched", status: cleared}, {id: W-MATERIALS, label: "Materials reconciled", status: open}, {id: W-QA, label: "QA passed", status: cleared}, {id: W-INVOICE, label: "Invoice issued", status: cleared}]}
+          - {op: changed_by, path: warranty_revision_count, by: 1}
+          - {op: equals, path: last_action, value: reopen_materials}

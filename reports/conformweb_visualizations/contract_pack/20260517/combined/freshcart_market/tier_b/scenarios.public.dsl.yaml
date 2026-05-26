@@ -1,0 +1,100 @@
+dsl_version: "3.0.0"
+visibility: public
+tier_weights:
+  smoke: 1
+  core: 2
+  validation: 3
+  service: 4
+  upload: 4
+  permission: 4
+  persistence: 5
+  journey: 6
+
+scenarios:
+  - id: public_01_filter_greenfarm_catalog
+    tier: smoke
+    steps:
+      - do: reset_button.click
+      - do: filter_greenfarm_button.click
+        expect:
+          - {op: equals, path: current_vendor, value: GreenFarm}
+      - table: product_grid
+        expect_order: [GC-ARG-01, GC-TOM-01, GC-AVO-01]
+        expect_row_count: 3
+        expect_rows:
+          - id: GC-ARG-01
+            cells:
+              name: Baby Arugula
+              vendor: GreenFarm
+          - id: GC-AVO-01
+            cells:
+              name: Hass Avocados
+              vendor: GreenFarm
+
+  - id: public_02_add_avocado_updates_cart
+    tier: core
+    steps:
+      - do: reset_button.click
+      - do: add_avocado_button.click
+        expect:
+          - {op: equals, path: cart_count, value: 1}
+          - {op: equals, path: cart_subtotal, value: 6500}
+          - {op: equals, path: greenfarm_count, value: 1}
+          - {op: equals, path: oceancatch_count, value: 0}
+          - {op: equals, path: delivery_fee, value: 3000}
+          - {op: equals, path: order_total, value: 9500}
+          - {op: equals, path: last_action, value: add_item}
+
+  - id: public_03_minimum_order_rejected
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: add_arugula_button.click
+        expect:
+          - {op: equals, path: cart_subtotal, value: 3100}
+      - do: go_checkout_button.click
+      - do: slot_morning_button.click
+      - do: customer_name_input.fill
+        input: {value: "Test User"}
+      - do: place_order_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: order_placed, value: false}
+
+  - id: public_04_coupon_green15_credit
+    tier: service
+    steps:
+      - do: reset_button.click
+      - do: add_tuna_button.click
+      - do: go_checkout_button.click
+      - do: coupon_code_input.fill
+        input: {value: " green15 "}
+        expect:
+          - {op: equals, path: coupon_code, value: GREEN15}
+      - do: apply_coupon_button.click
+        expect:
+          - {op: equals, path: coupon_credit, value: 2000}
+          - {op: equals, path: coupon_status, value: applied}
+          - {op: equals, path: coupon_call_count, value: 1}
+          - {op: equals, path: service_call_count, value: 1}
+
+  - id: public_05_place_order_full_flow
+    tier: journey
+    steps:
+      - do: reset_button.click
+      - do: add_shrimp_button.click
+      - do: add_rice_button.click
+        expect:
+          - {op: equals, path: cart_count, value: 2}
+          - {op: equals, path: cart_subtotal, value: 21400}
+      - do: go_basket_button.click
+      - do: go_checkout_button.click
+      - do: slot_evening_button.click
+      - do: customer_name_input.fill
+        input: {value: "Jiyeon Park"}
+      - do: place_order_button.click
+        expect:
+          - {op: equals, path: order_placed, value: true}
+          - {op: equals, path: order_id, value: "ORD-001"}
+          - {op: equals, path: audit_count, value: 1}
+      - do: go_orders_button.click

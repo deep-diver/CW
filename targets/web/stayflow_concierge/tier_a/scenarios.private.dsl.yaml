@@ -1,0 +1,323 @@
+dsl_version: "3.0.0"
+visibility: private
+tier_weights:
+  smoke: 1
+  core: 2
+  validation: 3
+  service: 4
+  upload: 4
+  permission: 4
+  persistence: 5
+  journey: 6
+scenarios:
+  - id: private_01_show_all_catalog_order
+    tier: smoke
+    steps:
+      - do: reset_button.click
+      - do: filter_busan_button.click
+      - do: show_all_stays_button.click
+      - table: property_grid
+        expect_order: [SF-BUSAN-HARBOR, SF-SEOUL-LOFT, SF-KYOTO-MACHIYA]
+        expect_row_count: 3
+
+  - id: private_02_kyoto_high_fee_quote
+    tier: core
+    steps:
+      - do: reset_button.click
+      - do: select_kyoto_button.click
+        expect:
+          - {op: equals, path: service_fee, value: 58}
+          - {op: equals, path: total_due, value: 678}
+
+  - id: private_03_addon_stack_recalculates_total
+    tier: core
+    steps:
+      - do: reset_button.click
+      - do: select_busan_button.click
+      - do: add_breakfast_button.click
+      - do: add_pickup_button.click
+        expect:
+          - {op: equals, path: breakfast, value: true}
+          - {op: equals, path: airport_pickup, value: true}
+          - {op: equals, path: addon_total, value: 97}
+          - {op: equals, path: total_due, value: 449}
+
+  - id: private_04_flexible_cancel_on_kyoto_keeps_high_fee
+    tier: core
+    steps:
+      - do: reset_button.click
+      - do: select_kyoto_button.click
+      - do: add_flexible_button.click
+        expect:
+          - {op: equals, path: flexible_cancel, value: true}
+          - {op: equals, path: addon_total, value: 70}
+          - {op: equals, path: service_fee, value: 58}
+          - {op: equals, path: total_due, value: 748}
+
+  - id: private_05_guest_email_normalizes
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: go_checkout_button.click
+      - do: guest_name_input.fill
+        input: {value: "Mina Park"}
+      - do: guest_email_input.fill
+        input: {value: "  MINA@EXAMPLE.COM  "}
+        expect:
+          - {op: equals, path: guest_email, value: mina@example.com}
+
+  - id: private_06_valid_guest_allows_hold
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: select_seoul_button.click
+      - do: go_checkout_button.click
+      - do: guest_name_input.fill
+        input: {value: "Mina Park"}
+      - do: guest_email_input.fill
+        input: {value: "mina@example.com"}
+      - do: validate_guest_button.click
+        expect:
+          - {op: equals, path: booking_status, value: guest_validated}
+          - {op: equals, path: error_count, value: 0}
+      - do: hold_booking_button.click
+        expect:
+          - {op: equals, path: booking_status, value: held}
+          - {op: equals, path: audit_count, value: 1}
+
+  - id: private_07_welcome50_only_for_busan
+    tier: service
+    steps:
+      - do: reset_button.click
+      - do: select_busan_button.click
+      - do: go_checkout_button.click
+      - do: promo_code_input.fill
+        input: {value: "WELCOME50"}
+      - do: apply_promo_button.click
+        expect:
+          - {op: equals, path: service_call_count, value: 1}
+          - {op: equals, path: promo_credit, value: 50}
+          - {op: equals, path: availability_status, value: applied}
+          - {op: equals, path: total_due, value: 302}
+
+  - id: private_08_bad_promo_rejected_without_credit
+    tier: service
+    steps:
+      - do: reset_button.click
+      - do: select_kyoto_button.click
+      - do: go_checkout_button.click
+      - do: promo_code_input.fill
+        input: {value: "BADCODE"}
+      - do: apply_promo_button.click
+        expect:
+          - {op: equals, path: service_call_count, value: 1}
+          - {op: equals, path: promo_credit, value: 0}
+          - {op: equals, path: availability_status, value: rejected}
+          - {op: equals, path: total_due, value: 678}
+
+  - id: private_09_second_promo_call_keeps_service_count
+    tier: service
+    steps:
+      - do: reset_button.click
+      - do: select_seoul_button.click
+      - do: go_checkout_button.click
+      - do: promo_code_input.fill
+        input: {value: "STAY20"}
+      - do: apply_promo_button.click
+      - do: promo_code_input.fill
+        input: {value: "BADCODE"}
+      - do: apply_promo_button.click
+        expect:
+          - {op: equals, path: service_call_count, value: 2}
+
+  - id: private_10_manifest_upload_replaces_previous_rows
+    tier: upload
+    steps:
+      - do: reset_button.click
+      - do: go_manage_button.click
+      - do: group_upload_input.upload
+        input:
+          file:
+            name: guests-a.csv
+            mime_type: text/csv
+            content: |
+              id,name,tier,meal
+              G-10,Ivy Cho,gold,standard
+          rows:
+            - {id: G-10, name: Ivy Cho, tier: gold, meal: standard}
+      - do: group_upload_input.upload
+        input:
+          file:
+            name: guests-b.csv
+            mime_type: text/csv
+            content: |
+              id,name,tier,meal
+              G-20,Leo Moon,standard,vegan
+              G-21,Ari Choi,platinum,vegetarian
+          rows:
+            - {id: G-20, name: Leo Moon, tier: standard, meal: vegan}
+            - {id: G-21, name: Ari Choi, tier: platinum, meal: vegetarian}
+      - table: guest_grid
+        expect_order: [G-20, G-21]
+        expect_row_count: 2
+
+  - id: private_11_guest_cannot_confirm_held_booking
+    tier: permission
+    steps:
+      - do: reset_button.click
+      - do: select_seoul_button.click
+      - do: go_checkout_button.click
+      - do: guest_name_input.fill
+        input: {value: "Jin Rao"}
+      - do: guest_email_input.fill
+        input: {value: "jin@example.com"}
+      - do: validate_guest_button.click
+      - do: hold_booking_button.click
+      - do: go_manage_button.click
+      - do: confirm_booking_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: booking_status, value: held}
+          - {op: equals, path: denied_count, value: 1}
+
+  - id: private_12_agent_confirms_after_role_switch
+    tier: permission
+    steps:
+      - do: reset_button.click
+      - do: select_busan_button.click
+      - do: go_checkout_button.click
+      - do: guest_name_input.fill
+        input: {value: "Jin Rao"}
+      - do: guest_email_input.fill
+        input: {value: "jin@example.com"}
+      - do: validate_guest_button.click
+      - do: hold_booking_button.click
+      - do: go_manage_button.click
+      - do: role_agent_button.click
+      - do: confirm_booking_button.click
+        expect:
+          - {op: equals, path: booking_status, value: confirmed}
+          - {op: equals, path: audit_count, value: 2}
+
+  - id: private_13_reload_preserves_quote_and_route
+    tier: persistence
+    steps:
+      - do: reset_button.click
+      - do: select_seoul_button.click
+      - do: add_breakfast_button.click
+      - do: go_checkout_button.click
+      - browser: reload
+        expect:
+          - {op: unchanged, path: current_page}
+          - {op: unchanged, path: selected_property_id}
+          - {op: unchanged, path: total_due}
+          - {op: unchanged, path: breakfast}
+
+  - id: private_14_reload_preserves_manifest
+    tier: persistence
+    steps:
+      - do: reset_button.click
+      - do: go_manage_button.click
+      - do: group_upload_input.upload
+        input:
+          file:
+            name: guests-c.csv
+            mime_type: text/csv
+            content: |
+              id,name,tier,meal
+              G-30,Ren Ito,gold,standard
+              G-31,Nia Yang,standard,halal
+          rows:
+            - {id: G-30, name: Ren Ito, tier: gold, meal: standard}
+            - {id: G-31, name: Nia Yang, tier: standard, meal: halal}
+      - browser: reload
+        expect:
+          - {op: unchanged, path: group_guests}
+          - {op: unchanged, path: group_guest_count}
+          - {op: unchanged, path: last_file}
+      - table: guest_grid
+        expect_order: [G-30, G-31]
+
+  - id: private_15_browser_back_restores_search_route
+    tier: persistence
+    steps:
+      - do: reset_button.click
+      - do: go_checkout_button.click
+      - do: go_manage_button.click
+      - browser: back
+        expect_page: checkout
+        expect:
+          - {op: equals, path: current_page, value: checkout}
+      - browser: back
+        expect_page: search
+        expect:
+          - {op: equals, path: current_page, value: search}
+
+  - id: private_16_full_booking_with_manifest_and_agent
+    tier: journey
+    steps:
+      - do: reset_button.click
+      - do: filter_busan_button.click
+      - do: select_busan_button.click
+      - do: add_breakfast_button.click
+      - do: go_checkout_button.click
+      - do: promo_code_input.fill
+        input: {value: WELCOME50}
+      - do: apply_promo_button.click
+      - do: guest_name_input.fill
+        input: {value: "Team Lead"}
+      - do: guest_email_input.fill
+        input: {value: "lead@example.com"}
+      - do: validate_guest_button.click
+      - do: hold_booking_button.click
+      - do: go_manage_button.click
+      - do: group_upload_input.upload
+        input:
+          file:
+            name: team.csv
+            mime_type: text/csv
+            content: |
+              id,name,tier,meal
+              T-1,Team One,gold,standard
+              T-2,Team Two,standard,vegetarian
+          rows:
+            - {id: T-1, name: Team One, tier: gold, meal: standard}
+            - {id: T-2, name: Team Two, tier: standard, meal: vegetarian}
+      - do: role_agent_button.click
+      - do: confirm_booking_button.click
+        expect:
+          - {op: equals, path: booking_status, value: confirmed}
+          - {op: equals, path: total_due, value: 344}
+          - {op: equals, path: group_guest_count, value: 2}
+          - {op: equals, path: audit_count, value: 2}
+
+  - id: private_17_reset_clears_everything_after_long_flow
+    tier: journey
+    steps:
+      - do: reset_button.click
+      - do: select_kyoto_button.click
+      - do: add_flexible_button.click
+      - do: go_checkout_button.click
+      - do: guest_name_input.fill
+        input: {value: "Mika Guest"}
+      - do: guest_email_input.fill
+        input: {value: "mika@example.com"}
+      - do: validate_guest_button.click
+      - do: hold_booking_button.click
+      - do: reset_button.click
+        expect:
+          - {op: equals, path: selected_property_id, value: ""}
+          - {op: equals, path: booking_status, value: idle}
+          - {op: equals, path: total_due, value: 0}
+          - {op: equals, path: audit_count, value: 0}
+
+  - id: private_18_agent_role_persists_across_reload
+    tier: persistence
+    steps:
+      - do: reset_button.click
+      - do: role_agent_button.click
+      - do: go_manage_button.click
+      - browser: reload
+        expect:
+          - {op: unchanged, path: active_role}
+          - {op: unchanged, path: current_page}

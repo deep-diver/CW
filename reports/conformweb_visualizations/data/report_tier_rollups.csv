@@ -1,0 +1,25 @@
+suite,suite_label,tier,runs,formal_mean,stepwise_mean,full_pass,full_total,full_pass_rate,report_view
+stayflow_concierge,StayFlow Concierge,A,90,0.3492637215528781,0.5016220437304775,2,90,0.022222222222222223,paper_main_reported
+stayflow_concierge,StayFlow Concierge,B,90,0.35828282828282826,0.5282047910356522,2,90,0.022222222222222223,paper_main_reported
+stayflow_concierge,StayFlow Concierge,C,90,0.20522875816993458,0.4025959674818629,1,90,0.011111111111111112,paper_main_reported
+stayflow_concierge,StayFlow Concierge,D,90,0.21767676767676764,0.3659438683897156,4,90,0.044444444444444446,paper_main_reported
+freshcart_market,FreshCart Market,A,90,0.4174418604651163,0.5018820291212561,12,90,0.13333333333333333,paper_main_reported
+freshcart_market,FreshCart Market,B,90,0.19289289289289283,0.34746055579388907,3,90,0.03333333333333333,paper_main_reported
+freshcart_market,FreshCart Market,C,90,0.21931464174454823,0.406415863422255,4,90,0.044444444444444446,paper_main_reported
+freshcart_market,FreshCart Market,D,90,0.18459383753501393,0.3681306230897824,1,90,0.011111111111111112,paper_main_reported
+clinic_shift_command,Clinic Shift Command,A,90,0.48976608187134507,0.5924402230323282,23,90,0.25555555555555554,paper_main_reported
+clinic_shift_command,Clinic Shift Command,B,90,0.4473829201101928,0.5369921618785254,13,90,0.14444444444444443,paper_main_reported
+clinic_shift_command,Clinic Shift Command,C,90,0.38683760683760676,0.4880223524342765,5,90,0.05555555555555555,paper_main_reported
+clinic_shift_command,Clinic Shift Command,D,90,0.3733225979602791,0.48094042708898344,3,90,0.03333333333333333,paper_main_reported
+campus_registrar_command,Campus Registrar Command,A,90,0.4886666666666667,0.606,31,90,0.34444444444444444,paper_main_reported
+campus_registrar_command,Campus Registrar Command,B,90,0.4773333333333333,0.5683333333333334,30,90,0.3333333333333333,paper_main_reported
+campus_registrar_command,Campus Registrar Command,C,90,0.42028248587570616,0.514847133943922,12,90,0.13333333333333333,paper_main_reported
+campus_registrar_command,Campus Registrar Command,D,90,0.39245767195767195,0.49106743444567164,2,90,0.022222222222222223,paper_main_reported
+media_campaign_launch_desk,Media Campaign Launch Desk,A,90,0.5409999999999999,0.6183333333333333,37,90,0.4111111111111111,paper_main_reported
+media_campaign_launch_desk,Media Campaign Launch Desk,B,90,0.45466666666666666,0.5426666666666667,28,90,0.3111111111111111,paper_main_reported
+media_campaign_launch_desk,Media Campaign Launch Desk,C,90,0.5154285714285713,0.6079812680627806,20,90,0.2222222222222222,paper_main_reported
+media_campaign_launch_desk,Media Campaign Launch Desk,D,90,0.31881246325690765,0.4334181372604933,0,90,0.0,paper_main_reported
+homefix_hub,HomeFix Hub,A,90,0.38178294573643407,0.5514261314697362,11,90,0.12222222222222222,paper_main_reported
+homefix_hub,HomeFix Hub,B,90,0.3697420634920635,0.49407413849378135,6,90,0.06666666666666667,paper_main_reported
+homefix_hub,HomeFix Hub,C,90,0.3781535158346752,0.487151467961033,2,90,0.022222222222222223,paper_main_reported
+homefix_hub,HomeFix Hub,D,90,0.222550225502255,0.4093320896795676,0,90,0.0,paper_main_reported

@@ -1,0 +1,1515 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>StayFlow Concierge Tier C</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #202124;
+      --muted: #5f6368;
+      --line: #dadce0;
+      --paper: #f8fafd;
+      --panel: #ffffff;
+      --mist: #eef6ff;
+      --blue: #1a73e8;
+      --blue-dark: #1558b0;
+      --teal: #00897b;
+      --gold: #fbbc04;
+      --coral: #ff6d4d;
+      --green: #188038;
+      --shadow: 0 16px 36px rgba(60, 64, 67, .14);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 0;
+    }
+
+    button, input {
+      font: inherit;
+    }
+
+    .shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 360px;
+      grid-template-areas:
+        "nav nav"
+        "main rail";
+    }
+
+    .sidebar {
+      grid-area: nav;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(255, 255, 255, .94);
+      color: var(--ink);
+      border-bottom: 1px solid var(--line);
+      padding: 14px 32px;
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      backdrop-filter: blur(18px);
+    }
+
+    .brand {
+      display: grid;
+      gap: 3px;
+      min-width: 158px;
+    }
+
+    .brand strong {
+      font-size: 22px;
+      letter-spacing: 0;
+      color: #0b57d0;
+    }
+
+    .brand span {
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .nav button,
+    .rolebar button,
+    .button {
+      border: 1px solid transparent;
+      border-radius: 6px;
+      min-height: 36px;
+      padding: 0 12px;
+      cursor: pointer;
+      font-weight: 700;
+      background: #eef3fb;
+      color: var(--ink);
+    }
+
+    .nav button {
+      white-space: nowrap;
+      color: #3c4043;
+      background: transparent;
+    }
+
+    .nav button.active {
+      background: #e8f0fe;
+      color: #174ea6;
+    }
+
+    .rolebar {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .rolebar button {
+      background: #fff;
+      color: #3c4043;
+      border-color: var(--line);
+    }
+
+    .rolebar button.active {
+      background: #fff7d6;
+      color: #5f4200;
+      border-color: #f2cf63;
+    }
+
+    .main {
+      grid-area: main;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .topbar {
+      min-height: 300px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 260px;
+      align-items: center;
+      gap: 26px;
+      padding: 34px 42px;
+      background:
+        linear-gradient(90deg, rgba(16, 34, 52, .82), rgba(16, 34, 52, .24)),
+        url("assets/hero.jpg");
+      background-size: cover;
+      background-position: center;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .title {
+      display: grid;
+      gap: 12px;
+      color: #fff;
+      max-width: 760px;
+    }
+
+    .title h1 {
+      margin: 0;
+      font-size: 46px;
+      line-height: 1.04;
+      max-width: 720px;
+    }
+
+    .title span {
+      color: rgba(255,255,255,.88);
+      font-size: 17px;
+      line-height: 1.45;
+    }
+
+    .top-actions {
+      display: grid;
+      gap: 10px;
+      align-self: stretch;
+      align-content: center;
+      background: rgba(255,255,255,.92);
+      border: 1px solid rgba(255,255,255,.7);
+      border-radius: 8px;
+      padding: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .reset {
+      background: #fff;
+      border-color: var(--line);
+      color: var(--ink);
+    }
+
+    .primary { background: var(--blue); color: #fff; }
+    .primary:hover { background: var(--blue-dark); }
+    .gold { background: #fff2bd; color: #493300; border-color: #f6d45a; }
+    .coral { background: #ffe9e2; color: #8f2715; border-color: #f4b09e; }
+    .blue { background: #e8f0fe; color: #174ea6; border-color: #c6dafc; }
+
+    .content {
+      padding: 24px 42px 46px;
+      display: grid;
+      gap: 22px;
+      min-width: 0;
+    }
+
+    .page {
+      display: none;
+      gap: 18px;
+    }
+
+    .page.active {
+      display: grid;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(320px, .9fr);
+      gap: 20px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .panel {
+      background: rgba(255,255,255,.96);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 8px 24px rgba(60,64,67,.08);
+      padding: 18px;
+      min-width: 0;
+    }
+
+    .panel h2 {
+      margin: 0 0 12px;
+      font-size: 20px;
+      text-transform: none;
+      letter-spacing: 0;
+      color: var(--ink);
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .metric {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: linear-gradient(180deg, #fff, #f7fbff);
+      padding: 13px;
+      min-height: 76px;
+    }
+
+    .metric span {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 7px;
+    }
+
+    .metric b {
+      font-size: 22px;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 26px;
+      padding: 0 9px;
+      border-radius: 999px;
+      background: #e8f0fe;
+      color: #174ea6;
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .status.warn { background: #fff1cc; color: #815900; }
+    .status.bad { background: #ffe5de; color: #8f2715; }
+    .status.good { background: #daf3e5; color: #0f6039; }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      align-items: center;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+
+    input[type="text"], input[type="file"] {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--ink);
+      min-height: 38px;
+      padding: 8px 10px;
+    }
+
+    .table-wrap {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th {
+      text-align: left;
+      color: #51625a;
+      background: #f5f7fb;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      padding: 9px 10px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    td {
+      padding: 10px;
+      border-bottom: 1px solid #edf0ec;
+      vertical-align: middle;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .right-rail {
+      grid-area: rail;
+      background: #fff;
+      border-left: 1px solid var(--line);
+      padding: 22px;
+      display: grid;
+      align-content: start;
+      gap: 14px;
+    }
+
+    .dossier {
+      background: #f8fafd;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 15px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .dossier h2 {
+      margin: 0;
+      font-size: 16px;
+    }
+
+    .kv {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      font-size: 13px;
+      border-bottom: 1px dashed #dfe4dd;
+      padding-bottom: 8px;
+    }
+
+    .kv span { color: var(--muted); }
+    .kv b { font-variant-numeric: tabular-nums; }
+
+    .audit-list {
+      display: grid;
+      gap: 8px;
+      max-height: 240px;
+      overflow: auto;
+    }
+
+    .audit-item {
+      border: 1px solid #e8eaed;
+      border-radius: 6px;
+      padding: 8px 10px;
+      background: #fff;
+      font-size: 12px;
+    }
+
+    .search-card {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      padding: 14px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .search-card > .button {
+      grid-column: 1 / -1;
+      min-height: 48px;
+    }
+
+    .search-field {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px 12px;
+      background: #f8fafd;
+      display: grid;
+      gap: 4px;
+      min-height: 58px;
+    }
+
+    .search-field span {
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      font-weight: 800;
+    }
+
+    .search-field b {
+      font-size: 14px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .destination-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .destination-card,
+    .stay-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      overflow: hidden;
+      box-shadow: 0 8px 20px rgba(60,64,67,.08);
+    }
+
+    .photo {
+      min-height: 154px;
+      background-size: cover;
+      background-position: center;
+    }
+
+    .photo.busan {
+      background-image: linear-gradient(180deg, rgba(0,0,0,.06), rgba(0,0,0,.18)), url("assets/busan.jpg");
+    }
+
+    .photo.seoul {
+      background-image: linear-gradient(180deg, rgba(0,0,0,.06), rgba(0,0,0,.18)), url("assets/seoul.jpg");
+    }
+
+    .photo.kyoto {
+      background-image: linear-gradient(180deg, rgba(0,0,0,.06), rgba(0,0,0,.18)), url("assets/kyoto.jpg");
+    }
+
+    .photo.jeju {
+      background-image: linear-gradient(180deg, rgba(0,0,0,.06), rgba(0,0,0,.18)), url("assets/jeju.jpg");
+    }
+
+    .card-body {
+      padding: 13px;
+      display: grid;
+      gap: 9px;
+    }
+
+    .card-body h3 {
+      margin: 0;
+      font-size: 16px;
+    }
+
+    .card-body p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .price-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+    }
+
+    .price-row b {
+      font-size: 18px;
+    }
+
+    .timeline {
+      display: grid;
+      gap: 10px;
+    }
+
+    .timeline-item {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      background: #fff;
+      display: grid;
+      grid-template-columns: 44px 1fr auto;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .day-badge {
+      width: 44px;
+      min-height: 44px;
+      border-radius: 8px;
+      background: #e8f0fe;
+      color: #174ea6;
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+    }
+
+    .callout {
+      border: 1px solid #f1d17a;
+      background: #fff8df;
+      border-radius: 8px;
+      padding: 14px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .step-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .step-item {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      gap: 10px;
+      align-items: start;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .step-dot {
+      width: 28px;
+      min-height: 28px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      background: #e6f4ea;
+      color: var(--green);
+      font-weight: 900;
+    }
+
+    @media (max-width: 1180px) {
+      .shell {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+          "nav"
+          "main"
+          "rail";
+      }
+      .right-rail { border-left: 0; border-top: 1px solid var(--line); }
+      .search-card { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .destination-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 860px) {
+      .shell { grid-template-columns: 1fr; }
+      .sidebar { align-items: flex-start; flex-direction: column; padding: 14px 16px; }
+      .nav, .rolebar { width: 100%; overflow-x: auto; }
+      .grid-2, .grid-3, .metric-grid, .search-card, .destination-grid { grid-template-columns: 1fr; }
+      .topbar { min-height: auto; padding: 28px 16px; grid-template-columns: 1fr; }
+      .title h1 { font-size: 34px; }
+      .content { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <strong>StayFlow</strong>
+        <span>Curated stays</span>
+      </div>
+      <nav class="nav">
+        <button data-testid="go-command" data-nav="command" type="button">Discover</button>
+        <button data-testid="go-itinerary" data-nav="itinerary" type="button">Stays</button>
+        <button data-testid="go-guests" data-nav="guests" type="button">Guests</button>
+        <button data-testid="go-suppliers" data-nav="suppliers" type="button">Concierge partners</button>
+        <button data-testid="go-finance" data-nav="finance" type="button">Checkout</button>
+        <button data-testid="go-review" data-nav="review" type="button">Confirm</button>
+      </nav>
+      <div class="rolebar">
+        <button data-testid="role-guest" data-role="guest" type="button">Guest view</button>
+        <button data-testid="role-agent" data-role="agent" type="button">Concierge</button>
+        <button data-testid="role-manager" data-role="manager" type="button">Trip manager</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="title">
+          <h1>Book a multi-city stay with concierge support</h1>
+          <span>Build a polished Busan, Seoul, Kyoto, and Jeju itinerary with hotel holds, traveler readiness, protected checkout, and final trip confirmation in one place.</span>
+        </div>
+        <div class="top-actions">
+          <span class="status" id="role-pill">guest</span>
+          <span class="status warn" id="booking-pill">idle</span>
+          <button class="button reset" data-testid="reset" type="button">Start over</button>
+        </div>
+      </header>
+
+      <section class="content">
+        <div class="search-card">
+          <div class="search-field">
+            <span>Route</span>
+            <b>Busan, Seoul, Kyoto, Jeju</b>
+          </div>
+          <div class="search-field">
+            <span>Dates</span>
+            <b>10 nights flexible</b>
+          </div>
+          <div class="search-field">
+            <span>Travelers</span>
+            <b>Family and mobility ready</b>
+          </div>
+          <div class="search-field">
+            <span>Service</span>
+            <b>Concierge holds included</b>
+          </div>
+          <button class="button primary" type="button">Explore stays</button>
+        </div>
+
+        <div class="metric-grid">
+          <div class="metric"><span>Trip route</span><b id="m-route">-</b></div>
+          <div class="metric"><span>Estimated total</span><b id="m-total">0</b></div>
+          <div class="metric"><span>Travelers ready</span><b id="m-ready">0/0</b></div>
+          <div class="metric"><span>Concierge alerts</span><b id="m-exceptions">0</b></div>
+        </div>
+
+        <section class="page" data-page="command">
+          <div class="grid-2">
+            <div class="panel">
+              <h2>Your trip board</h2>
+              <p style="margin-top:0;color:var(--muted)">Plan a premium route, reserve matching stays, upload guest details, and let the concierge handle partner availability before checkout.</p>
+              <div class="grid-3">
+                <div class="metric"><span>Quote</span><b id="c-quote">idle</b></div>
+                <div class="metric"><span>Partner holds</span><b id="c-supplier">idle</b></div>
+                <div class="metric"><span>Checkout</span><b id="c-payment">idle</b></div>
+              </div>
+              <div class="destination-grid" style="margin-top:16px">
+                <article class="destination-card">
+                  <div class="photo busan"></div>
+                  <div class="card-body">
+                    <h3>Busan coast</h3>
+                    <p>Harbor views, markets, spa access, and private transfer coordination.</p>
+                  </div>
+                </article>
+                <article class="destination-card">
+                  <div class="photo seoul"></div>
+                  <div class="card-body">
+                    <h3>Seoul city stay</h3>
+                    <p>Loft-style base near dining, museums, and family-friendly transit.</p>
+                  </div>
+                </article>
+                <article class="destination-card">
+                  <div class="photo kyoto"></div>
+                  <div class="card-body">
+                    <h3>Kyoto garden</h3>
+                    <p>Machiya-style calm with local host support and dining reservations.</p>
+                  </div>
+                </article>
+                <article class="destination-card">
+                  <div class="photo jeju"></div>
+                  <div class="card-body">
+                    <h3>Jeju retreat</h3>
+                    <p>Pool villa, weather-aware routing, and late checkout planning.</p>
+                  </div>
+                </article>
+              </div>
+            </div>
+            <div class="panel">
+              <h2>Concierge messages</h2>
+              <p style="margin-top:0;color:var(--muted)">Open items from documents, partner holds, or checkout are tracked here as the booking moves forward.</p>
+              <div class="table-wrap">
+                <table data-testid="exception-grid">
+                  <thead><tr><th>Type</th><th>Status</th><th>Owner</th></tr></thead>
+                  <tbody id="exception-rows"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="page" data-page="itinerary">
+          <div class="grid-2">
+            <div class="panel">
+              <h2>Pick your stays</h2>
+              <p style="margin-top:0;color:var(--muted)">Compare curated properties and add the route legs that belong in the trip.</p>
+              <div class="toolbar">
+                <button class="button" data-testid="filter-all" type="button">All cities</button>
+                <button class="button" data-testid="filter-jeju" type="button">Jeju only</button>
+              </div>
+              <div class="destination-grid" style="margin-top:14px">
+                <article class="stay-card">
+                  <div class="photo busan"></div>
+                  <div class="card-body">
+                    <h3>Harbor Capsule Hotel</h3>
+                    <p>Compact design rooms near the Busan waterfront with breakfast and luggage transfer.</p>
+                    <div class="price-row"><span>From</span><b>USD 320</b></div>
+                    <button class="button primary" data-testid="add-busan-leg" type="button">Add Busan</button>
+                  </div>
+                </article>
+                <article class="stay-card">
+                  <div class="photo seoul"></div>
+                  <div class="card-body">
+                    <h3>Han River Loft</h3>
+                    <p>Family-friendly Seoul loft with river access, kitchen, and late arrival support.</p>
+                    <div class="price-row"><span>From</span><b>USD 480</b></div>
+                    <button class="button primary" data-testid="add-seoul-leg" type="button">Add Seoul</button>
+                  </div>
+                </article>
+                <article class="stay-card">
+                  <div class="photo kyoto"></div>
+                  <div class="card-body">
+                    <h3>Machiya Garden House</h3>
+                    <p>Traditional townhouse stay with garden breakfast and reservation concierge.</p>
+                    <div class="price-row"><span>From</span><b>USD 620</b></div>
+                    <button class="button primary" data-testid="add-kyoto-leg" type="button">Add Kyoto</button>
+                  </div>
+                </article>
+                <article class="stay-card">
+                  <div class="photo jeju"></div>
+                  <div class="card-body">
+                    <h3>Windstone Pool Villa</h3>
+                    <p>Private villa for the final island leg with driver standby and weather fallback.</p>
+                    <div class="price-row"><span>From</span><b>USD 760</b></div>
+                    <button class="button primary" data-testid="add-jeju-leg" type="button">Add Jeju</button>
+                  </div>
+                </article>
+              </div>
+              <div class="toolbar" style="margin-top:14px">
+                <button class="button gold" data-testid="add-ops-addons" type="button">Add airport transfers and local support</button>
+              </div>
+              <div class="table-wrap" style="margin-top:14px">
+                <table data-testid="stay-grid">
+                  <thead><tr><th>Name</th><th>City</th><th>Base</th></tr></thead>
+                  <tbody id="stay-rows"></tbody>
+                </table>
+              </div>
+            </div>
+            <div class="panel">
+              <h2>Trip timeline</h2>
+              <div class="timeline">
+                <div class="timeline-item">
+                  <div class="day-badge">1</div>
+                  <div><b>Arrive in Busan</b><br><span style="color:var(--muted)">Harbor check-in, luggage support, spa hold.</span></div>
+                  <span class="status">coast</span>
+                </div>
+                <div class="timeline-item">
+                  <div class="day-badge">2</div>
+                  <div><b>Move to Seoul</b><br><span style="color:var(--muted)">Rail routing, family transfer, flexible late arrival.</span></div>
+                  <span class="status">city</span>
+                </div>
+                <div class="timeline-item">
+                  <div class="day-badge">3</div>
+                  <div><b>Kyoto garden stay</b><br><span style="color:var(--muted)">Cross-border notes and restaurant hold coordination.</span></div>
+                  <span class="status">culture</span>
+                </div>
+                <div class="timeline-item">
+                  <div class="day-badge">4</div>
+                  <div><b>Jeju villa finale</b><br><span style="color:var(--muted)">Weather fallback, driver standby, late checkout.</span></div>
+                  <span class="status warn">retreat</span>
+                </div>
+              </div>
+              <div class="table-wrap" style="margin-top:14px">
+                <table data-testid="itinerary-grid">
+                  <thead><tr><th>City</th><th>Stay</th><th>Add-on</th><th>Leg total</th></tr></thead>
+                  <tbody id="itinerary-rows"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="page" data-page="guests">
+          <div class="grid-2">
+            <div class="panel">
+              <h2>Guest details</h2>
+              <p style="margin-top:0;color:var(--muted)">Upload traveler and document files so StayFlow can highlight readiness gaps before final confirmation.</p>
+              <div class="form-grid">
+                <label>Traveler list CSV
+                  <input data-testid="traveler-upload" type="file" accept=".csv,text/csv">
+                </label>
+                <label>Passport and document CSV
+                  <input data-testid="document-upload" type="file" accept=".csv,text/csv">
+                </label>
+              </div>
+              <div class="toolbar" style="margin-top:12px">
+                <button class="button primary" data-testid="build-readiness" type="button">Check guest readiness</button>
+                <button class="button coral" data-testid="open-document-exception" type="button">Flag missing document</button>
+                <button class="button blue" data-testid="resolve-document-exception" type="button">Mark document fixed</button>
+              </div>
+            </div>
+            <div class="panel">
+              <h2>Travel party</h2>
+              <div class="table-wrap">
+                <table data-testid="traveler-grid">
+                  <thead><tr><th>Name</th><th>Type</th><th>Mobility</th></tr></thead>
+                  <tbody id="traveler-rows"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <h2>Departure readiness</h2>
+            <div class="table-wrap">
+              <table data-testid="readiness-grid">
+                <thead><tr><th>Traveler</th><th>Document status</th><th>Ready</th></tr></thead>
+                <tbody id="readiness-rows"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section class="page" data-page="suppliers">
+          <div class="panel">
+            <h2>Concierge partner availability</h2>
+            <p style="margin-top:0;color:var(--muted)">Reserve hotel inventory, local transfer capacity, and city support windows before asking the guest to pay.</p>
+            <div class="toolbar">
+              <button class="button primary" data-testid="request-supplier-holds" type="button">Reserve partner inventory</button>
+              <button class="button coral" data-testid="external-supplier-change" type="button">Partner changed availability</button>
+              <button class="button blue" data-testid="refresh-supplier-draft" type="button">Refresh partner quote</button>
+              <button class="button gold" data-testid="release-supplier-holds" type="button">Release reserved inventory</button>
+            </div>
+            <div class="table-wrap" style="margin-top:12px">
+              <table data-testid="supplier-grid">
+                <thead><tr><th>City</th><th>Status</th><th>Version</th></tr></thead>
+                <tbody id="supplier-rows"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section class="page" data-page="finance">
+          <div class="grid-2">
+            <div class="panel">
+              <h2>StayFlow quote</h2>
+              <p style="margin-top:0;color:var(--muted)">Generate a protected quote after stays, guest readiness, and partner availability are aligned.</p>
+              <div class="toolbar">
+                <button class="button primary" data-testid="request-quote" type="button">Generate quote</button>
+                <label style="min-width:220px">Travel credit
+                  <input data-testid="promo-code" type="text" placeholder="STAYFLOW260">
+                </label>
+                <button class="button gold" data-testid="apply-promo" type="button">Apply travel credit</button>
+              </div>
+            </div>
+            <div class="panel">
+              <h2>Secure checkout</h2>
+              <p style="margin-top:0;color:var(--muted)">Authorize the exact amount shown in the protected quote before final booking release.</p>
+              <div class="toolbar">
+                <label style="min-width:240px">Authorization amount
+                  <input data-testid="payment-amount" type="text" placeholder="USD 2500">
+                </label>
+                <button class="button primary" data-testid="authorize-payment" type="button">Authorize checkout</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="page" data-page="review">
+          <div class="grid-2">
+            <div class="panel">
+              <h2>Before you book</h2>
+              <div class="step-list">
+                <div class="step-item"><span class="step-dot">1</span><div><b>Partner inventory</b><br><span style="color:var(--muted)">All cities need confirmed holds before release.</span></div></div>
+                <div class="step-item"><span class="step-dot">2</span><div><b>Guest documents</b><br><span style="color:var(--muted)">Travelers must be marked ready for departure.</span></div></div>
+                <div class="step-item"><span class="step-dot">3</span><div><b>Checkout authorization</b><br><span style="color:var(--muted)">The authorized amount must match the latest quote.</span></div></div>
+              </div>
+              <div class="toolbar">
+                <button class="button blue" data-testid="check-supplier" type="button">Check suppliers</button>
+                <button class="button blue" data-testid="check-documents" type="button">Check documents</button>
+                <button class="button blue" data-testid="check-payment" type="button">Check payment</button>
+              </div>
+            </div>
+            <div class="panel">
+              <h2>Ready to reserve</h2>
+              <div class="callout">
+                <b>Trip manager approval may be required.</b>
+                <span style="color:var(--muted)">When the itinerary has risk flags, a manager must approve before the final reservation can be released.</span>
+              </div>
+              <div class="toolbar">
+                <button class="button gold" data-testid="manager-approve" type="button">Approve trip</button>
+                <button class="button primary" data-testid="final-confirm" type="button">Confirm reservation</button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <aside class="right-rail">
+      <div class="dossier">
+        <h2>Booking summary</h2>
+        <div class="kv"><span>Role</span><b id="d-role">guest</b></div>
+        <div class="kv"><span>Route</span><b id="d-route">-</b></div>
+        <div class="kv"><span>Quote</span><b id="d-quote">-</b></div>
+        <div class="kv"><span>Partner version</span><b id="d-version">1/1</b></div>
+        <div class="kv"><span>Approval</span><b id="d-approval">not_required</b></div>
+        <div class="kv"><span>Concierge calls</span><b id="d-calls">0</b></div>
+      </div>
+      <div class="dossier">
+        <h2>Concierge activity</h2>
+        <div class="audit-list" id="audit-list"></div>
+      </div>
+    </aside>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "stayflow-tier-c-state";
+
+    const initialState = {
+      current_page: "command",
+      active_role: "guest",
+      stay_catalog: [
+        { id: "ST-BUSAN-HARBOR", city: "Busan", name: "Harbor Capsule Hotel", base: 320, available: true },
+        { id: "ST-SEOUL-LOFT", city: "Seoul", name: "Han River Loft", base: 480, available: true },
+        { id: "ST-KYOTO-MACHIYA", city: "Kyoto", name: "Machiya Garden House", base: 620, available: true },
+        { id: "ST-JEJU-VILLA", city: "Jeju", name: "Windstone Pool Villa", base: 760, available: true }
+      ],
+      visible_stays: [],
+      current_city_filter: "all",
+      itinerary_legs: [],
+      leg_count: 0,
+      route_key: "",
+      trip_subtotal: 0,
+      addon_total: 0,
+      service_fee: 0,
+      promo_code: "",
+      promo_credit: 0,
+      total_due: 0,
+      quote_status: "idle",
+      quote_id: "",
+      quote_risk: "none",
+      promo_status: "idle",
+      travelers: [],
+      traveler_count: 0,
+      child_count: 0,
+      mobility_count: 0,
+      documents: [],
+      document_count: 0,
+      missing_document_count: 0,
+      readiness_rows: [],
+      ready_count: 0,
+      last_traveler_file: "",
+      last_document_file: "",
+      supplier_holds: [],
+      hold_count: 0,
+      confirmed_hold_count: 0,
+      supplier_version: 1,
+      supplier_draft_version: 1,
+      supplier_status: "idle",
+      payment_amount_key: "",
+      payment_status: "idle",
+      payment_authorized: false,
+      payment_ledger: [],
+      payment_count: 0,
+      approval_status: "not_required",
+      booking_status: "idle",
+      review_checklist: {},
+      checklist_completed_count: 0,
+      exception_queue: [],
+      open_exception_count: 0,
+      audit_events: [],
+      audit_count: 0,
+      denied_count: 0,
+      conflict_count: 0,
+      service_call_count: 0,
+      quote_call_count: 0,
+      promo_call_count: 0,
+      hold_call_count: 0,
+      payment_call_count: 0,
+      last_action: "ready"
+    };
+    initialState.visible_stays = initialState.stay_catalog.map((item) => ({ ...item }));
+
+    let state = loadState();
+
+    function clone(value) {
+      return JSON.parse(JSON.stringify(value));
+    }
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) return JSON.parse(raw);
+      } catch (_) {}
+      return clone(initialState);
+    }
+
+    function saveState() {
+      window.__DETOX_STATE__ = state;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function normalizeCurrency(value) {
+      const match = String(value || "").replace(/,/g, "").match(/-?\d+(?:\.\d+)?/);
+      if (!match) return "";
+      const number = Number(match[0]);
+      return Number.isInteger(number) ? String(number) : String(number).replace(/\.0+$/, "");
+    }
+
+    function routeFromLegs() {
+      return state.itinerary_legs.map((leg) => leg.city.toUpperCase()).join("_");
+    }
+
+    function recomputePricing() {
+      state.leg_count = state.itinerary_legs.length;
+      state.trip_subtotal = state.itinerary_legs.reduce((sum, leg) => sum + Number(leg.base || 0), 0);
+      state.addon_total = state.itinerary_legs.reduce((sum, leg) => sum + Number(leg.addon || 0), 0);
+      if (state.trip_subtotal >= 2100) state.service_fee = 188;
+      else if (state.trip_subtotal >= 1400) state.service_fee = 132;
+      else if (state.trip_subtotal >= 800) state.service_fee = 86;
+      else if (state.trip_subtotal > 0) state.service_fee = 48;
+      else state.service_fee = 0;
+      state.total_due = state.trip_subtotal + state.addon_total + state.service_fee - state.promo_credit;
+    }
+
+    function recomputeTravelers() {
+      state.traveler_count = state.travelers.length;
+      state.child_count = state.travelers.filter((row) => row.type === "child").length;
+      state.mobility_count = state.travelers.filter((row) => row.mobility === "yes").length;
+    }
+
+    function recomputeDocuments() {
+      state.document_count = state.documents.length;
+      state.missing_document_count = state.documents.filter((row) => row.document_status === "missing").length;
+    }
+
+    function recomputeReadiness() {
+      const docsByTraveler = new Map(state.documents.map((doc) => [doc.traveler_id, doc]));
+      state.readiness_rows = state.travelers.map((traveler) => {
+        const doc = docsByTraveler.get(traveler.id) || {};
+        return {
+          traveler_id: traveler.id,
+          traveler: traveler.name,
+          type: traveler.type,
+          mobility: traveler.mobility,
+          document_status: doc.document_status || "",
+          ready: doc.ready || ""
+        };
+      });
+      state.ready_count = state.readiness_rows.filter((row) => row.ready === "yes").length;
+    }
+
+    function recomputeSuppliers() {
+      state.hold_count = state.supplier_holds.length;
+      state.confirmed_hold_count = state.supplier_holds.filter((hold) => hold.status === "confirmed").length;
+    }
+
+    function recomputeLedgers() {
+      state.payment_count = state.payment_ledger.length;
+      state.checklist_completed_count = Object.keys(state.review_checklist).length;
+      state.open_exception_count = state.exception_queue.filter((item) => item.status === "open").length;
+      state.audit_count = state.audit_events.length;
+    }
+
+    function recomputeAll() {
+      recomputePricing();
+      recomputeTravelers();
+      recomputeDocuments();
+      recomputeReadiness();
+      recomputeSuppliers();
+      recomputeLedgers();
+    }
+
+    function saveRender() {
+      recomputeAll();
+      saveState();
+      render();
+    }
+
+    function setPage(page, action) {
+      state.current_page = page;
+      if (action) state.last_action = action;
+      const target = "#/" + page;
+      if (location.hash !== target) {
+        location.hash = target;
+      }
+      saveRender();
+    }
+
+    function syncPageFromHash() {
+      const page = (location.hash || "#/command").replace("#/", "");
+      if (["command", "itinerary", "guests", "suppliers", "finance", "review"].includes(page)) {
+        state.current_page = page;
+      }
+      saveRender();
+    }
+
+    function resetWorkspace() {
+      localStorage.removeItem(STORAGE_KEY);
+      state = clone(initialState);
+      state.last_action = "reset";
+      if (location.hash !== "#/command") location.hash = "#/command";
+      saveRender();
+    }
+
+    function filterAll() {
+      state.visible_stays = state.stay_catalog.filter((item) => item.available).sort((a, b) => a.base - b.base).map((item) => ({ ...item }));
+      state.current_city_filter = "all";
+      state.last_action = "filter_all";
+      saveRender();
+    }
+
+    function filterJeju() {
+      state.visible_stays = state.stay_catalog.filter((item) => item.city === "Jeju").sort((a, b) => a.base - b.base).map((item) => ({ ...item }));
+      state.current_city_filter = "Jeju";
+      state.last_action = "filter_jeju";
+      saveRender();
+    }
+
+    function addLeg(id, city, stay, base, requiredRoute, nextRoute, action) {
+      if (state.route_key !== requiredRoute) return;
+      state.itinerary_legs.push({ id, city, stay, base, addon: 0, leg_total: base });
+      state.route_key = nextRoute;
+      state.promo_credit = 0;
+      state.promo_status = "idle";
+      state.quote_status = "draft_changed";
+      state.booking_status = "drafting";
+      if (nextRoute.includes("KYOTO")) state.approval_status = "required";
+      state.last_action = action;
+      saveRender();
+    }
+
+    function addBusan() {
+      if (state.leg_count !== 0) return;
+      state.itinerary_legs.push({ id: "LEG-BUSAN", city: "Busan", stay: "Harbor Capsule Hotel", base: 320, addon: 0, leg_total: 320 });
+      state.route_key = "BUSAN";
+      state.booking_status = "drafting";
+      state.last_action = "add_busan_leg";
+      saveRender();
+    }
+
+    function addOpsAddons() {
+      if (state.route_key !== "BUSAN_SEOUL_KYOTO") return;
+      const updates = {
+        "LEG-BUSAN": { addon: 42, leg_total: 362 },
+        "LEG-SEOUL": { addon: 55, leg_total: 535 },
+        "LEG-KYOTO": { addon: 70, leg_total: 690 }
+      };
+      state.itinerary_legs = state.itinerary_legs.map((leg) => ({ ...leg, ...(updates[leg.id] || {}) }));
+      state.last_action = "add_ops_addons";
+      saveRender();
+    }
+
+    function localQuote() {
+      if (state.route_key === "BUSAN_SEOUL") return { quote_id: "QC-BS-744", status: "ready", risk: "balanced" };
+      if (state.route_key === "BUSAN_SEOUL_KYOTO") return { quote_id: "QC-BSK-912", status: "ready", risk: "complex" };
+      if (state.route_key === "BUSAN_SEOUL_KYOTO_JEJU") return { quote_id: "QC-BSKJ-518", status: "ready", risk: "elevated" };
+      return { quote_id: "", status: "rejected", risk: "rejected" };
+    }
+
+    function localPromo() {
+      if (state.promo_code === "OPS180" && state.route_key === "BUSAN_SEOUL_KYOTO") return { status: "applied", credit: 180 };
+      if (state.promo_code === "COMMAND260" && state.route_key === "BUSAN_SEOUL_KYOTO_JEJU") return { status: "applied", credit: 260 };
+      return { status: "rejected", credit: 0 };
+    }
+
+    function requestQuote() {
+      if (state.leg_count < 2) return;
+      fetch(`/api/tier-c-quote?route=${encodeURIComponent(state.route_key)}`).catch(() => {});
+      const quote = localQuote();
+      state.service_call_count += 1;
+      state.quote_call_count += 1;
+      state.quote_status = quote.status;
+      state.quote_id = quote.quote_id;
+      state.quote_risk = quote.risk;
+      state.booking_status = "quoted";
+      state.last_action = "request_quote";
+      saveRender();
+    }
+
+    function applyPromo() {
+      if (state.quote_status !== "ready" || !state.promo_code) return;
+      fetch(`/api/tier-c-promo?code=${encodeURIComponent(state.promo_code)}&route=${encodeURIComponent(state.route_key)}`).catch(() => {});
+      const promo = localPromo();
+      state.service_call_count += 1;
+      state.promo_call_count += 1;
+      state.promo_status = promo.status;
+      state.promo_credit = promo.credit;
+      state.last_action = "apply_promo";
+      saveRender();
+    }
+
+    function parseCsv(text) {
+      const lines = text.trim().split(/\r?\n/).filter(Boolean);
+      if (!lines.length) return [];
+      const headers = lines[0].split(",").map((item) => item.trim());
+      return lines.slice(1).map((line) => {
+        const cells = line.split(",").map((item) => item.trim());
+        const row = {};
+        headers.forEach((header, index) => { row[header] = cells[index] || ""; });
+        return row;
+      });
+    }
+
+    async function readCsvFile(input, target, filenamePath, action) {
+      const file = input.files && input.files[0];
+      if (!file) return;
+      const text = await file.text();
+      state[target] = parseCsv(text);
+      state[filenamePath] = file.name;
+      state.last_action = action;
+      saveRender();
+    }
+
+    function buildReadiness() {
+      if (!state.traveler_count || !state.document_count) return;
+      state.last_action = "build_readiness";
+      saveRender();
+    }
+
+    function openDocumentException() {
+      if (state.missing_document_count <= 0) return;
+      state.exception_queue.push({ id: "EX-DOCS", type: "documents", status: "open", owner: "agent" });
+      state.booking_status = "blocked";
+      state.last_action = "open_document_exception";
+      saveRender();
+    }
+
+    function resolveDocumentException() {
+      if (!["agent", "manager"].includes(state.active_role)) {
+        state.denied_count += 1;
+        state.last_action = "deny_resolve_document_exception";
+        saveRender();
+        return;
+      }
+      const item = state.exception_queue.find((entry) => entry.id === "EX-DOCS");
+      if (item) item.status = "resolved";
+      state.last_action = "resolve_document_exception";
+      saveRender();
+    }
+
+    function requestSupplierHolds() {
+      if (state.route_key !== "BUSAN_SEOUL_KYOTO_JEJU") return;
+      fetch("/api/tier-c-holds", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ route: state.route_key })
+      }).catch(() => {});
+      state.service_call_count += 1;
+      state.hold_call_count += 1;
+      state.supplier_holds = [
+        { id: "HOLD-BUSAN", city: "Busan", status: "confirmed", version: 2 },
+        { id: "HOLD-SEOUL", city: "Seoul", status: "confirmed", version: 2 },
+        { id: "HOLD-KYOTO", city: "Kyoto", status: "confirmed", version: 2 },
+        { id: "HOLD-JEJU", city: "Jeju", status: "confirmed", version: 2 }
+      ];
+      state.supplier_status = "confirmed";
+      state.supplier_version = 2;
+      state.supplier_draft_version = 2;
+      state.last_action = "request_supplier_holds";
+      saveRender();
+    }
+
+    function externalSupplierChange() {
+      if (!state.hold_count) return;
+      state.supplier_version += 1;
+      const hold = state.supplier_holds.find((item) => item.id === "HOLD-KYOTO");
+      if (hold) hold.status = "stale";
+      state.supplier_status = "external_change";
+      state.last_action = "external_supplier_change";
+      saveRender();
+    }
+
+    function refreshSupplierDraft() {
+      state.supplier_draft_version = state.supplier_version;
+      state.supplier_holds = state.supplier_holds.map((hold) => hold.status === "stale" ? { ...hold, status: "confirmed" } : hold);
+      state.supplier_status = "refreshed";
+      state.last_action = "refresh_supplier_draft";
+      saveRender();
+    }
+
+    function releaseSupplierHolds() {
+      if (!state.hold_count) return;
+      if (state.supplier_draft_version !== state.supplier_version) {
+        state.conflict_count += 1;
+        state.supplier_status = "conflict_stale_supplier";
+        state.last_action = "conflict_release_supplier_holds";
+        saveRender();
+        return;
+      }
+      state.supplier_holds = state.supplier_holds.map((hold) => hold.status === "confirmed" ? { ...hold, status: "released" } : hold);
+      state.supplier_status = "released";
+      state.last_action = "release_supplier_holds";
+      saveRender();
+    }
+
+    function authorizePayment() {
+      if (!state.payment_amount_key) return;
+      fetch("/api/tier-c-payment", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ amount_key: state.payment_amount_key })
+      }).catch(() => {});
+      state.service_call_count += 1;
+      state.payment_call_count += 1;
+      state.payment_authorized = state.payment_amount_key === "2500";
+      state.payment_status = state.payment_authorized ? "authorized" : "shortfall";
+      state.payment_ledger.push({ id: state.payment_count + 1, amount_key: state.payment_amount_key });
+      state.last_action = "authorize_payment";
+      saveRender();
+    }
+
+    function staffCheck(key, action, denyAction) {
+      if (state.active_role !== "agent") {
+        state.denied_count += 1;
+        state.last_action = denyAction;
+        saveRender();
+        return;
+      }
+      state.review_checklist[key] = true;
+      state.last_action = action;
+      saveRender();
+    }
+
+    function managerApprove() {
+      if (state.active_role !== "manager") {
+        state.denied_count += 1;
+        state.last_action = "deny_manager_approve";
+        saveRender();
+        return;
+      }
+      if (state.approval_status !== "required" || state.open_exception_count !== 0) return;
+      state.approval_status = "approved";
+      state.audit_events.push({ id: state.audit_count + 1, event: "manager_approve", role: state.active_role });
+      state.last_action = "manager_approve";
+      saveRender();
+    }
+
+    function finalConfirm() {
+      if (state.active_role !== "agent") {
+        state.denied_count += 1;
+        state.last_action = "deny_final_confirm";
+        saveRender();
+        return;
+      }
+      if (
+        state.quote_status !== "ready" ||
+        state.supplier_status !== "released" ||
+        !state.payment_authorized ||
+        state.approval_status !== "approved" ||
+        state.open_exception_count !== 0 ||
+        state.checklist_completed_count !== 3
+      ) return;
+      state.booking_status = "confirmed";
+      state.audit_events.push({ id: state.audit_count + 1, event: "final_confirm", role: state.active_role });
+      state.last_action = "final_confirm";
+      saveRender();
+    }
+
+    function row(cells, attrs = "") {
+      return `<tr ${attrs}>${cells.map((cell) => `<td ${cell.attr || ""}>${cell.value}</td>`).join("")}</tr>`;
+    }
+
+    function renderRows() {
+      document.getElementById("stay-rows").innerHTML = state.visible_stays.map((item) => row([
+        { attr: 'data-col="name"', value: item.name },
+        { attr: 'data-col="city"', value: item.city },
+        { attr: 'data-col="base"', value: item.base }
+      ], `data-testid="stay-row" data-stay-id="${item.id}"`)).join("");
+
+      document.getElementById("itinerary-rows").innerHTML = state.itinerary_legs.map((item) => row([
+        { attr: 'data-col="city"', value: item.city },
+        { attr: 'data-col="stay"', value: item.stay },
+        { attr: 'data-col="addon"', value: item.addon },
+        { attr: 'data-col="leg_total"', value: item.leg_total }
+      ], `data-testid="itinerary-row" data-leg-id="${item.id}"`)).join("");
+
+      document.getElementById("traveler-rows").innerHTML = state.travelers.map((item) => row([
+        { attr: 'data-col="name"', value: item.name },
+        { attr: 'data-col="type"', value: item.type },
+        { attr: 'data-col="mobility"', value: item.mobility }
+      ], `data-testid="traveler-row" data-traveler-id="${item.id}"`)).join("");
+
+      document.getElementById("readiness-rows").innerHTML = state.readiness_rows.map((item) => row([
+        { attr: 'data-col="traveler"', value: item.traveler },
+        { attr: 'data-col="document_status"', value: item.document_status },
+        { attr: 'data-col="ready"', value: item.ready }
+      ], `data-testid="readiness-row" data-traveler-id="${item.traveler_id}"`)).join("");
+
+      document.getElementById("supplier-rows").innerHTML = state.supplier_holds.map((item) => row([
+        { attr: 'data-col="city"', value: item.city },
+        { attr: 'data-col="status"', value: item.status },
+        { attr: 'data-col="version"', value: item.version }
+      ], `data-testid="supplier-row" data-hold-id="${item.id}"`)).join("");
+
+      document.getElementById("exception-rows").innerHTML = state.exception_queue.map((item) => row([
+        { attr: 'data-col="type"', value: item.type },
+        { attr: 'data-col="status"', value: item.status },
+        { attr: 'data-col="owner"', value: item.owner }
+      ], `data-testid="exception-row" data-exception-id="${item.id}"`)).join("");
+    }
+
+    function render() {
+      window.__DETOX_STATE__ = state;
+      document.querySelectorAll(".page").forEach((page) => {
+        page.classList.toggle("active", page.dataset.page === state.current_page);
+      });
+      document.querySelectorAll("[data-nav]").forEach((button) => {
+        button.classList.toggle("active", button.dataset.nav === state.current_page);
+      });
+      document.querySelectorAll("[data-role]").forEach((button) => {
+        button.classList.toggle("active", button.dataset.role === state.active_role);
+      });
+      const route = state.route_key || "-";
+      document.getElementById("role-pill").textContent = state.active_role;
+      document.getElementById("booking-pill").textContent = state.booking_status;
+      document.getElementById("booking-pill").className = "status " + (state.booking_status === "confirmed" ? "good" : state.booking_status === "blocked" ? "bad" : "warn");
+      document.getElementById("m-route").textContent = route;
+      document.getElementById("m-total").textContent = state.total_due;
+      document.getElementById("m-ready").textContent = `${state.ready_count}/${state.traveler_count}`;
+      document.getElementById("m-exceptions").textContent = state.open_exception_count;
+      document.getElementById("c-quote").textContent = state.quote_status;
+      document.getElementById("c-supplier").textContent = state.supplier_status;
+      document.getElementById("c-payment").textContent = state.payment_status;
+      document.getElementById("d-role").textContent = state.active_role;
+      document.getElementById("d-route").textContent = route;
+      document.getElementById("d-quote").textContent = state.quote_id || "-";
+      document.getElementById("d-version").textContent = `${state.supplier_draft_version}/${state.supplier_version}`;
+      document.getElementById("d-approval").textContent = state.approval_status;
+      document.getElementById("d-calls").textContent = state.service_call_count;
+      document.querySelector('[data-testid="promo-code"]').value = state.promo_code;
+      document.querySelector('[data-testid="payment-amount"]').value = state.payment_amount_key;
+      document.getElementById("audit-list").innerHTML = state.audit_events.length
+        ? state.audit_events.map((event) => `<div class="audit-item">${event.id}: ${event.event} by ${event.role}</div>`).join("")
+        : '<div class="audit-item">No release events yet.</div>';
+      renderRows();
+    }
+
+    document.querySelector('[data-testid="reset"]').addEventListener("click", resetWorkspace);
+    document.querySelector('[data-testid="go-command"]').addEventListener("click", () => setPage("command", "nav_command"));
+    document.querySelector('[data-testid="go-itinerary"]').addEventListener("click", () => setPage("itinerary", "nav_itinerary"));
+    document.querySelector('[data-testid="go-guests"]').addEventListener("click", () => setPage("guests", "nav_guests"));
+    document.querySelector('[data-testid="go-suppliers"]').addEventListener("click", () => setPage("suppliers", "nav_suppliers"));
+    document.querySelector('[data-testid="go-finance"]').addEventListener("click", () => setPage("finance", "nav_finance"));
+    document.querySelector('[data-testid="go-review"]').addEventListener("click", () => setPage("review", "nav_review"));
+    document.querySelector('[data-testid="role-guest"]').addEventListener("click", () => { state.active_role = "guest"; state.last_action = "role_guest"; saveRender(); });
+    document.querySelector('[data-testid="role-agent"]').addEventListener("click", () => { state.active_role = "agent"; state.last_action = "role_agent"; saveRender(); });
+    document.querySelector('[data-testid="role-manager"]').addEventListener("click", () => { state.active_role = "manager"; state.last_action = "role_manager"; saveRender(); });
+    document.querySelector('[data-testid="filter-all"]').addEventListener("click", filterAll);
+    document.querySelector('[data-testid="filter-jeju"]').addEventListener("click", filterJeju);
+    document.querySelector('[data-testid="add-busan-leg"]').addEventListener("click", addBusan);
+    document.querySelector('[data-testid="add-seoul-leg"]').addEventListener("click", () => addLeg("LEG-SEOUL", "Seoul", "Han River Loft", 480, "BUSAN", "BUSAN_SEOUL", "add_seoul_leg"));
+    document.querySelector('[data-testid="add-kyoto-leg"]').addEventListener("click", () => addLeg("LEG-KYOTO", "Kyoto", "Machiya Garden House", 620, "BUSAN_SEOUL", "BUSAN_SEOUL_KYOTO", "add_kyoto_leg"));
+    document.querySelector('[data-testid="add-jeju-leg"]').addEventListener("click", () => addLeg("LEG-JEJU", "Jeju", "Windstone Pool Villa", 760, "BUSAN_SEOUL_KYOTO", "BUSAN_SEOUL_KYOTO_JEJU", "add_jeju_leg"));
+    document.querySelector('[data-testid="add-ops-addons"]').addEventListener("click", addOpsAddons);
+    document.querySelector('[data-testid="request-quote"]').addEventListener("click", requestQuote);
+    document.querySelector('[data-testid="promo-code"]').addEventListener("input", (event) => {
+      state.promo_code = event.target.value.trim().toUpperCase();
+      state.last_action = "edit_promo";
+      saveRender();
+    });
+    document.querySelector('[data-testid="apply-promo"]').addEventListener("click", applyPromo);
+    document.querySelector('[data-testid="traveler-upload"]').addEventListener("change", (event) => readCsvFile(event.target, "travelers", "last_traveler_file", "upload_travelers"));
+    document.querySelector('[data-testid="document-upload"]').addEventListener("change", (event) => readCsvFile(event.target, "documents", "last_document_file", "upload_documents"));
+    document.querySelector('[data-testid="build-readiness"]').addEventListener("click", buildReadiness);
+    document.querySelector('[data-testid="open-document-exception"]').addEventListener("click", openDocumentException);
+    document.querySelector('[data-testid="resolve-document-exception"]').addEventListener("click", resolveDocumentException);
+    document.querySelector('[data-testid="request-supplier-holds"]').addEventListener("click", requestSupplierHolds);
+    document.querySelector('[data-testid="external-supplier-change"]').addEventListener("click", externalSupplierChange);
+    document.querySelector('[data-testid="refresh-supplier-draft"]').addEventListener("click", refreshSupplierDraft);
+    document.querySelector('[data-testid="release-supplier-holds"]').addEventListener("click", releaseSupplierHolds);
+    document.querySelector('[data-testid="payment-amount"]').addEventListener("input", (event) => {
+      state.payment_amount_key = normalizeCurrency(event.target.value);
+      state.last_action = "edit_payment_amount";
+      saveRender();
+    });
+    document.querySelector('[data-testid="authorize-payment"]').addEventListener("click", authorizePayment);
+    document.querySelector('[data-testid="check-supplier"]').addEventListener("click", () => staffCheck("supplier", "check_supplier", "deny_check_supplier"));
+    document.querySelector('[data-testid="check-documents"]').addEventListener("click", () => staffCheck("documents", "check_documents", "deny_check_documents"));
+    document.querySelector('[data-testid="check-payment"]').addEventListener("click", () => staffCheck("payment", "check_payment", "deny_check_payment"));
+    document.querySelector('[data-testid="manager-approve"]').addEventListener("click", managerApprove);
+    document.querySelector('[data-testid="final-confirm"]').addEventListener("click", finalConfirm);
+    window.addEventListener("hashchange", syncPageFromHash);
+
+    if (!location.hash) location.hash = "#/command";
+    syncPageFromHash();
+  </script>
+</body>
+</html>

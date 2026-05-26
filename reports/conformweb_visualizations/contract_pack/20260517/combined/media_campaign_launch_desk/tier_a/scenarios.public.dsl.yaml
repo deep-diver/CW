@@ -1,0 +1,207 @@
+dsl_version: "3.0.0"
+visibility: public
+tier_weights:
+  smoke: 1
+  core: 2
+  validation: 3
+  service: 4
+  permission: 4
+  persistence: 5
+  journey: 6
+
+scenarios:
+  - id: public_01_filter_social_assets
+    tier: smoke
+    steps:
+      - do: reset_button.click
+      - do: filter_social_button.click
+        expect:
+          - {op: equals, path: selected_channel, value: social}
+      - table: asset_grid
+        expect_order: [AD-VID-01, AD-INF-03]
+        expect_row_count: 2
+        expect_rows:
+          - id: AD-VID-01
+            cells: {name: "Aurora Launch Film", channel: social}
+
+  - id: public_02_select_video_and_schedule_morning
+    tier: core
+    steps:
+      - do: reset_button.click
+      - do: select_video_button.click
+      - do: go_calendar_button.click
+      - do: schedule_morning_button.click
+        expect:
+          - {op: equals, path: selected_asset_name, value: "Aurora Launch Film"}
+          - {op: equals, path: schedule_count, value: 1}
+      - table: schedule_grid
+        expect_order: [SCH-001]
+        expect_row_count: 1
+        expect_rows:
+          - id: SCH-001
+            cells: {asset: "Aurora Launch Film", channel: social, slot: monday_0900, status: scheduled}
+
+  - id: public_03_campaign_metadata_normalization
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: go_calendar_button.click
+      - do: campaign_name_input.fill
+        input: {value: "  Spring   Launch  "}
+      - do: budget_input.fill
+        input: {value: "$2,500"}
+        expect:
+          - {op: equals, path: campaign_name, value: "Spring Launch"}
+          - {op: equals, path: budget_key, value: "2500"}
+
+  - id: public_04_rights_check_service
+    tier: service
+    steps:
+      - do: reset_button.click
+      - do: select_video_button.click
+      - do: go_launch_button.click
+      - do: check_rights_button.click
+        expect:
+          - {op: equals, path: rights_status, value: cleared}
+          - {op: equals, path: service_call_count, value: 1}
+
+  - id: public_05_launch_requires_rights
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: select_video_button.click
+      - do: go_calendar_button.click
+      - do: campaign_name_input.fill
+        input: {value: "Spring Launch"}
+      - do: budget_input.fill
+        input: {value: "2500"}
+      - do: commit_budget_button.click
+      - do: schedule_morning_button.click
+      - do: go_launch_button.click
+      - do: launch_campaign_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: launch_status, value: blocked}
+          - {op: equals, path: last_action, value: launch_blocked}
+
+  - id: public_06_launch_video_campaign
+    tier: journey
+    steps:
+      - do: reset_button.click
+      - do: select_video_button.click
+      - do: go_calendar_button.click
+      - do: campaign_name_input.fill
+        input: {value: "Spring Launch"}
+      - do: budget_input.fill
+        input: {value: "2500"}
+      - do: commit_budget_button.click
+      - do: schedule_morning_button.click
+      - do: go_launch_button.click
+      - do: check_rights_button.click
+      - do: launch_campaign_button.click
+        expect:
+          - {op: equals, path: launch_status, value: launched}
+          - {op: equals, path: launch_count, value: 1}
+      - table: launch_grid
+        expect_order: [LAUNCH-001]
+        expect_row_count: 1
+        expect_rows:
+          - id: LAUNCH-001
+            cells: {campaign: "Spring Launch", asset: "Aurora Launch Film", channel: social, status: launched}
+
+  - id: public_07_legal_approval_is_role_gated
+    tier: permission
+    steps:
+      - do: reset_button.click
+      - do: select_creator_button.click
+      - do: go_launch_button.click
+      - do: request_legal_review_button.click
+      - do: legal_approve_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: denied_count, value: 1}
+          - {op: equals, path: review_status, value: legal_required}
+      - do: role_legal_button.click
+      - do: legal_approve_button.click
+        expect:
+          - {op: equals, path: approval_status, value: legal_approved}
+          - {op: equals, path: rights_status, value: cleared}
+
+  - id: public_08_reload_preserves_schedule
+    tier: persistence
+    steps:
+      - do: reset_button.click
+      - do: select_video_button.click
+      - do: go_calendar_button.click
+      - do: schedule_morning_button.click
+      - browser: reload
+        expect:
+          - {op: equals, path: schedule_count, value: 1}
+          - {op: equals, path: selected_asset_id, value: AD-VID-01}
+
+  - id: public_09_filter_all_restores_asset_order
+    tier: smoke
+    steps:
+      - do: reset_button.click
+      - do: filter_social_button.click
+      - do: filter_all_button.click
+      - table: asset_grid
+        expect_order: [AD-VID-01, AD-BAN-02, AD-INF-03, AD-EML-04]
+        expect_row_count: 4
+
+  - id: public_10_select_banner_context
+    tier: core
+    steps:
+      - do: reset_button.click
+      - do: select_banner_button.click
+        expect:
+          - {op: equals, path: selected_asset_id, value: AD-BAN-02}
+          - {op: equals, path: selected_asset_budget, value: 1800}
+
+  - id: public_11_commit_budget_sets_status
+    tier: core
+    steps:
+      - do: reset_button.click
+      - do: go_calendar_button.click
+      - do: budget_input.fill
+        input: {value: "$4,200"}
+      - do: commit_budget_button.click
+        expect:
+          - {op: equals, path: budget_key, value: "4200"}
+          - {op: equals, path: budget_status, value: committed}
+
+  - id: public_12_reset_clears_launch_packet
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: select_video_button.click
+      - do: go_calendar_button.click
+      - do: campaign_name_input.fill
+        input: {value: "Reset Test"}
+      - do: budget_input.fill
+        input: {value: "2500"}
+      - do: commit_budget_button.click
+      - do: reset_button.click
+        expect:
+          - {op: equals, path: campaign_name, value: ""}
+          - {op: equals, path: budget_status, value: idle}
+          - {op: equals, path: launch_count, value: 0}
+
+  - id: public_13_role_marketer_roundtrip
+    tier: permission
+    steps:
+      - do: reset_button.click
+      - do: role_legal_button.click
+      - do: role_marketer_button.click
+        expect:
+          - {op: equals, path: active_role, value: marketer}
+          - {op: equals, path: last_action, value: role_marketer}
+
+  - id: public_14_legal_role_persists_reload
+    tier: persistence
+    steps:
+      - do: reset_button.click
+      - do: role_legal_button.click
+      - browser: reload
+        expect:
+          - {op: equals, path: active_role, value: legal}

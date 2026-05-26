@@ -1,0 +1,185 @@
+dsl_version: "3.0.0"
+visibility: private
+tier_weights:
+  smoke: 1
+  core: 2
+  validation: 3
+  service: 4
+  upload: 4
+  permission: 4
+  persistence: 5
+  journey: 6
+
+scenarios:
+  - id: private_01_ac_quote_and_acceptance_journey
+    tier: journey
+    steps:
+      - do: reset_button.click
+      - do: select_ac_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+      - do: customer_name_input.fill
+        input: {value: "Mina Park"}
+      - do: address_input.fill
+        input: {value: "88 Cedar House"}
+      - do: get_quote_button.click
+        expect:
+          - {op: equals, path: quote_amount, value: 18900}
+      - do: approve_quote_button.click
+      - do: book_visit_button.click
+      - do: go_visits_button.click
+      - do: role_pro_button.click
+      - do: pro_accept_button.click
+        expect:
+          - {op: equals, path: booking_status, value: accepted}
+
+  - id: private_02_address_normalization
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: go_booking_button.click
+      - do: address_input.fill
+        input: {value: "  9 Oak Terrace  "}
+        expect:
+          - {op: equals, path: address, value: "9 Oak Terrace"}
+
+  - id: private_03_homeowner_cannot_assign_technician
+    tier: permission
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: get_quote_button.click
+      - do: approve_quote_button.click
+      - do: go_dispatch_button.click
+      - do: assign_mina_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: assigned_technician, value: ""}
+
+  - id: private_04_dispatch_persists_after_reload
+    tier: persistence
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+      - do: get_quote_button.click
+      - do: approve_quote_button.click
+      - do: role_dispatcher_button.click
+      - do: go_dispatch_button.click
+      - do: assign_mina_button.click
+      - do: ready_parts_button.click
+      - do: dispatch_visit_button.click
+      - browser: reload
+        expect:
+          - {op: equals, path: dispatch_status, value: dispatched}
+          - {op: equals, path: assigned_technician, value: TECH-MINA}
+
+# density-extension:start
+
+  - id: private_05_dispatcher_assignment_roster_table
+    tier: core
+    steps:
+      - do: reset_button.click
+      - do: role_dispatcher_button.click
+      - do: go_dispatch_button.click
+      - table: technician_grid
+        expect_order: [TECH-MINA, TECH-RAUL, TECH-JUNE]
+        expect_row_count: 3
+
+  - id: private_06_parts_readiness_counter
+    tier: core
+    steps:
+      - do: reset_button.click
+      - do: role_dispatcher_button.click
+      - do: go_dispatch_button.click
+      - do: ready_parts_button.click
+        expect:
+          - {op: equals, path: parts_ready_count, value: 2}
+
+  - id: private_07_technician_cannot_dispatch_without_dispatcher_role
+    tier: permission
+    steps:
+      - do: reset_button.click
+      - do: role_technician_button.click
+      - do: go_dispatch_button.click
+      - do: dispatch_visit_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: last_action, value: unauthorized_dispatch}
+
+  - id: private_08_dispatcher_role_persists_after_reload
+    tier: persistence
+    steps:
+      - do: reset_button.click
+      - do: role_dispatcher_button.click
+      - browser: reload
+        expect:
+          - {op: equals, path: active_role, value: dispatcher}
+
+  - id: private_09_ready_parts_persist_after_reload
+    tier: persistence
+    steps:
+      - do: reset_button.click
+      - do: role_dispatcher_button.click
+      - do: go_dispatch_button.click
+      - do: ready_parts_button.click
+      - browser: reload
+        expect:
+          - {op: equals, path: parts_ready_count, value: 2}
+
+  - id: private_10_assign_after_ac_quote
+    tier: journey
+    steps:
+      - do: reset_button.click
+      - do: select_ac_button.click
+      - do: go_booking_button.click
+      - do: get_quote_button.click
+      - do: approve_quote_button.click
+      - do: role_dispatcher_button.click
+      - do: go_dispatch_button.click
+      - do: assign_mina_button.click
+        expect:
+          - {op: equals, path: assigned_technician_name, value: "Mina Cho"}
+
+  - id: private_11_dispatch_visit_sets_booking_dispatched
+    tier: journey
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+      - do: get_quote_button.click
+      - do: approve_quote_button.click
+      - do: role_dispatcher_button.click
+      - do: go_dispatch_button.click
+      - do: assign_mina_button.click
+      - do: ready_parts_button.click
+      - do: dispatch_visit_button.click
+        expect:
+          - {op: equals, path: booking_status, value: dispatched}
+
+  - id: private_12_dispatch_requires_assignment_rejected
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: role_dispatcher_button.click
+      - do: go_dispatch_button.click
+      - do: dispatch_visit_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: dispatch_status, value: blocked}
+
+  - id: private_13_reset_clears_parts_and_dispatch_count
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: role_dispatcher_button.click
+      - do: go_dispatch_button.click
+      - do: ready_parts_button.click
+      - do: reset_button.click
+        expect:
+          - {op: equals, path: parts_ready_count, value: 0}
+          - {op: equals, path: dispatch_count, value: 0}
+# density-extension:end

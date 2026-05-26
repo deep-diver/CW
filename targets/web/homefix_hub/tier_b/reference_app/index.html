@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HomeFix Hub Tier B</title>
+  <style>
+    :root{--bg:#f4fbf7;--ink:#173238;--muted:#5c7379;--line:#c7dfd8;--surface:#fff;--button:#eaf5f0;--primary:#109f8b;--accent:#ffbe3d;--warn:#fff0c2;--warn-line:#d19b21;--warn-ink:#6b4700;--input:#fff;--badge-bg:#e3f7ef;--badge-ink:#0b7f70;--halo:rgba(16,159,139,.18);--bar:#d8ede8;--heat-cool:#d8ede8;--heat-hot:#ffbe3d;--heat-critical:#f05d4f}
+
+*{box-sizing:border-box}body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:0;color:var(--ink);background:var(--bg)}button,input{font:inherit}button{border:1px solid var(--line);border-radius:7px;background:var(--button);color:var(--ink);padding:9px 12px;cursor:pointer}button.primary{background:var(--primary);border-color:var(--primary);color:#fff}button.warn{background:var(--warn);border-color:var(--warn-line);color:var(--warn-ink)}input{border:1px solid var(--line);border-radius:7px;background:var(--input);color:var(--ink);padding:10px}h1,h2,h3,p{margin-top:0}h1{font-size:22px;margin-bottom:4px}h2{font-size:25px}h3{font-size:16px}small,label{color:var(--muted)}label{display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:800;text-transform:uppercase}.page{display:none}.page.active{display:block}.toolbar,.rolebar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.rolebar span{font-size:12px;color:var(--muted);text-transform:uppercase}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.stack{display:grid;gap:12px}.card,.mini,.ledger div,.step,.lane div{border:1px solid var(--line);border-radius:8px;background:var(--surface)}.card{padding:14px}.badge{display:inline-flex;padding:3px 8px;border-radius:999px;background:var(--badge-bg);color:var(--badge-ink);font-size:12px}.ledger,.decor,.timeline,.lane,.bars{display:grid;gap:8px}.ledger div,.step,.lane div{display:flex;justify-content:space-between;gap:10px;padding:9px}.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.mini{padding:12px}.mini span{display:block;text-transform:uppercase;font-size:11px;font-weight:800;color:var(--muted)}.mini b{font-size:20px}.rail{display:grid;grid-template-columns:1.1fr .9fr;gap:12px}.step{display:grid;grid-template-columns:24px 1fr auto;align-items:center}.dot{width:14px;height:14px;border-radius:50%;background:var(--primary);box-shadow:0 0 0 4px var(--halo)}.bar{height:12px;border-radius:999px;background:var(--bar);overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--primary),var(--accent))}.heat{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}.heat i{height:34px;border-radius:6px;background:var(--heat-cool)}.heat i.hot{background:var(--heat-hot)}.heat i.critical{background:var(--heat-critical)}table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;border-bottom:1px solid var(--line);padding:9px}th{font-size:11px;text-transform:uppercase;color:var(--muted)}.service-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.board-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+    body{min-height:100vh;background:linear-gradient(180deg,#f4fbf7,#e6f5ef);color:var(--ink)}.booking-board{min-height:100vh;display:grid;grid-template-columns:260px minmax(0,1fr) 330px;grid-template-rows:92px 1fr;gap:14px;padding:14px}.market-header{grid-column:1/4;border:1px solid var(--line);border-radius:8px;background:#fff;display:grid;grid-template-columns:260px 1fr auto;gap:18px;align-items:center;padding:14px 18px;box-shadow:0 18px 40px rgba(20,88,80,.08)}.market-header nav{display:flex;gap:8px;flex-wrap:wrap}.market-header .rolebar{justify-content:flex-end}.day-planner{border:1px solid var(--line);border-radius:8px;background:#dff5ef;padding:16px;display:grid;align-content:start;gap:14px}.slot-stack{display:grid;gap:10px}.slot-stack div{border:1px solid rgba(16,159,139,.22);border-radius:8px;background:#fff;padding:11px}.slot-stack b,.slot-stack span{display:block}.service-stage{border:1px solid var(--line);border-radius:8px;background:#fff;padding:16px;overflow:auto;box-shadow:0 24px 50px rgba(20,88,80,.1)}.stage-hero{border:1px solid var(--line);border-radius:8px;background:linear-gradient(135deg,#e3f7ef,#fff 65%);display:grid;grid-template-columns:1fr 190px;gap:16px;padding:14px;margin-bottom:14px}.calendar-art{border:1px solid var(--line);border-radius:8px;background:repeating-linear-gradient(90deg,#edf8f4 0 42px,#fff 42px 84px);position:relative;min-height:110px}.calendar-art:before{content:"";position:absolute;left:20px;right:30px;top:28px;height:16px;border-radius:999px;background:#109f8b;box-shadow:42px 36px 0 #ffbe3d,150px 58px 0 #f05d4f}.crew-pocket{border:1px solid var(--line);border-radius:8px;background:#12383c;color:#f5fffb;padding:16px;overflow:auto}.crew-pocket .ledger div{background:#1c4a4d;border-color:#2f6668}.crew-pocket small{color:#b8d4d0}.decor{margin-top:14px}.board-grid{grid-template-columns:1fr 1fr}.service-grid .card,.board-grid .card{background:#fff}.page h2{margin-bottom:14px}
+  </style>
+</head>
+<body>
+  <main class="booking-board">
+    <header class="market-header"><div><h1>HomeFix Hub</h1><small>Tier B Field Scheduler</small></div><nav><button data-testid="go-jobs">Jobs</button><button data-testid="go-booking">Booking</button><button data-testid="go-dispatch">Dispatch</button><button data-testid="go-visits">Visits</button><button data-testid="reset" class="warn">Reset</button></nav><div class="rolebar"><span id="roleLabel"></span><button data-testid="role-homeowner">Homeowner</button><button data-testid="role-pro">Pro</button><button data-testid="role-dispatcher">Dispatcher</button><button data-testid="role-technician">Tech</button></div></header>
+    <aside class="day-planner"><h2>Today Board</h2><div class="slot-stack"><div><b id="quoteMini">$0</b><span>Live quote</span></div><div><b id="statusMini">idle</b><span>Visit status</span></div><div><b>04:00 PM</b><span>Preferred arrival</span></div><div><b>Mina Cho</b><span>Primary crew</span></div></div></aside>
+    <section class="service-stage"><div class="stage-hero"><div><h2>Neighborhood Service Desk</h2><p style="color:var(--muted)">Customer booking, crew release, and visit acceptance share one bright scheduling canvas.</p></div><div class="calendar-art"></div></div>
+<div id="jobs" class="page"><h2>Service Intake</h2><div class="toolbar"><button data-testid="filter-all">All Services</button><button data-testid="filter-plumbing">Plumbing</button></div><div data-testid="service_grid" class="grid service-grid"></div></div>
+<div id="booking" class="page"><h2>Quote Gate</h2><div class="stack"><div class="card booking-card"><span class="badge" id="selectedBadge">No service selected</span><div class="toolbar"><button data-testid="urgency-emergency">Emergency</button><button data-testid="slot-today">Today 4PM</button><button data-testid="get-quote" class="primary">Get Quote</button><button data-testid="approve-quote">Approve Quote</button><button data-testid="book-visit" class="primary">Book Visit</button></div><div class="grid form-grid"><label>Customer<input data-testid="customer-name"></label><label>Address<input data-testid="address"></label></div></div></div></div>
+<div id="dispatch" class="page"><h2>Dispatch Work Surface</h2><div class="toolbar"><button data-testid="assign-mina">Assign Mina</button><button data-testid="ready-parts">Ready Parts</button><button data-testid="dispatch-visit" class="primary">Dispatch Visit</button></div><div class="grid board-grid"><div class="card"><h3>Technicians</h3><table data-testid="technician_grid"></table></div><div class="card"><h3>Parts</h3><table data-testid="parts_grid"></table></div></div></div>
+
+
+<div id="visits" class="page"><h2>Visit Ledger</h2><div class="toolbar"><button data-testid="pro-accept" class="primary">Pro Accept</button></div><table data-testid="visit_grid"></table></div><div data-testid="decor_panel" class="decor"></div></section>
+    <aside class="crew-pocket"><h2>Crew Pocket</h2><div class="ledger" id="summary"></div></aside>
+  </main>
+<script>
+	const KEY='homefix-b-state-v1';
+	const TIER='b';
+	const initial={
+  "current_page": "jobs",
+  "active_role": "homeowner",
+  "services": [
+    {
+      "id": "HF-LEAK",
+      "name": "Burst pipe repair",
+      "category": "plumbing",
+      "base_price": 21900,
+      "urgency": "same_day"
+    },
+    {
+      "id": "HF-AC",
+      "name": "Air conditioner tune-up",
+      "category": "hvac",
+      "base_price": 15000,
+      "urgency": "scheduled"
+    },
+    {
+      "id": "HF-LIGHT",
+      "name": "Panel and light fix",
+      "category": "electrical",
+      "base_price": 17600,
+      "urgency": "scheduled"
+    },
+    {
+      "id": "HF-ROOF",
+      "name": "Storm roof patch",
+      "category": "exterior",
+      "base_price": 34200,
+      "urgency": "emergency"
+    }
+  ],
+  "visible_services": [
+    {
+      "id": "HF-AC",
+      "name": "Air conditioner tune-up",
+      "category": "hvac",
+      "base_price": 15000,
+      "urgency": "scheduled"
+    },
+    {
+      "id": "HF-LIGHT",
+      "name": "Panel and light fix",
+      "category": "electrical",
+      "base_price": 17600,
+      "urgency": "scheduled"
+    },
+    {
+      "id": "HF-LEAK",
+      "name": "Burst pipe repair",
+      "category": "plumbing",
+      "base_price": 21900,
+      "urgency": "same_day"
+    },
+    {
+      "id": "HF-ROOF",
+      "name": "Storm roof patch",
+      "category": "exterior",
+      "base_price": 34200,
+      "urgency": "emergency"
+    }
+  ],
+  "selected_service_id": "",
+  "selected_service_name": "",
+  "selected_category": "all",
+  "urgency_level": "standard",
+  "address": "",
+  "customer_name": "",
+  "selected_slot": "",
+  "quote_status": "idle",
+  "quote_amount": 0,
+  "diagnostic_fee": 0,
+  "booking_status": "idle",
+  "visit_history": [],
+  "visit_count": 0,
+  "validation_errors": {},
+  "service_call_count": 0,
+  "denied_count": 0,
+  "technicians": [
+    {
+      "id": "TECH-MINA",
+      "name": "Mina Cho",
+      "trade": "plumbing",
+      "status": "available"
+    },
+    {
+      "id": "TECH-RAUL",
+      "name": "Raul Diaz",
+      "trade": "electrical",
+      "status": "available"
+    },
+    {
+      "id": "TECH-JUNE",
+      "name": "June Kim",
+      "trade": "hvac",
+      "status": "on_call"
+    }
+  ],
+  "last_action": "ready",
+  "__services.calls": [],
+  "assigned_technician": "",
+  "assigned_technician_name": "",
+  "technician_status": "idle",
+  "parts_rows": [
+    {
+      "id": "P-VALVE",
+      "name": "Shutoff valve",
+      "required": "yes",
+      "status": "needed"
+    },
+    {
+      "id": "P-SEAL",
+      "name": "Compression seal kit",
+      "required": "yes",
+      "status": "needed"
+    }
+  ],
+  "parts_ready_count": 0,
+  "dispatch_status": "idle",
+  "dispatch_count": 0,
+  "permit_rows": [],
+  "permit_count": 0,
+  "last_permit_file": "",
+  "permit_status": "idle",
+  "homeowner_approval_status": "idle",
+  "qa_rows": [
+    {
+      "id": "Q-PHOTO",
+      "label": "Before photos attached",
+      "status": "open"
+    },
+    {
+      "id": "Q-PERMIT",
+      "label": "Permit dossier reviewed",
+      "status": "open"
+    },
+    {
+      "id": "Q-PARTS",
+      "label": "Materials ready",
+      "status": "open"
+    }
+  ],
+  "qa_ready_count": 0,
+  "qa_status": "idle",
+  "invoice_status": "idle",
+  "invoice_total": 0,
+  "claim_status": "idle",
+  "claim_reference": "",
+  "materials_rows": [],
+  "material_mismatch_count": 0,
+  "materials_status": "idle",
+  "warranty_status": "open",
+  "warranty_score": 0,
+  "open_warranty_blockers": 5,
+  "warranty_rows": [
+    {
+      "id": "W-CLAIM",
+      "label": "Insurance preauth complete",
+      "status": "open"
+    },
+    {
+      "id": "W-DISPATCH",
+      "label": "Crew dispatched",
+      "status": "open"
+    },
+    {
+      "id": "W-MATERIALS",
+      "label": "Materials reconciled",
+      "status": "open"
+    },
+    {
+      "id": "W-QA",
+      "label": "QA passed",
+      "status": "open"
+    },
+    {
+      "id": "W-INVOICE",
+      "label": "Invoice issued",
+      "status": "open"
+    }
+  ],
+  "warranty_count": 0
+};
+let S=load();
+function load(){try{return {...structuredClone(initial),...JSON.parse(localStorage.getItem(KEY)||'{}')}}catch{return structuredClone(initial)}}
+function save(){localStorage.setItem(KEY,JSON.stringify(S))}
+function money(v){return '$'+Number(v||0).toLocaleString()}
+function setPage(p){if(!["jobs","booking","dispatch","visits"].includes(p))return;S.current_page=p;location.hash='#/'+p;save();render()}
+function reset(){localStorage.removeItem(KEY);S=structuredClone(initial);S.last_action='reset';location.hash='#/jobs';render()}
+function updateQuote(){ if(S.selected_service_id==='HF-LEAK'){S.quote_amount=26800}else if(S.selected_service_id==='HF-AC'){S.quote_amount=18900}else{S.quote_amount=0} S.diagnostic_fee=4900; }
+function parseCsv(text){const lines=text.trim().split(/\r?\n/);const heads=lines.shift().split(',');return lines.filter(Boolean).map(line=>{const vals=line.split(',');const o={};heads.forEach((h,i)=>o[h.trim()]=(vals[i]||'').trim());return o})}
+function syncWarranty(){}
+	function render(){syncWarranty();document.querySelectorAll('.page').forEach(el=>el.classList.toggle('active',el.id===S.current_page));document.getElementById('roleLabel').textContent='Role '+S.active_role;document.getElementById('quoteMini').textContent=money(S.quote_amount);document.getElementById('statusMini').textContent=S.booking_status;document.getElementById('selectedBadge').textContent=S.selected_service_name||'No service selected';renderServices();renderVisits();renderTech();renderParts();renderSummary();renderDecor();window.__DETOX_STATE__=S;save()}
+function renderServices(){const root=document.querySelector('[data-testid="service_grid"]');root.innerHTML=S.visible_services.map(x=>'<div class="card" data-testid="service-row" data-service-id="'+x.id+'"><h3 data-col="name">'+x.name+'</h3><span class="badge" data-col="category">'+x.category+'</span><p data-col="base_price">'+x.base_price+'</p><p data-col="urgency">'+x.urgency+'</p><button data-testid="select-'+x.id+'">Select</button></div>').join('');}
+function table(root, rows, idAttr, rowTest, cols){const el=document.querySelector('[data-testid="'+root+'"]');if(!el)return;el.innerHTML='<thead><tr>'+cols.map(c=>'<th>'+c+'</th>').join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr data-testid="'+rowTest+'" '+idAttr+'="'+r.id+'">'+cols.map(c=>'<td data-col="'+c+'">'+(r[c]??'')+'</td>').join('')+'</tr>').join('')+'</tbody>'}
+function renderVisits(){table('visit_grid',S.visit_history,'data-visit-id','visit-row',['service','slot','status','total'])}
+function renderTech(){table('technician_grid',S.technicians,'data-tech-id','technician-row',['name','trade','status'])}
+function renderParts(){table('parts_grid',S.parts_rows||[],'data-part-id','part-row',['name','status'])}
+function renderPermits(){table('permit_grid',S.permit_rows||[],'data-permit-id','permit-row',['document','status'])}
+function renderQa(){table('qa_grid',S.qa_rows||[],'data-qa-id','qa-row',['label','status'])}
+	function renderMaterials(){table('materials_grid',S.materials_rows||[],'data-material-id','material-row',['item','status'])}
+	function renderWarranty(){table('warranty_grid',S.warranty_rows||[],'data-warranty-id','warranty-row',['label','status'])}
+	function renderSummary(){document.getElementById('summary').innerHTML=[['Service',S.selected_service_name||'none'],['Slot',S.selected_slot||'none'],['Quote',money(S.quote_amount)],['Booking',S.booking_status],['Dispatch',S.dispatch_status||'idle'],['QA',S.qa_status||'idle'],['Warranty',S.warranty_status||'n/a']].map(([a,b])=>'<div><span>'+a+'</span><b>'+b+'</b></div>').join('')}
+	function renderDecor(){const el=document.querySelector('[data-testid="decor_panel"]');if(!el)return;const kpis='<div class="kpis"><div class="mini"><span>Quote</span><b>'+money(S.quote_amount)+'</b></div><div class="mini"><span>Visit</span><b>'+(S.selected_slot||'unslotted')+'</b></div><div class="mini"><span>Calls</span><b>'+S.service_call_count+'</b></div><div class="mini"><span>Denials</span><b>'+S.denied_count+'</b></div></div>';if(TIER==='a'){el.innerHTML=kpis+'<div class="rail"><div class="card"><h3>Homeowner Journey</h3><div class="timeline"><div class="step"><i class="dot"></i><b>Service selected</b><span>'+(S.selected_service_name||'pending')+'</span></div><div class="step"><i class="dot"></i><b>Quote approval</b><span>'+S.quote_status+'</span></div><div class="step"><i class="dot"></i><b>Visit booking</b><span>'+S.booking_status+'</span></div></div></div><div class="card"><h3>Price Detail</h3><div class="ledger"><div><span>Repair labor</span><b>'+money(S.quote_amount)+'</b></div><div><span>Diagnostic</span><b>'+money(S.diagnostic_fee)+'</b></div><div><span>Confidence</span><b>96%</b></div></div></div></div>';return}if(TIER==='b'){el.innerHTML=kpis+'<div class="rail"><div class="card"><h3>Crew Capacity</h3><div class="lane"><div><b>Mina Cho</b><span>'+S.technician_status+'</span></div><div><b>Raul Diaz</b><span>backup</span></div><div><b>June Kim</b><span>on call</span></div></div></div><div class="card"><h3>Dispatch Readiness</h3><div class="bars"><span>Parts readiness</span><div class="bar"><i style="width:'+(S.parts_ready_count>=2?100:35)+'%"></i></div><span>Route confidence</span><div class="bar"><i style="width:'+(S.dispatch_status==='dispatched'?88:42)+'%"></i></div></div></div></div>';return}if(TIER==='c'){el.innerHTML=kpis+'<div class="rail"><div class="card"><h3>Renovation Controls</h3><div class="timeline"><div class="step"><i class="dot"></i><b>Homeowner approval</b><span>'+S.homeowner_approval_status+'</span></div><div class="step"><i class="dot"></i><b>Permit dossier</b><span>'+S.permit_status+' · '+S.permit_count+' docs</span></div><div class="step"><i class="dot"></i><b>QA and invoice</b><span>'+S.qa_status+' / '+S.invoice_status+'</span></div></div></div><div class="card"><h3>Invoice Rail</h3><div class="ledger"><div><span>Quote</span><b>'+money(S.quote_amount)+'</b></div><div><span>Diagnostic</span><b>'+money(S.diagnostic_fee)+'</b></div><div><span>Issued total</span><b>'+money(S.invoice_total)+'</b></div></div></div></div>';return}el.innerHTML=kpis+'<div class="rail"><div class="card"><h3>Storm Triage</h3><div class="heat"><i class="critical"></i><i class="hot"></i><i></i><i class="hot"></i><i></i><i class="critical"></i><i></i><i class="hot"></i><i></i><i></i><i class="hot"></i><i></i></div></div><div class="card"><h3>Warranty Gates</h3><div class="timeline"><div class="step"><i class="dot"></i><b>Claim</b><span>'+S.claim_status+'</span></div><div class="step"><i class="dot"></i><b>Materials</b><span>'+S.materials_status+' · '+S.material_mismatch_count+' mismatch</span></div><div class="step"><i class="dot"></i><b>Seal score</b><span>'+S.warranty_score+'%</span></div></div></div></div>'}
+document.addEventListener('click',e=>{const id=e.target.dataset.testid;if(!id)return;
+ if(id==='reset')return reset(); if(id.startsWith('go-'))return setPage(id.replace('go-','')); if(id.startsWith('role-')){S.active_role=id.replace('role-','').replace('quality','quality_manager').replace('claims','claims_manager');S.last_action='role_'+S.active_role;return render()}
+ if(id==='filter-all'){S.selected_category='all';S.visible_services=[...S.services].sort((a,b)=>a.base_price-b.base_price);return render()} if(id==='filter-plumbing'){S.selected_category='plumbing';S.visible_services=S.services.filter(x=>x.category==='plumbing').sort((a,b)=>a.base_price-b.base_price);return render()}
+ if(id.startsWith('select-')){const svc=S.services.find(x=>x.id===id.replace('select-',''));S.selected_service_id=svc.id;S.selected_service_name=svc.name;S.last_action='select_service';return render()}
+ if(id==='urgency-emergency'){S.urgency_level='emergency';S.last_action='set_urgency';return render()} if(id==='slot-today'){S.selected_slot='today_4pm';S.last_action='select_slot';return render()}
+ if(id==='get-quote'){if(!S.selected_service_id)return;updateQuote();S.quote_status='ready';S.service_call_count++;S.last_action='get_quote';return render()} if(id==='approve-quote'){if(S.quote_status==='ready'){S.quote_status='approved';S.last_action='approve_quote'}return render()}
+ if(id==='book-visit'){if(S.quote_status!=='approved'||S.selected_slot!=='today_4pm'){S.booking_status='blocked';S.last_action='booking_blocked'}else{S.booking_status='scheduled';S.visit_count++;S.visit_history=[...S.visit_history,{id:'VIS-001',service:S.selected_service_name,slot:'today_4pm',status:'scheduled',total:S.quote_amount}];S.last_action='book_visit'}return render()}
+ if(id==='pro-accept'){if(S.active_role!=='pro'){S.denied_count++;S.last_action='unauthorized_pro'}else if(S.booking_status==='scheduled'){S.booking_status='accepted';S.last_action='pro_accept'}return render()}
+ if(id==='assign-mina'){if(S.active_role!=='dispatcher'){S.denied_count++;S.last_action='unauthorized_dispatch'}else if(S.quote_status==='approved'){S.assigned_technician='TECH-MINA';S.assigned_technician_name='Mina Cho';S.technician_status='assigned';S.last_action='assign_technician'}return render()}
+ if(id==='ready-parts'){if(S.active_role==='dispatcher'){S.parts_rows=S.parts_rows.map(p=>({...p,status:'ready'}));S.parts_ready_count=2;S.last_action='ready_parts'}return render()}
+ if(id==='dispatch-visit'){if(S.active_role!=='dispatcher'){S.denied_count++;S.last_action='unauthorized_dispatch'}else if(S.assigned_technician==='TECH-MINA'&&S.parts_ready_count===2){S.dispatch_status='dispatched';S.booking_status='dispatched';S.dispatch_count++;S.last_action='dispatch_visit'}else{S.dispatch_status='blocked';S.last_action='dispatch_blocked'}return render()}
+ if(id==='approve-homeowner'){S.homeowner_approval_status='approved';S.quote_status='approved';S.last_action='homeowner_approved';return render()}
+ if(id==='pass-qa'){if(S.active_role==='quality_manager'&&S.dispatch_status==='dispatched'&&S.permit_status==='review'){S.qa_rows=S.qa_rows.map(q=>({...q,status:'cleared'}));S.qa_ready_count=3;S.qa_status='passed';S.booking_status='complete';S.last_action='pass_qa'}return render()}
+ if(id==='issue-invoice'){if(S.active_role==='quality_manager'&&S.qa_status==='passed'){S.invoice_status='issued';S.invoice_total=S.quote_amount+S.diagnostic_fee;S.last_action='issue_invoice'}return render()}
+ if(id==='preauth-claim'){if(S.active_role==='claims_manager'){S.claim_status='approved';S.service_call_count++;S.last_action='preauth_claim'}return render()}
+ if(id==='reconcile-materials'){if(S.active_role==='claims_manager'&&S.material_mismatch_count===0){S.materials_status='reconciled';S.last_action='reconcile_materials'}return render()}
+ if(id==='seal-warranty'){if(S.active_role==='claims_manager'&&S.claim_status==='approved'&&S.dispatch_status==='dispatched'&&S.materials_status==='reconciled'&&S.qa_status==='passed'&&S.invoice_status==='issued'){S.warranty_status='sealed';S.warranty_score=100;S.open_warranty_blockers=0;S.warranty_rows=S.warranty_rows.map(w=>({...w,status:'cleared'}));S.warranty_count++;S.last_action='seal_warranty'}else{S.warranty_status='blocked';S.last_action='warranty_blocked'}return render()}
+});
+document.addEventListener('input',e=>{const id=e.target.dataset.testid;if(id==='address')S.address=e.target.value.trim();if(id==='customer-name')S.customer_name=e.target.value.trim();if(id==='claim-code')S.claim_reference=e.target.value.trim().toUpperCase();render()});
+document.addEventListener('change',async e=>{const id=e.target.dataset.testid;const file=e.target.files&&e.target.files[0];if(!file)return;const rows=parseCsv(await file.text());if(id==='permit-upload'){S.permit_rows=rows;S.permit_count=rows.length;S.last_permit_file=file.name;S.permit_status='review';S.last_action='upload_permit'}if(id==='materials-upload'){S.materials_rows=rows;S.material_mismatch_count=rows.filter(r=>r.status==='mismatch').length;S.materials_status='review';S.warranty_status='open';S.last_action='upload_materials'}render()});
+window.addEventListener('hashchange',()=>{const p=location.hash.replace('#/','')||'jobs';if(["jobs","booking","dispatch","visits"].includes(p)){S.current_page=p;render()}});
+if(location.hash){const p=location.hash.replace('#/','');if(["jobs","booking","dispatch","visits"].includes(p))S.current_page=p}render();
+</script>
+</body>
+</html>

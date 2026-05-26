@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FreshCart Market</title>
+<style>
+:root {
+  --green-900: #064e3b;
+  --green-700: #047857;
+  --green-600: #059669;
+  --green-500: #10b981;
+  --green-100: #d1fae5;
+  --green-50: #ecfdf5;
+  --amber-500: #f59e0b;
+  --amber-100: #fef3c7;
+  --red-500: #ef4444;
+  --red-100: #fee2e2;
+  --gray-900: #111827;
+  --gray-700: #374151;
+  --gray-500: #6b7280;
+  --gray-300: #d1d5db;
+  --gray-100: #f3f4f6;
+  --gray-50: #f9fafb;
+  --white: #ffffff;
+  --radius: 12px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: var(--gray-50); color: var(--gray-900); line-height: 1.5; }
+
+.app-shell { max-width: 960px; margin: 0 auto; min-height: 100vh; }
+
+/* Top bar */
+.topbar { background: var(--green-700); color: var(--white); padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; box-shadow: var(--shadow-md); }
+.topbar-brand { display: flex; align-items: center; gap: 8px; font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
+.topbar-brand span { font-size: 24px; }
+.topbar-nav { display: flex; gap: 4px; }
+.topbar-nav button { background: rgba(255,255,255,0.12); color: var(--white); border: none; padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+.topbar-nav button:hover { background: rgba(255,255,255,0.22); }
+.topbar-nav button.active { background: var(--white); color: var(--green-700); }
+.topbar-right { display: flex; align-items: center; gap: 8px; }
+.topbar-right .role-btn { background: rgba(255,255,255,0.15); border: none; color: var(--white); padding: 5px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; }
+.topbar-right .role-btn.active { background: var(--amber-500); color: var(--gray-900); }
+.topbar-right .reset-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.25); color: var(--white); padding: 5px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; }
+
+/* Cart badge */
+.cart-badge { background: var(--amber-500); color: var(--gray-900); font-size: 11px; font-weight: 700; padding: 1px 6px; border-radius: 10px; margin-left: 4px; }
+.cart-badge:empty { display: none; }
+
+/* Pages */
+.page { display: none; padding: 20px; }
+.page.active { display: block; }
+
+/* Hero */
+.hero { background: linear-gradient(135deg, var(--green-700) 0%, var(--green-500) 100%); color: var(--white); border-radius: var(--radius); padding: 32px 28px; margin-bottom: 24px; }
+.hero h2 { font-size: 26px; font-weight: 800; margin-bottom: 6px; }
+.hero p { opacity: 0.9; font-size: 15px; }
+
+/* Category filters */
+.category-bar { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+.category-bar button { background: var(--white); border: 1.5px solid var(--gray-300); color: var(--gray-700); padding: 7px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+.category-bar button:hover { border-color: var(--green-500); color: var(--green-700); }
+.category-bar button.active { background: var(--green-700); border-color: var(--green-700); color: var(--white); }
+
+/* Product grid */
+.product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; }
+.product-card { background: var(--white); border: 1px solid var(--gray-100); border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow); transition: box-shadow 0.15s; display: flex; flex-direction: column; }
+.product-card:hover { box-shadow: var(--shadow-md); }
+.product-emoji { font-size: 36px; margin-bottom: 8px; text-align: center; }
+.product-name { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+.product-category { font-size: 11px; color: var(--gray-500); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+.product-meta { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
+.product-price { font-size: 16px; font-weight: 800; color: var(--green-700); }
+.product-unit { font-size: 11px; color: var(--gray-500); }
+.product-card button { background: var(--green-600); color: var(--white); border: none; padding: 8px 0; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; margin-top: 10px; width: 100%; transition: background 0.15s; }
+.product-card button:hover { background: var(--green-700); }
+
+/* Cart page */
+.cart-layout { display: grid; grid-template-columns: 1fr 320px; gap: 24px; }
+.cart-table { background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+.cart-table table { width: 100%; border-collapse: collapse; }
+.cart-table th { background: var(--green-50); padding: 10px 14px; text-align: left; font-size: 12px; font-weight: 700; color: var(--green-900); text-transform: uppercase; letter-spacing: 0.5px; }
+.cart-table td { padding: 10px 14px; font-size: 14px; border-top: 1px solid var(--gray-100); }
+.cart-empty { padding: 40px; text-align: center; color: var(--gray-500); font-size: 14px; }
+
+/* Summary panel */
+.summary-panel { background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; position: sticky; top: 72px; }
+.summary-panel h3 { font-size: 16px; font-weight: 700; margin-bottom: 16px; color: var(--green-900); }
+.summary-row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 8px; }
+.summary-row.total { font-weight: 800; font-size: 18px; border-top: 2px solid var(--green-100); padding-top: 10px; margin-top: 10px; color: var(--green-900); }
+.summary-row .fee-free { color: var(--green-600); font-weight: 600; }
+
+/* Coupon */
+.coupon-row { display: flex; gap: 6px; margin: 14px 0; }
+.coupon-row input { flex: 1; border: 1.5px solid var(--gray-300); border-radius: 8px; padding: 8px 12px; font-size: 14px; outline: none; }
+.coupon-row input:focus { border-color: var(--green-500); }
+.coupon-row button { background: var(--green-600); color: var(--white); border: none; padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.coupon-status { font-size: 12px; margin-bottom: 8px; font-weight: 600; }
+.coupon-status.applied { color: var(--green-600); }
+.coupon-status.rejected { color: var(--red-500); }
+
+/* Delivery slots */
+.slot-group { margin: 14px 0; }
+.slot-group label { font-size: 13px; font-weight: 700; display: block; margin-bottom: 6px; }
+.slot-options { display: flex; gap: 6px; }
+.slot-options button { border: 1.5px solid var(--gray-300); background: var(--white); padding: 6px 12px; border-radius: 8px; font-size: 12px; cursor: pointer; font-weight: 600; }
+.slot-options button.active { border-color: var(--green-600); background: var(--green-50); color: var(--green-700); }
+
+/* Customer info */
+.info-group { margin: 12px 0; }
+.info-group input { width: 100%; border: 1.5px solid var(--gray-300); border-radius: 8px; padding: 8px 12px; font-size: 14px; margin-bottom: 6px; outline: none; }
+.info-group input:focus { border-color: var(--green-500); }
+.error-msg { color: var(--red-500); font-size: 12px; font-weight: 600; margin-bottom: 6px; }
+
+/* Place order */
+.place-order-btn { width: 100%; background: var(--green-700); color: var(--white); border: none; padding: 12px; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 14px; transition: background 0.15s; }
+.place-order-btn:hover { background: var(--green-900); }
+
+/* Receipts page */
+.receipts-list { display: flex; flex-direction: column; gap: 12px; }
+.receipt-card { background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px 20px; }
+.receipt-card h4 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+.receipt-meta { font-size: 13px; color: var(--gray-500); margin-bottom: 8px; }
+.receipt-items { font-size: 13px; color: var(--gray-700); }
+.receipt-total { font-size: 15px; font-weight: 700; color: var(--green-700); margin-top: 6px; }
+.cancel-btn { background: var(--red-500); color: var(--white); border: none; padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; margin-top: 8px; }
+.no-receipts { text-align: center; color: var(--gray-500); padding: 40px; font-size: 14px; }
+
+/* Data bindings */
+[data-bind] { min-height: 1em; }
+[data-error] { color: var(--red-500); font-size: 12px; font-weight: 600; }
+
+/* Responsive */
+@media (max-width: 700px) {
+  .cart-layout { grid-template-columns: 1fr; }
+  .summary-panel { position: static; }
+  .product-grid { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <header class="topbar">
+    <div class="topbar-brand">
+      <span>🥬</span> FreshCart
+    </div>
+    <nav class="topbar-nav">
+      <button data-testid="go-shop" onclick="navigate('shop')">Shop</button>
+      <button data-testid="go-cart" onclick="navigate('cart')">Cart<span class="cart-badge" data-bind="cart-badge"></span></button>
+      <button data-testid="go-receipts" onclick="navigate('receipts')">Receipts</button>
+    </nav>
+    <div class="topbar-right">
+      <button class="role-btn" data-testid="role-customer" onclick="setRole('customer')">Customer</button>
+      <button class="role-btn" data-testid="role-staff" onclick="setRole('staff')">Staff</button>
+      <button class="reset-btn" data-testid="reset" onclick="resetState()">Reset</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- SHOP PAGE -->
+    <section id="page-shop" class="page active">
+      <div class="hero">
+        <h2>Fresh groceries, delivered fast</h2>
+        <p>Pick your favorites and we'll bring them to your door.</p>
+      </div>
+      <div class="category-bar">
+        <button data-testid="filter-all" onclick="filterCategory('all')" class="active">All</button>
+        <button data-testid="filter-fruit" onclick="filterCategory('fruit')">🍎 Fruit</button>
+        <button data-testid="filter-vegetable" onclick="filterCategory('vegetable')">🥬 Vegetables</button>
+        <button data-testid="filter-dairy" onclick="filterCategory('dairy')">🧀 Dairy</button>
+      </div>
+      <div class="product-grid" data-testid="product-grid" id="product-grid"></div>
+    </section>
+
+    <!-- CART PAGE -->
+    <section id="page-cart" class="page">
+      <h2 style="font-size:22px;font-weight:800;margin-bottom:16px;">Your Cart</h2>
+      <div class="cart-layout">
+        <div>
+          <div class="cart-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>Qty</th>
+                  <th>Unit Price</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody id="cart-tbody" data-testid="cart-grid"></tbody>
+            </table>
+            <div class="cart-empty" id="cart-empty">Your cart is empty. Start shopping!</div>
+          </div>
+          <button data-testid="remove-last-item" onclick="removeLastItem()" style="margin-top:10px;background:var(--gray-100);border:1px solid var(--gray-300);padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;font-weight:600;">Remove Last Item</button>
+        </div>
+        <div class="summary-panel">
+          <h3>Order Summary</h3>
+          <div class="summary-row"><span>Subtotal</span><span data-bind-money="cart_subtotal"></span></div>
+          <div class="summary-row"><span>Delivery</span><span id="delivery-fee-display"></span></div>
+          <div class="summary-row" id="coupon-line" style="display:none"><span>Coupon</span><span style="color:var(--green-600)" data-bind-money="coupon_credit" data-prefix="-₩"></span></div>
+          <div class="summary-row total"><span>Total</span><span data-bind-money="order_total"></span></div>
+
+          <div class="coupon-row">
+            <input type="text" data-testid="coupon-code" id="coupon-code-input" placeholder="Coupon code" oninput="updateCouponCode(this.value)">
+            <button data-testid="apply-coupon" onclick="applyCoupon()">Apply</button>
+          </div>
+          <div class="coupon-status" id="coupon-status-msg"></div>
+
+          <div class="slot-group">
+            <label>Delivery Time</label>
+            <div class="slot-options">
+              <button data-testid="slot-morning" onclick="selectSlot('morning')">🌅 Morning</button>
+              <button data-testid="slot-afternoon" onclick="selectSlot('afternoon')">☀️ Afternoon</button>
+              <button data-testid="slot-evening" onclick="selectSlot('evening')">🌙 Evening</button>
+            </div>
+          </div>
+
+          <div class="info-group">
+            <input type="text" data-testid="customer-name" placeholder="Your name" oninput="updateName(this.value)">
+            <div data-error="name"></div>
+            <input type="text" data-testid="customer-phone" placeholder="Phone number" oninput="updatePhone(this.value)">
+            <div data-error="phone"></div>
+          </div>
+          <div data-error="minimum_order" style="color:var(--red-500);font-size:12px;font-weight:600;margin-bottom:6px;"></div>
+          <button class="place-order-btn" data-testid="place-order" onclick="placeOrder()">Place Order</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- RECEIPTS PAGE -->
+    <section id="page-receipts" class="page">
+      <h2 style="font-size:22px;font-weight:800;margin-bottom:16px;">Order Receipts</h2>
+      <div class="receipts-list" id="receipts-list"></div>
+      <div class="no-receipts" id="no-receipts">No orders yet. Start shopping!</div>
+      <button data-testid="cancel-order" onclick="cancelLatestOrder()" style="display:none">Cancel Latest</button>
+    </section>
+  </main>
+</div>
+
+<script>
+const STORAGE_KEY = "freshcart-market-state-v1";
+
+const EMOJIS = {
+  fruit: { "FC-APL-01": "🍎", "FC-BNN-01": "🍌" },
+  vegetable: { "FC-SPN-01": "🥬", "FC-TMT-01": "🍅" },
+  dairy: { "FC-MLK-01": "🥛", "FC-CHS-01": "🧀" },
+  meat: { "FC-CKN-01": "🍗" },
+  seafood: { "FC-SAL-01": "🐟" },
+  pantry: { "FC-RCE-01": "🍚", "FC-OLV-01": "🫒" }
+};
+
+function getEmoji(id) {
+  for (const cat of Object.values(EMOJIS)) {
+    if (cat[id]) return cat[id];
+  }
+  return "📦";
+}
+
+const initialState = {
+  current_page: "shop",
+  active_role: "customer",
+  products: [
+    { id: "FC-APL-01", name: "Fuji Apples", category: "fruit", price: 5900, unit: "1kg" },
+    { id: "FC-BNN-01", name: "Cavendish Bananas", category: "fruit", price: 3200, unit: "bunch" },
+    { id: "FC-SPN-01", name: "Baby Spinach", category: "vegetable", price: 2800, unit: "200g" },
+    { id: "FC-TMT-01", name: "Vine Tomatoes", category: "vegetable", price: 4500, unit: "500g" },
+    { id: "FC-MLK-01", name: "Organic Whole Milk", category: "dairy", price: 3800, unit: "1L" },
+    { id: "FC-CHS-01", name: "Aged Gouda", category: "dairy", price: 7200, unit: "200g" },
+    { id: "FC-CKN-01", name: "Free-Range Chicken Breast", category: "meat", price: 9800, unit: "500g" },
+    { id: "FC-SAL-01", name: "Norwegian Salmon Fillet", category: "seafood", price: 14500, unit: "200g" },
+    { id: "FC-RCE-01", name: "Premium Short-Grain Rice", category: "pantry", price: 11900, unit: "5kg" },
+    { id: "FC-OLV-01", name: "Extra Virgin Olive Oil", category: "pantry", price: 8500, unit: "500ml" }
+  ],
+  current_category: "all",
+  visible_products: [],
+  cart_items: [],
+  cart_count: 0,
+  cart_subtotal: 0,
+  delivery_fee: 0,
+  order_total: 0,
+  coupon_code: "",
+  coupon_credit: 0,
+  coupon_status: "idle",
+  service_call_count: 0,
+  delivery_slot: "",
+  customer_name: "",
+  customer_phone: "",
+  validation_errors: {},
+  order_placed: false,
+  order_id: "",
+  order_history: [],
+  last_action: "",
+  __services: { calls: [] }
+};
+
+const persistedPaths = [
+  "current_page", "active_role", "products", "current_category", "visible_products",
+  "cart_items", "cart_count", "cart_subtotal", "delivery_fee", "coupon_code",
+  "coupon_credit", "coupon_status", "service_call_count", "delivery_slot",
+  "customer_name", "customer_phone", "order_placed", "order_id",
+  "order_history", "last_action"
+];
+
+let orderCounter = 0;
+
+function deepClone(obj) { return JSON.parse(JSON.stringify(obj)); }
+
+function persist() {
+  const payload = {};
+  for (const k of persistedPaths) {
+    if (state[k] !== undefined) payload[k] = deepClone(state[k]);
+  }
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(payload)); } catch (e) {}
+}
+
+function restoreState() {
+  const s = deepClone(initialState);
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if (saved) {
+      for (const k of persistedPaths) {
+        if (saved[k] !== undefined) s[k] = saved[k];
+      }
+    }
+  } catch (e) {}
+  // Restore visible_products from products if needed
+  if (!s.visible_products || s.visible_products.length === 0) {
+    s.visible_products = deepClone(s.products);
+  }
+  return s;
+}
+
+let state = restoreState();
+window.__DETOX_STATE__ = state;
+
+function commit() {
+  state.cart_count = state.cart_items.length;
+  state.cart_subtotal = state.cart_items.reduce((sum, item) => sum + item.line_total, 0);
+  if (state.cart_count === 0) {
+    state.delivery_fee = 0;
+  } else if (state.cart_subtotal >= 40000) {
+    state.delivery_fee = 0;
+  } else {
+    state.delivery_fee = 3000;
+  }
+  state.order_total = state.cart_subtotal + state.delivery_fee - state.coupon_credit;
+  window.__DETOX_STATE__ = state;
+  persist();
+  render();
+}
+
+function pageFromHash() {
+  const hash = (window.location.hash || "").replace("#/", "");
+  return ["shop", "cart", "receipts"].includes(hash) ? hash : "shop";
+}
+
+function navigate(page, replace) {
+  state.current_page = page;
+  if (replace) {
+    history.replaceState(null, "", "#/" + page);
+  } else {
+    history.pushState(null, "", "#/" + page);
+  }
+  commit();
+}
+
+function setRole(role) {
+  state.active_role = role;
+  state.last_action = "set_role";
+  commit();
+}
+
+function resetState() {
+  state = deepClone(initialState);
+  state.visible_products = deepClone(initialState.products);
+  state.last_action = "reset";
+  localStorage.removeItem(STORAGE_KEY);
+  orderCounter = 0;
+  history.pushState(null, "", "#/shop");
+  commit();
+}
+
+function filterCategory(cat) {
+  state.current_category = cat;
+  if (cat === "all") {
+    state.visible_products = deepClone(state.products);
+  } else {
+    state.visible_products = deepClone(state.products)
+      .filter(p => p.category === cat)
+      .sort((a, b) => a.price - b.price);
+  }
+  commit();
+}
+
+function addItem(productId) {
+  const product = state.products.find(p => p.id === productId);
+  if (!product) return;
+  state.cart_items.push({
+    product_id: product.id,
+    name: product.name,
+    quantity: 1,
+    unit_price: product.price,
+    line_total: product.price
+  });
+  state.last_action = "add_item";
+  commit();
+}
+
+function removeLastItem() {
+  if (state.cart_items.length === 0) return;
+  state.cart_items.pop();
+  delete state.validation_errors.minimum_order;
+  state.last_action = "remove_item";
+  commit();
+}
+
+function updateCouponCode(val) {
+  state.coupon_code = val.trim().toUpperCase();
+}
+
+async function applyCoupon() {
+  if (state.cart_count < 1) return;
+  const code = state.coupon_code;
+  const subtotal = String(state.cart_subtotal);
+  try {
+    const params = new URLSearchParams({ code });
+    const response = await fetch("/api/coupon?" + params.toString());
+    const data = response.ok ? await response.json() : { valid: false, credit: 0, status: "rejected" };
+    state.service_call_count += 1;
+    state.coupon_credit = data.valid ? Number(data.credit || 0) : 0;
+    state.coupon_status = data.status === "applied" ? "applied" : "rejected";
+  } catch (e) {
+    state.service_call_count += 1;
+    state.coupon_credit = 0;
+    state.coupon_status = "rejected";
+  }
+  state.last_action = "apply_coupon";
+  commit();
+}
+
+function selectSlot(slot) {
+  state.delivery_slot = slot;
+  state.last_action = "select_slot";
+  commit();
+}
+
+function updateName(val) {
+  state.customer_name = val.trim();
+  if (state.customer_name.length > 0) delete state.validation_errors.name;
+  commit();
+}
+
+function updatePhone(val) {
+  state.customer_phone = val.trim();
+  if (state.customer_phone.length > 0) delete state.validation_errors.phone;
+  commit();
+}
+
+function placeOrder() {
+  if (state.cart_subtotal < 10000) {
+    state.validation_errors.minimum_order = "Minimum order is ₩10,000";
+    state.order_placed = false;
+    state.last_action = "rejected";
+    commit();
+    return;
+  }
+  if (state.cart_count < 1) return;
+  if (!state.customer_name) {
+    state.validation_errors.name = "Name is required";
+    commit();
+    return;
+  }
+  if (!["morning", "afternoon", "evening"].includes(state.delivery_slot)) {
+    state.last_action = "rejected";
+    commit();
+    return;
+  }
+  orderCounter++;
+  const orderId = "ORD-" + String(orderCounter).padStart(3, "0");
+  const order = {
+    order_id: orderId,
+    items: deepClone(state.cart_items),
+    total: state.order_total,
+    slot: state.delivery_slot,
+    name: state.customer_name,
+    phone: state.customer_phone,
+    status: "confirmed"
+  };
+  state.order_history.push(order);
+  state.order_id = orderId;
+  state.order_placed = true;
+  state.last_action = "place_order";
+  commit();
+}
+
+function cancelLatestOrder() {
+  if (state.order_history.length === 0) return;
+  if (state.active_role !== "staff") {
+    state.last_action = "unauthorized";
+    commit();
+    return;
+  }
+  state.order_history[state.order_history.length - 1].status = "cancelled";
+  state.last_action = "cancel_order";
+  commit();
+}
+
+function render() {
+  // Pages
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  const page = state.current_page || pageFromHash();
+  const pageEl = document.getElementById("page-" + page);
+  if (pageEl) pageEl.classList.add("active");
+
+  // Nav buttons
+  document.querySelectorAll(".topbar-nav button").forEach(b => b.classList.remove("active"));
+  const navMap = { shop: "go-shop", cart: "go-cart", receipts: "go-receipts" };
+  const activeNav = document.querySelector(`[data-testid="${navMap[page]}"]`);
+  if (activeNav) activeNav.classList.add("active");
+
+  // Role buttons
+  document.querySelectorAll(".role-btn").forEach(b => b.classList.remove("active"));
+  const roleBtn = document.querySelector(`[data-testid="role-${state.active_role}"]`);
+  if (roleBtn) roleBtn.classList.add("active");
+
+  // Cart badge
+  const badge = document.querySelector("[data-bind='cart-badge']");
+  if (badge) badge.textContent = state.cart_count > 0 ? state.cart_count : "";
+
+  // Product grid
+  renderProductGrid();
+
+  // Cart
+  renderCart();
+
+  // Receipts
+  renderReceipts();
+
+  // Data bindings
+  document.querySelectorAll("[data-bind-money]").forEach(el => {
+    const path = el.getAttribute("data-bind-money");
+    const val = state[path] || 0;
+    el.textContent = "₩" + val.toLocaleString();
+  });
+
+  // Delivery fee display
+  const feeEl = document.getElementById("delivery-fee-display");
+  if (feeEl) {
+    if (state.cart_count === 0) {
+      feeEl.textContent = "₩0";
+    } else if (state.delivery_fee === 0) {
+      feeEl.innerHTML = '<span class="fee-free">FREE</span>';
+    } else {
+      feeEl.textContent = "₩" + state.delivery_fee.toLocaleString();
+    }
+  }
+
+  // Coupon line
+  const couponLine = document.getElementById("coupon-line");
+  if (couponLine) couponLine.style.display = state.coupon_credit > 0 ? "flex" : "none";
+
+  // Coupon status
+  const couponMsg = document.getElementById("coupon-status-msg");
+  if (couponMsg) {
+    couponMsg.textContent = state.coupon_status === "applied" ? "Coupon applied!" :
+      state.coupon_status === "rejected" ? "Invalid coupon" : "";
+    couponMsg.className = "coupon-status " + state.coupon_status;
+  }
+
+  // Slot buttons
+  document.querySelectorAll(".slot-options button").forEach(b => b.classList.remove("active"));
+  if (state.delivery_slot) {
+    const slotBtn = document.querySelector(`[data-testid="slot-${state.delivery_slot}"]`);
+    if (slotBtn) slotBtn.classList.add("active");
+  }
+
+  // Inputs
+  const nameInput = document.querySelector('[data-testid="customer-name"]');
+  if (nameInput && document.activeElement !== nameInput) nameInput.value = state.customer_name;
+  const phoneInput = document.querySelector('[data-testid="customer-phone"]');
+  if (phoneInput && document.activeElement !== phoneInput) phoneInput.value = state.customer_phone;
+  const couponInput = document.getElementById("coupon-code-input");
+  if (couponInput && document.activeElement !== couponInput) couponInput.value = state.coupon_code;
+
+  // Errors
+  document.querySelectorAll("[data-error]").forEach(el => {
+    const field = el.getAttribute("data-error");
+    el.textContent = state.validation_errors[field] || "";
+  });
+
+  // Cancel button
+  const cancelBtn = document.querySelector('[data-testid="cancel-order"]');
+  if (cancelBtn) cancelBtn.style.display = state.order_history.length > 0 ? "inline-block" : "none";
+}
+
+function renderProductGrid() {
+  const grid = document.getElementById("product-grid");
+  if (!grid) return;
+  const prods = state.visible_products || [];
+  grid.innerHTML = prods.map(p => `
+    <div class="product-card" data-testid="product-row" data-product-id="${p.id}">
+      <div class="product-emoji">${getEmoji(p.id)}</div>
+      <div class="product-name" data-col="name">${p.name}</div>
+      <div class="product-category" data-col="category">${p.category}</div>
+      <div class="product-meta">
+        <span class="product-price" data-col="price">${p.price}</span>
+        <span class="product-unit" data-col="unit">${p.unit}</span>
+      </div>
+      <button data-testid="add-${p.id}" onclick="addItem('${p.id}')">Add to Cart</button>
+    </div>
+  `).join("");
+
+  // Category buttons
+  document.querySelectorAll(".category-bar button").forEach(b => b.classList.remove("active"));
+  const catBtn = document.querySelector(`[data-testid="filter-${state.current_category}"]`);
+  if (catBtn) catBtn.classList.add("active");
+}
+
+function renderCart() {
+  const tbody = document.getElementById("cart-tbody");
+  const empty = document.getElementById("cart-empty");
+  if (!tbody) return;
+
+  if (state.cart_items.length === 0) {
+    tbody.innerHTML = "";
+    if (empty) empty.style.display = "block";
+    return;
+  }
+
+  if (empty) empty.style.display = "none";
+  tbody.innerHTML = state.cart_items.map(item => `
+    <tr data-testid="cart-row" data-item-id="${item.product_id}">
+      <td data-col="name">${item.name}</td>
+      <td data-col="quantity">${item.quantity}</td>
+      <td data-col="unit-price">${item.unit_price.toLocaleString()}</td>
+      <td data-col="line-total">${item.line_total.toLocaleString()}</td>
+    </tr>
+  `).join("");
+}
+
+function renderReceipts() {
+  const list = document.getElementById("receipts-list");
+  const noReceipts = document.getElementById("no-receipts");
+  if (!list) return;
+
+  if (state.order_history.length === 0) {
+    list.innerHTML = "";
+    if (noReceipts) noReceipts.style.display = "block";
+    return;
+  }
+
+  if (noReceipts) noReceipts.style.display = "none";
+  list.innerHTML = state.order_history.map(o => `
+    <div class="receipt-card">
+      <h4>Order ${o.order_id}</h4>
+      <div class="receipt-meta">${o.name} · ${o.slot} delivery · ${o.status === "cancelled" ? "❌ Cancelled" : "✅ Confirmed"}</div>
+      <div class="receipt-items">${o.items.map(i => i.name + " x" + i.quantity).join(", ")}</div>
+      <div class="receipt-total">₩${o.total.toLocaleString()}</div>
+    </div>
+  `).join("");
+}
+
+// Init
+window.addEventListener("hashchange", () => {
+  state.current_page = pageFromHash();
+  commit();
+});
+window.addEventListener("popstate", () => {
+  state.current_page = pageFromHash();
+  commit();
+});
+
+// Set initial page from hash
+state.current_page = pageFromHash();
+commit();
+</script>
+</body>
+</html>

@@ -1,0 +1,1505 @@
+dsl_version: "3.0.0"
+visibility: private
+tier_weights:
+  smoke: 1
+  core: 2
+  validation: 3
+  service: 4
+  upload: 4
+  permission: 4
+  persistence: 5
+  journey: 6
+
+scenarios:
+  - id: private_01_ac_quote_and_acceptance_journey
+    tier: journey
+    steps:
+      - do: reset_button.click
+      - do: select_ac_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+      - do: customer_name_input.fill
+        input: {value: "Mina Park"}
+      - do: address_input.fill
+        input: {value: "88 Cedar House"}
+      - do: get_quote_button.click
+        expect:
+          - {op: equals, path: quote_amount, value: 18900}
+      - do: approve_quote_button.click
+      - do: book_visit_button.click
+      - do: go_visits_button.click
+      - do: role_pro_button.click
+      - do: pro_accept_button.click
+        expect:
+          - {op: equals, path: booking_status, value: accepted}
+
+  - id: private_02_address_normalization
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: go_booking_button.click
+      - do: address_input.fill
+        input: {value: "  9 Oak Terrace  "}
+        expect:
+          - {op: equals, path: address, value: "9 Oak Terrace"}
+
+  - id: private_03_homeowner_cannot_assign_technician
+    tier: permission
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: get_quote_button.click
+      - do: approve_quote_button.click
+      - do: go_dispatch_button.click
+      - do: assign_mina_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: assigned_technician, value: ""}
+
+  - id: private_04_dispatch_persists_after_reload
+    tier: persistence
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+      - do: get_quote_button.click
+      - do: approve_quote_button.click
+      - do: role_dispatcher_button.click
+      - do: go_dispatch_button.click
+      - do: assign_mina_button.click
+      - do: ready_parts_button.click
+      - do: dispatch_visit_button.click
+      - browser: reload
+        expect:
+          - {op: equals, path: dispatch_status, value: dispatched}
+          - {op: equals, path: assigned_technician, value: TECH-MINA}
+
+  - id: private_05_invoice_requires_qa
+    tier: permission
+    steps:
+      - do: reset_button.click
+      - do: role_quality_manager_button.click
+      - do: go_quality_button.click
+      - do: issue_invoice_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: invoice_status, value: idle}
+
+  - id: private_06_full_quality_invoice_path
+    tier: journey
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+      - do: get_quote_button.click
+      - do: approve_homeowner_button.click
+      - do: role_dispatcher_button.click
+      - do: go_dispatch_button.click
+      - do: assign_mina_button.click
+      - do: ready_parts_button.click
+      - do: dispatch_visit_button.click
+      - do: role_quality_manager_button.click
+      - do: go_quality_button.click
+      - do: permit_upload_input.upload
+        input:
+          file:
+            name: final-dossier.csv
+            mime_type: text/csv
+            content: |
+              id,document,status
+              PM-1,Before photos,ready
+              PM-2,Fixture permit,ready
+          rows:
+            - {id: PM-1, document: "Before photos", status: ready}
+            - {id: PM-2, document: "Fixture permit", status: ready}
+      - do: pass_qa_button.click
+      - do: issue_invoice_button.click
+        expect:
+          - {op: equals, path: invoice_status, value: issued}
+          - {op: equals, path: invoice_total, value: 31700}
+
+  - id: private_07_warranty_seal_full_journey
+    tier: journey
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+      - do: get_quote_button.click
+      - do: approve_homeowner_button.click
+      - do: role_dispatcher_button.click
+      - do: go_dispatch_button.click
+      - do: assign_mina_button.click
+      - do: ready_parts_button.click
+      - do: dispatch_visit_button.click
+      - do: role_quality_manager_button.click
+      - do: go_quality_button.click
+      - do: permit_upload_input.upload
+        input:
+          file:
+            name: storm-dossier.csv
+            mime_type: text/csv
+            content: |
+              id,document,status
+              PM-1,Before photos,ready
+              PM-2,Roof access permit,ready
+          rows:
+            - {id: PM-1, document: "Before photos", status: ready}
+            - {id: PM-2, document: "Roof access permit", status: ready}
+      - do: pass_qa_button.click
+      - do: issue_invoice_button.click
+      - do: role_claims_manager_button.click
+      - do: go_warranty_button.click
+      - do: claim_code_input.fill
+        input: {value: " storm-77 "}
+      - do: preauth_claim_button.click
+      - do: materials_upload_input.upload
+        input:
+          file:
+            name: materials-clear.csv
+            mime_type: text/csv
+            content: |
+              id,item,status
+              MT-1,Copper valve,matched
+              MT-2,Drywall patch,matched
+          rows:
+            - {id: MT-1, item: "Copper valve", status: matched}
+            - {id: MT-2, item: "Drywall patch", status: matched}
+      - do: reconcile_materials_button.click
+      - do: seal_warranty_button.click
+        expect:
+          - {op: equals, path: warranty_status, value: sealed}
+          - {op: equals, path: warranty_score, value: 100}
+          - {op: equals, path: warranty_count, value: 1}
+      - table: warranty_grid
+        expect_order: [W-CLAIM, W-DISPATCH, W-MATERIALS, W-QA, W-INVOICE]
+        expect_row_count: 5
+        expect_rows:
+          - id: W-MATERIALS
+            cells: {status: cleared}
+      - do: materials_upload_input.upload
+        input:
+          file:
+            name: materials-mismatch.csv
+            mime_type: text/csv
+            content: |
+              id,item,status
+              MT-1,Copper valve,matched
+              MT-2,Drywall patch,mismatch
+          rows:
+            - {id: MT-1, item: "Copper valve", status: matched}
+            - {id: MT-2, item: "Drywall patch", status: mismatch}
+        expect:
+          - {op: equals, path: warranty_status, value: open}
+          - {op: equals, path: materials_status, value: review}
+          - {op: equals, path: material_mismatch_count, value: 1}
+
+# density-extension:start
+
+  - id: private_08_claim_code_trim_uppercase
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: go_warranty_button.click
+      - do: claim_code_input.fill
+        input: {value: "  storm-77  "}
+        expect:
+          - {op: equals, path: claim_reference, value: STORM-77}
+
+  - id: private_09_zero_mismatch_reconcile_path
+    tier: upload
+    steps:
+      - do: reset_button.click
+      - do: role_claims_manager_button.click
+      - do: go_warranty_button.click
+      - do: materials_upload_input.upload
+
+        input:
+          file:
+            name: materials-clear.csv
+            mime_type: text/csv
+            content: |
+              id,item,status
+              MT-1,Copper valve,matched
+              MT-2,Drywall patch,matched
+          rows:
+            - {id: MT-1, item: "Copper valve", status: matched}
+            - {id: MT-2, item: "Drywall patch", status: matched}
+      - do: reconcile_materials_button.click
+        expect:
+          - {op: equals, path: material_mismatch_count, value: 0}
+          - {op: equals, path: materials_status, value: reconciled}
+
+  - id: private_10_warranty_rejected_without_invoice
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: role_claims_manager_button.click
+      - do: go_warranty_button.click
+      - do: preauth_claim_button.click
+      - do: seal_warranty_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: last_action, value: warranty_blocked}
+
+  - id: private_11_full_warranty_table_cleared
+    tier: journey
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+      - do: get_quote_button.click
+      - do: approve_homeowner_button.click
+      - do: role_dispatcher_button.click
+      - do: go_dispatch_button.click
+      - do: assign_mina_button.click
+      - do: ready_parts_button.click
+      - do: dispatch_visit_button.click
+      - do: role_quality_manager_button.click
+      - do: go_quality_button.click
+      - do: permit_upload_input.upload
+
+        input:
+          file:
+            name: permit-three.csv
+            mime_type: text/csv
+            content: |
+              id,document,status
+              PM-1,Before photos,ready
+              PM-2,Fixture permit,ready
+              PM-3,Access waiver,ready
+          rows:
+            - {id: PM-1, document: "Before photos", status: ready}
+            - {id: PM-2, document: "Fixture permit", status: ready}
+            - {id: PM-3, document: "Access waiver", status: ready}
+      - do: pass_qa_button.click
+      - do: issue_invoice_button.click
+      - do: role_claims_manager_button.click
+      - do: go_warranty_button.click
+      - do: preauth_claim_button.click
+      - do: materials_upload_input.upload
+
+        input:
+          file:
+            name: materials-clear.csv
+            mime_type: text/csv
+            content: |
+              id,item,status
+              MT-1,Copper valve,matched
+              MT-2,Drywall patch,matched
+          rows:
+            - {id: MT-1, item: "Copper valve", status: matched}
+            - {id: MT-2, item: "Drywall patch", status: matched}
+      - do: reconcile_materials_button.click
+      - do: seal_warranty_button.click
+      - table: warranty_grid
+        expect_rows:
+          - id: W-INVOICE
+            cells: {status: cleared}
+
+  - id: private_12_post_seal_material_upload_reopens_warranty
+    tier: journey
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+      - do: get_quote_button.click
+      - do: approve_homeowner_button.click
+      - do: role_dispatcher_button.click
+      - do: go_dispatch_button.click
+      - do: assign_mina_button.click
+      - do: ready_parts_button.click
+      - do: dispatch_visit_button.click
+      - do: role_quality_manager_button.click
+      - do: go_quality_button.click
+      - do: permit_upload_input.upload
+
+        input:
+          file:
+            name: permit-three.csv
+            mime_type: text/csv
+            content: |
+              id,document,status
+              PM-1,Before photos,ready
+              PM-2,Fixture permit,ready
+              PM-3,Access waiver,ready
+          rows:
+            - {id: PM-1, document: "Before photos", status: ready}
+            - {id: PM-2, document: "Fixture permit", status: ready}
+            - {id: PM-3, document: "Access waiver", status: ready}
+      - do: pass_qa_button.click
+      - do: issue_invoice_button.click
+      - do: role_claims_manager_button.click
+      - do: go_warranty_button.click
+      - do: preauth_claim_button.click
+      - do: materials_upload_input.upload
+
+        input:
+          file:
+            name: materials-clear.csv
+            mime_type: text/csv
+            content: |
+              id,item,status
+              MT-1,Copper valve,matched
+              MT-2,Drywall patch,matched
+          rows:
+            - {id: MT-1, item: "Copper valve", status: matched}
+            - {id: MT-2, item: "Drywall patch", status: matched}
+      - do: reconcile_materials_button.click
+      - do: seal_warranty_button.click
+      - do: materials_upload_input.upload
+
+        input:
+          file:
+            name: materials-mismatch.csv
+            mime_type: text/csv
+            content: |
+              id,item,status
+              MT-1,Copper valve,matched
+              MT-2,Drywall patch,mismatch
+          rows:
+            - {id: MT-1, item: "Copper valve", status: matched}
+            - {id: MT-2, item: "Drywall patch", status: mismatch}
+        expect:
+          - {op: equals, path: warranty_status, value: open}
+          - {op: equals, path: material_mismatch_count, value: 1}
+
+  - id: private_13_quote_and_claim_service_call_total
+    tier: service
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: get_quote_button.click
+      - do: role_claims_manager_button.click
+      - do: go_warranty_button.click
+      - do: preauth_claim_button.click
+        expect:
+          - {op: equals, path: service_call_count, value: 2}
+
+  - id: private_14_materials_mismatch_persists_after_reload
+    tier: persistence
+    steps:
+      - do: reset_button.click
+      - do: role_claims_manager_button.click
+      - do: go_warranty_button.click
+      - do: materials_upload_input.upload
+
+        input:
+          file:
+            name: materials-mismatch.csv
+            mime_type: text/csv
+            content: |
+              id,item,status
+              MT-1,Copper valve,matched
+              MT-2,Drywall patch,mismatch
+          rows:
+            - {id: MT-1, item: "Copper valve", status: matched}
+            - {id: MT-2, item: "Drywall patch", status: mismatch}
+      - browser: reload
+        expect:
+          - {op: equals, path: material_mismatch_count, value: 1}
+
+  - id: private_15_reset_clears_warranty_state
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: role_claims_manager_button.click
+      - do: go_warranty_button.click
+      - do: preauth_claim_button.click
+      - do: reset_button.click
+        expect:
+          - {op: equals, path: claim_status, value: idle}
+          - {op: equals, path: warranty_count, value: 0}
+
+  - id: private_16_full_warranty_status_persists_reload
+    tier: persistence
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+      - do: get_quote_button.click
+      - do: approve_homeowner_button.click
+      - do: role_dispatcher_button.click
+      - do: go_dispatch_button.click
+      - do: assign_mina_button.click
+      - do: ready_parts_button.click
+      - do: dispatch_visit_button.click
+      - do: role_quality_manager_button.click
+      - do: go_quality_button.click
+      - do: permit_upload_input.upload
+
+        input:
+          file:
+            name: permit-three.csv
+            mime_type: text/csv
+            content: |
+              id,document,status
+              PM-1,Before photos,ready
+              PM-2,Fixture permit,ready
+              PM-3,Access waiver,ready
+          rows:
+            - {id: PM-1, document: "Before photos", status: ready}
+            - {id: PM-2, document: "Fixture permit", status: ready}
+            - {id: PM-3, document: "Access waiver", status: ready}
+      - do: pass_qa_button.click
+      - do: issue_invoice_button.click
+      - do: role_claims_manager_button.click
+      - do: go_warranty_button.click
+      - do: preauth_claim_button.click
+      - do: materials_upload_input.upload
+
+        input:
+          file:
+            name: materials-clear.csv
+            mime_type: text/csv
+            content: |
+              id,item,status
+              MT-1,Copper valve,matched
+              MT-2,Drywall patch,matched
+          rows:
+            - {id: MT-1, item: "Copper valve", status: matched}
+            - {id: MT-2, item: "Drywall patch", status: matched}
+      - do: reconcile_materials_button.click
+      - do: seal_warranty_button.click
+      - browser: reload
+        expect:
+          - {op: equals, path: warranty_status, value: sealed}
+          - {op: equals, path: warranty_count, value: 1}
+
+  - id: private_17_warranty_reseal_after_clear_reupload
+    tier: journey
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+      - do: get_quote_button.click
+      - do: approve_homeowner_button.click
+      - do: role_dispatcher_button.click
+      - do: go_dispatch_button.click
+      - do: assign_mina_button.click
+      - do: ready_parts_button.click
+      - do: dispatch_visit_button.click
+      - do: role_quality_manager_button.click
+      - do: go_quality_button.click
+      - do: permit_upload_input.upload
+        input:
+          file:
+            name: reseal-permit.csv
+            mime_type: text/csv
+            content: |
+              id,document,status
+              PM-1,Before photos,ready
+              PM-2,Fixture permit,ready
+          rows:
+            - {id: PM-1, document: "Before photos", status: ready}
+            - {id: PM-2, document: "Fixture permit", status: ready}
+      - do: pass_qa_button.click
+      - do: issue_invoice_button.click
+      - do: role_claims_manager_button.click
+      - do: go_warranty_button.click
+      - do: preauth_claim_button.click
+      - do: materials_upload_input.upload
+        input:
+          file:
+            name: materials-clear.csv
+            mime_type: text/csv
+            content: |
+              id,item,status
+              MT-1,Copper valve,matched
+              MT-2,Drywall patch,matched
+          rows:
+            - {id: MT-1, item: "Copper valve", status: matched}
+            - {id: MT-2, item: "Drywall patch", status: matched}
+      - do: reconcile_materials_button.click
+      - do: seal_warranty_button.click
+      - do: materials_upload_input.upload
+        input:
+          file:
+            name: materials-mismatch.csv
+            mime_type: text/csv
+            content: |
+              id,item,status
+              MT-1,Copper valve,matched
+              MT-2,Drywall patch,mismatch
+          rows:
+            - {id: MT-1, item: "Copper valve", status: matched}
+            - {id: MT-2, item: "Drywall patch", status: mismatch}
+      - do: materials_upload_input.upload
+        input:
+          file:
+            name: materials-clear-again.csv
+            mime_type: text/csv
+            content: |
+              id,item,status
+              MT-1,Copper valve,matched
+              MT-2,Drywall patch,matched
+          rows:
+            - {id: MT-1, item: "Copper valve", status: matched}
+            - {id: MT-2, item: "Drywall patch", status: matched}
+      - do: reconcile_materials_button.click
+      - do: seal_warranty_button.click
+        expect:
+          - {op: equals, path: warranty_status, value: sealed}
+          - {op: equals, path: warranty_count, value: 2}
+          - {op: equals, path: material_mismatch_count, value: 0}
+
+  - id: private_18_seal_blocked_without_claim
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+      - do: get_quote_button.click
+      - do: approve_homeowner_button.click
+      - do: role_dispatcher_button.click
+      - do: go_dispatch_button.click
+      - do: assign_mina_button.click
+      - do: ready_parts_button.click
+      - do: dispatch_visit_button.click
+      - do: role_quality_manager_button.click
+      - do: go_quality_button.click
+      - do: permit_upload_input.upload
+        input:
+          file:
+            name: no-claim-permit.csv
+            mime_type: text/csv
+            content: |
+              id,document,status
+              PM-1,Before photos,ready
+          rows:
+            - {id: PM-1, document: "Before photos", status: ready}
+      - do: pass_qa_button.click
+      - do: issue_invoice_button.click
+      - do: role_claims_manager_button.click
+      - do: go_warranty_button.click
+      - do: materials_upload_input.upload
+        input:
+          file:
+            name: no-claim-materials.csv
+            mime_type: text/csv
+            content: |
+              id,item,status
+              MT-1,Copper valve,matched
+          rows:
+            - {id: MT-1, item: "Copper valve", status: matched}
+      - do: reconcile_materials_button.click
+      - do: seal_warranty_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: warranty_status, value: blocked}
+          - {op: equals, path: warranty_count, value: 0}
+
+  - id: private_19_reconcile_mismatch_does_not_clear
+    tier: upload
+    steps:
+      - do: reset_button.click
+      - do: role_claims_manager_button.click
+      - do: go_warranty_button.click
+      - do: materials_upload_input.upload
+        input:
+          file:
+            name: mismatch-stays.csv
+            mime_type: text/csv
+            content: |
+              id,item,status
+              MT-1,Copper valve,matched
+              MT-2,Drywall patch,mismatch
+          rows:
+            - {id: MT-1, item: "Copper valve", status: matched}
+            - {id: MT-2, item: "Drywall patch", status: mismatch}
+      - do: reconcile_materials_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: materials_status, value: review}
+          - {op: equals, path: material_mismatch_count, value: 1}
+
+  - id: private_20_claim_code_persists_after_reload
+    tier: persistence
+    steps:
+      - do: reset_button.click
+      - do: go_warranty_button.click
+      - do: claim_code_input.fill
+        input: {value: " storm-77 "}
+      - browser: reload
+        expect:
+          - {op: equals, path: claim_reference, value: STORM-77}
+          - {op: equals, path: current_page, value: warranty}
+
+  - id: private_21_double_quote_then_claim_service_call_count
+    tier: service
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: get_quote_button.click
+      - do: get_quote_button.click
+      - do: role_claims_manager_button.click
+      - do: go_warranty_button.click
+      - do: preauth_claim_button.click
+        expect:
+          - {op: equals, path: service_call_count, value: 3}
+
+  - id: private_22_materials_table_three_row_order
+    tier: upload
+    steps:
+      - do: reset_button.click
+      - do: role_claims_manager_button.click
+      - do: go_warranty_button.click
+      - do: materials_upload_input.upload
+        input:
+          file:
+            name: materials-three.csv
+            mime_type: text/csv
+            content: |
+              id,item,status
+              MT-A,Copper valve,matched
+              MT-B,Drywall patch,mismatch
+              MT-C,Sealant roll,matched
+          rows:
+            - {id: MT-A, item: "Copper valve", status: matched}
+            - {id: MT-B, item: "Drywall patch", status: mismatch}
+            - {id: MT-C, item: "Sealant roll", status: matched}
+        expect:
+          - {op: equals, path: material_mismatch_count, value: 1}
+      - table: materials_grid
+        expect_order: [MT-A, MT-B, MT-C]
+        expect_row_count: 3
+
+  - id: private_23_warranty_score_after_claim_and_dispatch_only
+    tier: core
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+      - do: get_quote_button.click
+      - do: approve_homeowner_button.click
+      - do: role_dispatcher_button.click
+      - do: go_dispatch_button.click
+      - do: assign_mina_button.click
+      - do: ready_parts_button.click
+      - do: dispatch_visit_button.click
+      - do: role_claims_manager_button.click
+      - do: go_warranty_button.click
+      - do: preauth_claim_button.click
+        expect:
+          - {op: equals, path: warranty_score, value: 40}
+          - {op: equals, path: open_warranty_blockers, value: 3}
+      - table: warranty_grid
+        expect_rows:
+          - id: W-CLAIM
+            cells: {status: cleared}
+          - id: W-DISPATCH
+            cells: {status: cleared}
+          - id: W-MATERIALS
+            cells: {status: open}
+
+  - id: private_24_post_seal_mismatch_reopens_score
+    tier: journey
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+      - do: get_quote_button.click
+      - do: approve_homeowner_button.click
+      - do: role_dispatcher_button.click
+      - do: go_dispatch_button.click
+      - do: assign_mina_button.click
+      - do: ready_parts_button.click
+      - do: dispatch_visit_button.click
+      - do: role_quality_manager_button.click
+      - do: go_quality_button.click
+      - do: permit_upload_input.upload
+        input:
+          file:
+            name: score-permit.csv
+            mime_type: text/csv
+            content: |
+              id,document,status
+              PM-1,Before photos,ready
+          rows:
+            - {id: PM-1, document: "Before photos", status: ready}
+      - do: pass_qa_button.click
+      - do: issue_invoice_button.click
+      - do: role_claims_manager_button.click
+      - do: go_warranty_button.click
+      - do: preauth_claim_button.click
+      - do: materials_upload_input.upload
+        input:
+          file:
+            name: score-clear.csv
+            mime_type: text/csv
+            content: |
+              id,item,status
+              MT-1,Copper valve,matched
+          rows:
+            - {id: MT-1, item: "Copper valve", status: matched}
+      - do: reconcile_materials_button.click
+      - do: seal_warranty_button.click
+      - do: materials_upload_input.upload
+        input:
+          file:
+            name: score-mismatch.csv
+            mime_type: text/csv
+            content: |
+              id,item,status
+              MT-1,Copper valve,mismatch
+          rows:
+            - {id: MT-1, item: "Copper valve", status: mismatch}
+        expect:
+          - {op: equals, path: warranty_status, value: open}
+          - {op: equals, path: warranty_score, value: 80}
+          - {op: equals, path: open_warranty_blockers, value: 1}
+
+  - id: private_25_reset_clears_material_rows
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: role_claims_manager_button.click
+      - do: go_warranty_button.click
+      - do: materials_upload_input.upload
+        input:
+          file:
+            name: reset-materials.csv
+            mime_type: text/csv
+            content: |
+              id,item,status
+              MT-1,Copper valve,matched
+          rows:
+            - {id: MT-1, item: "Copper valve", status: matched}
+      - do: reset_button.click
+        expect:
+          - {op: equals, path: materials_rows, value: []}
+          - {op: equals, path: material_mismatch_count, value: 0}
+
+  - id: private_26_ac_invoice_total_in_warranty_tier
+    tier: journey
+    steps:
+      - do: reset_button.click
+      - do: select_ac_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+      - do: get_quote_button.click
+      - do: approve_homeowner_button.click
+      - do: role_dispatcher_button.click
+      - do: go_dispatch_button.click
+      - do: assign_mina_button.click
+      - do: ready_parts_button.click
+      - do: dispatch_visit_button.click
+      - do: role_quality_manager_button.click
+      - do: go_quality_button.click
+      - do: permit_upload_input.upload
+        input:
+          file:
+            name: ac-warranty-permit.csv
+            mime_type: text/csv
+            content: |
+              id,document,status
+              PM-1,Before photos,ready
+          rows:
+            - {id: PM-1, document: "Before photos", status: ready}
+      - do: pass_qa_button.click
+      - do: issue_invoice_button.click
+        expect:
+          - {op: equals, path: invoice_total, value: 23800}
+
+  - id: private_27_dispatch_count_does_not_increment_without_parts
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: get_quote_button.click
+      - do: approve_quote_button.click
+      - do: role_dispatcher_button.click
+      - do: go_dispatch_button.click
+      - do: assign_mina_button.click
+      - do: dispatch_visit_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: dispatch_status, value: blocked}
+          - {op: equals, path: dispatch_count, value: 0}
+
+  - id: private_28_claims_manager_warranty_page_persists
+    tier: persistence
+    steps:
+      - do: reset_button.click
+      - do: role_claims_manager_button.click
+      - do: go_warranty_button.click
+      - browser: reload
+        expect:
+          - {op: equals, path: active_role, value: claims_manager}
+          - {op: equals, path: current_page, value: warranty}
+
+  - id: private_29_warranty_table_all_cleared_after_reload
+    tier: persistence
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+      - do: get_quote_button.click
+      - do: approve_homeowner_button.click
+      - do: role_dispatcher_button.click
+      - do: go_dispatch_button.click
+      - do: assign_mina_button.click
+      - do: ready_parts_button.click
+      - do: dispatch_visit_button.click
+      - do: role_quality_manager_button.click
+      - do: go_quality_button.click
+      - do: permit_upload_input.upload
+        input:
+          file:
+            name: reload-seal-permit.csv
+            mime_type: text/csv
+            content: |
+              id,document,status
+              PM-1,Before photos,ready
+          rows:
+            - {id: PM-1, document: "Before photos", status: ready}
+      - do: pass_qa_button.click
+      - do: issue_invoice_button.click
+      - do: role_claims_manager_button.click
+      - do: go_warranty_button.click
+      - do: preauth_claim_button.click
+      - do: materials_upload_input.upload
+        input:
+          file:
+            name: reload-clear.csv
+            mime_type: text/csv
+            content: |
+              id,item,status
+              MT-1,Copper valve,matched
+          rows:
+            - {id: MT-1, item: "Copper valve", status: matched}
+      - do: reconcile_materials_button.click
+      - do: seal_warranty_button.click
+      - browser: reload
+      - table: warranty_grid
+        expect_rows:
+          - id: W-CLAIM
+            cells: {status: cleared}
+          - id: W-DISPATCH
+            cells: {status: cleared}
+          - id: W-MATERIALS
+            cells: {status: cleared}
+          - id: W-QA
+            cells: {status: cleared}
+          - id: W-INVOICE
+            cells: {status: cleared}
+
+  - id: private_30_materials_clear_reupload_replaces_mismatch
+    tier: upload
+    steps:
+      - do: reset_button.click
+      - do: role_claims_manager_button.click
+      - do: go_warranty_button.click
+      - do: materials_upload_input.upload
+        input:
+          file:
+            name: replace-mismatch.csv
+            mime_type: text/csv
+            content: |
+              id,item,status
+              MT-1,Copper valve,mismatch
+          rows:
+            - {id: MT-1, item: "Copper valve", status: mismatch}
+      - do: materials_upload_input.upload
+        input:
+          file:
+            name: replace-clear.csv
+            mime_type: text/csv
+            content: |
+              id,item,status
+              MT-9,Sealant roll,matched
+          rows:
+            - {id: MT-9, item: "Sealant roll", status: matched}
+        expect:
+          - {op: equals, path: material_mismatch_count, value: 0}
+      - table: materials_grid
+        expect_order: [MT-9]
+        expect_row_count: 1
+
+  - id: private_31_homeowner_cannot_preauth_claim
+    tier: permission
+    steps:
+      - do: reset_button.click
+      - do: go_warranty_button.click
+      - do: preauth_claim_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: claim_status, value: idle}
+          - {op: equals, path: service_call_count, value: 0}
+
+  - id: private_32_claim_after_quote_preserves_quote_amount
+    tier: service
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: get_quote_button.click
+      - do: role_claims_manager_button.click
+      - do: go_warranty_button.click
+      - do: preauth_claim_button.click
+        expect:
+          - {op: equals, path: quote_amount, value: 26800}
+          - {op: equals, path: claim_status, value: approved}
+
+  - id: private_33_seal_blocked_after_material_mismatch
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+      - do: get_quote_button.click
+      - do: approve_homeowner_button.click
+      - do: role_dispatcher_button.click
+      - do: go_dispatch_button.click
+      - do: assign_mina_button.click
+      - do: ready_parts_button.click
+      - do: dispatch_visit_button.click
+      - do: role_quality_manager_button.click
+      - do: go_quality_button.click
+      - do: permit_upload_input.upload
+        input:
+          file:
+            name: mismatch-seal-permit.csv
+            mime_type: text/csv
+            content: |
+              id,document,status
+              PM-1,Before photos,ready
+          rows:
+            - {id: PM-1, document: "Before photos", status: ready}
+      - do: pass_qa_button.click
+      - do: issue_invoice_button.click
+      - do: role_claims_manager_button.click
+      - do: go_warranty_button.click
+      - do: preauth_claim_button.click
+      - do: materials_upload_input.upload
+        input:
+          file:
+            name: mismatch-seal.csv
+            mime_type: text/csv
+            content: |
+              id,item,status
+              MT-1,Copper valve,mismatch
+          rows:
+            - {id: MT-1, item: "Copper valve", status: mismatch}
+      - do: reconcile_materials_button.click
+        mode: rejected
+      - do: seal_warranty_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: warranty_status, value: blocked}
+          - {op: equals, path: warranty_count, value: 0}
+
+  - id: private_34_post_seal_mismatch_persists_reload
+    tier: persistence
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+      - do: get_quote_button.click
+      - do: approve_homeowner_button.click
+      - do: role_dispatcher_button.click
+      - do: go_dispatch_button.click
+      - do: assign_mina_button.click
+      - do: ready_parts_button.click
+      - do: dispatch_visit_button.click
+      - do: role_quality_manager_button.click
+      - do: go_quality_button.click
+      - do: permit_upload_input.upload
+        input:
+          file:
+            name: persisted-seal-permit.csv
+            mime_type: text/csv
+            content: |
+              id,document,status
+              PM-1,Before photos,ready
+          rows:
+            - {id: PM-1, document: "Before photos", status: ready}
+      - do: pass_qa_button.click
+      - do: issue_invoice_button.click
+      - do: role_claims_manager_button.click
+      - do: go_warranty_button.click
+      - do: preauth_claim_button.click
+      - do: materials_upload_input.upload
+        input:
+          file:
+            name: persisted-clear.csv
+            mime_type: text/csv
+            content: |
+              id,item,status
+              MT-1,Copper valve,matched
+          rows:
+            - {id: MT-1, item: "Copper valve", status: matched}
+      - do: reconcile_materials_button.click
+      - do: seal_warranty_button.click
+      - do: materials_upload_input.upload
+        input:
+          file:
+            name: persisted-mismatch.csv
+            mime_type: text/csv
+            content: |
+              id,item,status
+              MT-1,Copper valve,mismatch
+          rows:
+            - {id: MT-1, item: "Copper valve", status: mismatch}
+      - browser: reload
+        expect:
+          - {op: equals, path: warranty_status, value: open}
+          - {op: equals, path: material_mismatch_count, value: 1}
+
+  - id: private_35_pro_accept_does_not_reopen_dispatched_visit
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+      - do: get_quote_button.click
+      - do: approve_quote_button.click
+      - do: role_dispatcher_button.click
+      - do: go_dispatch_button.click
+      - do: assign_mina_button.click
+      - do: ready_parts_button.click
+      - do: dispatch_visit_button.click
+      - do: role_pro_button.click
+      - do: go_visits_button.click
+      - do: pro_accept_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: booking_status, value: dispatched}
+
+  - id: private_36_warranty_count_unchanged_after_blocked_second_seal
+    tier: journey
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+      - do: get_quote_button.click
+      - do: approve_homeowner_button.click
+      - do: role_dispatcher_button.click
+      - do: go_dispatch_button.click
+      - do: assign_mina_button.click
+      - do: ready_parts_button.click
+      - do: dispatch_visit_button.click
+      - do: role_quality_manager_button.click
+      - do: go_quality_button.click
+      - do: permit_upload_input.upload
+        input:
+          file:
+            name: count-block-permit.csv
+            mime_type: text/csv
+            content: |
+              id,document,status
+              PM-1,Before photos,ready
+          rows:
+            - {id: PM-1, document: "Before photos", status: ready}
+      - do: pass_qa_button.click
+      - do: issue_invoice_button.click
+      - do: role_claims_manager_button.click
+      - do: go_warranty_button.click
+      - do: preauth_claim_button.click
+      - do: materials_upload_input.upload
+        input:
+          file:
+            name: count-clear.csv
+            mime_type: text/csv
+            content: |
+              id,item,status
+              MT-1,Copper valve,matched
+          rows:
+            - {id: MT-1, item: "Copper valve", status: matched}
+      - do: reconcile_materials_button.click
+      - do: seal_warranty_button.click
+      - do: materials_upload_input.upload
+        input:
+          file:
+            name: count-mismatch.csv
+            mime_type: text/csv
+            content: |
+              id,item,status
+              MT-1,Copper valve,mismatch
+          rows:
+            - {id: MT-1, item: "Copper valve", status: mismatch}
+      - do: seal_warranty_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: warranty_count, value: 1}
+          - {op: equals, path: warranty_status, value: blocked}
+
+  - id: private_37_carrier_hold_reopens_claim_after_seal
+    tier: journey
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+      - do: get_quote_button.click
+      - do: approve_homeowner_button.click
+      - do: role_dispatcher_button.click
+      - do: go_dispatch_button.click
+      - do: assign_mina_button.click
+      - do: ready_parts_button.click
+      - do: dispatch_visit_button.click
+      - do: role_quality_manager_button.click
+      - do: go_quality_button.click
+      - do: permit_upload_input.upload
+        input:
+          file: {name: hold-permit.csv, mime_type: text/csv, content: "id,document,status\nPM-1,Before photos,ready\n"}
+          rows:
+            - {id: PM-1, document: "Before photos", status: ready}
+      - do: pass_qa_button.click
+      - do: issue_invoice_button.click
+      - do: role_claims_manager_button.click
+      - do: go_warranty_button.click
+      - do: preauth_claim_button.click
+      - do: materials_upload_input.upload
+        input:
+          file: {name: hold-materials.csv, mime_type: text/csv, content: "id,item,status\nMT-1,Copper valve,matched\n"}
+          rows:
+            - {id: MT-1, item: "Copper valve", status: matched}
+      - do: reconcile_materials_button.click
+      - do: seal_warranty_button.click
+      - do: carrier_hold_button.click
+        expect:
+          - {op: equals, path: warranty_status, value: hold}
+          - {op: equals, path: claim_status, value: review}
+          - {op: equals, path: warranty_revision_count, value: 1}
+
+  - id: private_38_carrier_hold_table_marks_claim_open
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+      - do: get_quote_button.click
+      - do: approve_homeowner_button.click
+      - do: role_dispatcher_button.click
+      - do: go_dispatch_button.click
+      - do: assign_mina_button.click
+      - do: ready_parts_button.click
+      - do: dispatch_visit_button.click
+      - do: role_quality_manager_button.click
+      - do: go_quality_button.click
+      - do: permit_upload_input.upload
+        input:
+          file: {name: hold-table-permit.csv, mime_type: text/csv, content: "id,document,status\nPM-1,Before photos,ready\n"}
+          rows:
+            - {id: PM-1, document: "Before photos", status: ready}
+      - do: pass_qa_button.click
+      - do: issue_invoice_button.click
+      - do: role_claims_manager_button.click
+      - do: go_warranty_button.click
+      - do: preauth_claim_button.click
+      - do: materials_upload_input.upload
+        input:
+          file: {name: hold-table-materials.csv, mime_type: text/csv, content: "id,item,status\nMT-1,Copper valve,matched\n"}
+          rows:
+            - {id: MT-1, item: "Copper valve", status: matched}
+      - do: reconcile_materials_button.click
+      - do: seal_warranty_button.click
+      - do: carrier_hold_button.click
+      - table: warranty_grid
+        expect_rows:
+          - id: W-CLAIM
+            cells: {status: open}
+          - id: W-MATERIALS
+            cells: {status: cleared}
+
+  - id: private_39_reseal_rejected_without_customer_ack
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+      - do: get_quote_button.click
+      - do: approve_homeowner_button.click
+      - do: role_dispatcher_button.click
+      - do: go_dispatch_button.click
+      - do: assign_mina_button.click
+      - do: ready_parts_button.click
+      - do: dispatch_visit_button.click
+      - do: role_quality_manager_button.click
+      - do: go_quality_button.click
+      - do: permit_upload_input.upload
+        input:
+          file: {name: no-ack-permit.csv, mime_type: text/csv, content: "id,document,status\nPM-1,Before photos,ready\n"}
+          rows:
+            - {id: PM-1, document: "Before photos", status: ready}
+      - do: pass_qa_button.click
+      - do: issue_invoice_button.click
+      - do: role_claims_manager_button.click
+      - do: go_warranty_button.click
+      - do: preauth_claim_button.click
+      - do: materials_upload_input.upload
+        input:
+          file: {name: no-ack-materials.csv, mime_type: text/csv, content: "id,item,status\nMT-1,Copper valve,matched\n"}
+          rows:
+            - {id: MT-1, item: "Copper valve", status: matched}
+      - do: reconcile_materials_button.click
+      - do: seal_warranty_button.click
+      - do: carrier_hold_button.click
+      - do: approve_claim_recheck_button.click
+      - do: reseal_warranty_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: reseal_status, value: blocked}
+          - {op: equals, path: warranty_status, value: hold}
+
+  - id: private_40_claims_manager_cannot_customer_ack
+    tier: permission
+    steps:
+      - do: reset_button.click
+      - do: role_claims_manager_button.click
+      - do: go_warranty_button.click
+      - do: customer_ack_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: closure_status, value: idle}
+          - {op: equals, path: closure_count, value: 0}
+
+  - id: private_41_customer_ack_then_reseal_counts
+    tier: journey
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+      - do: get_quote_button.click
+      - do: approve_homeowner_button.click
+      - do: role_dispatcher_button.click
+      - do: go_dispatch_button.click
+      - do: assign_mina_button.click
+      - do: ready_parts_button.click
+      - do: dispatch_visit_button.click
+      - do: role_quality_manager_button.click
+      - do: go_quality_button.click
+      - do: permit_upload_input.upload
+        input:
+          file: {name: reseal-permit.csv, mime_type: text/csv, content: "id,document,status\nPM-1,Before photos,ready\n"}
+          rows:
+            - {id: PM-1, document: "Before photos", status: ready}
+      - do: pass_qa_button.click
+      - do: issue_invoice_button.click
+      - do: role_claims_manager_button.click
+      - do: go_warranty_button.click
+      - do: preauth_claim_button.click
+      - do: materials_upload_input.upload
+        input:
+          file: {name: reseal-materials.csv, mime_type: text/csv, content: "id,item,status\nMT-1,Copper valve,matched\n"}
+          rows:
+            - {id: MT-1, item: "Copper valve", status: matched}
+      - do: reconcile_materials_button.click
+      - do: seal_warranty_button.click
+      - do: carrier_hold_button.click
+      - do: approve_claim_recheck_button.click
+      - do: role_homeowner_button.click
+      - do: customer_ack_button.click
+      - do: role_claims_manager_button.click
+      - do: reseal_warranty_button.click
+        expect:
+          - {op: equals, path: warranty_status, value: resealed}
+          - {op: equals, path: warranty_count, value: 2}
+          - {op: equals, path: warranty_revision_count, value: 2}
+
+  - id: private_42_reopen_materials_after_reseal
+    tier: journey
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+      - do: get_quote_button.click
+      - do: approve_homeowner_button.click
+      - do: role_dispatcher_button.click
+      - do: go_dispatch_button.click
+      - do: assign_mina_button.click
+      - do: ready_parts_button.click
+      - do: dispatch_visit_button.click
+      - do: role_quality_manager_button.click
+      - do: go_quality_button.click
+      - do: permit_upload_input.upload
+        input:
+          file: {name: reopen-permit.csv, mime_type: text/csv, content: "id,document,status\nPM-1,Before photos,ready\n"}
+          rows:
+            - {id: PM-1, document: "Before photos", status: ready}
+      - do: pass_qa_button.click
+      - do: issue_invoice_button.click
+      - do: role_claims_manager_button.click
+      - do: go_warranty_button.click
+      - do: preauth_claim_button.click
+      - do: materials_upload_input.upload
+        input:
+          file: {name: reopen-materials.csv, mime_type: text/csv, content: "id,item,status\nMT-1,Copper valve,matched\n"}
+          rows:
+            - {id: MT-1, item: "Copper valve", status: matched}
+      - do: reconcile_materials_button.click
+      - do: seal_warranty_button.click
+      - do: carrier_hold_button.click
+      - do: approve_claim_recheck_button.click
+      - do: role_homeowner_button.click
+      - do: customer_ack_button.click
+      - do: role_claims_manager_button.click
+      - do: reseal_warranty_button.click
+      - do: reopen_materials_button.click
+        expect:
+          - {op: equals, path: materials_status, value: review}
+          - {op: equals, path: material_mismatch_count, value: 1}
+          - {op: equals, path: warranty_status, value: open}
+
+  - id: private_43_reopen_materials_table_order
+    tier: upload
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+      - do: get_quote_button.click
+      - do: approve_homeowner_button.click
+      - do: role_dispatcher_button.click
+      - do: go_dispatch_button.click
+      - do: assign_mina_button.click
+      - do: ready_parts_button.click
+      - do: dispatch_visit_button.click
+      - do: role_quality_manager_button.click
+      - do: go_quality_button.click
+      - do: permit_upload_input.upload
+        input:
+          file: {name: reopen-table-permit.csv, mime_type: text/csv, content: "id,document,status\nPM-1,Before photos,ready\n"}
+          rows:
+            - {id: PM-1, document: "Before photos", status: ready}
+      - do: pass_qa_button.click
+      - do: issue_invoice_button.click
+      - do: role_claims_manager_button.click
+      - do: go_warranty_button.click
+      - do: preauth_claim_button.click
+      - do: materials_upload_input.upload
+        input:
+          file: {name: reopen-table-materials.csv, mime_type: text/csv, content: "id,item,status\nMT-1,Copper valve,matched\n"}
+          rows:
+            - {id: MT-1, item: "Copper valve", status: matched}
+      - do: reconcile_materials_button.click
+      - do: seal_warranty_button.click
+      - do: reopen_materials_button.click
+      - table: materials_grid
+        expect_order: [MT-REOPEN]
+        expect_rows:
+          - id: MT-REOPEN
+            cells: {status: mismatch}
+
+  - id: private_44_hold_state_survives_reload
+    tier: persistence
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+      - do: get_quote_button.click
+      - do: approve_homeowner_button.click
+      - do: role_dispatcher_button.click
+      - do: go_dispatch_button.click
+      - do: assign_mina_button.click
+      - do: ready_parts_button.click
+      - do: dispatch_visit_button.click
+      - do: role_quality_manager_button.click
+      - do: go_quality_button.click
+      - do: permit_upload_input.upload
+        input:
+          file: {name: hold-reload-permit.csv, mime_type: text/csv, content: "id,document,status\nPM-1,Before photos,ready\n"}
+          rows:
+            - {id: PM-1, document: "Before photos", status: ready}
+      - do: pass_qa_button.click
+      - do: issue_invoice_button.click
+      - do: role_claims_manager_button.click
+      - do: go_warranty_button.click
+      - do: preauth_claim_button.click
+      - do: materials_upload_input.upload
+        input:
+          file: {name: hold-reload-materials.csv, mime_type: text/csv, content: "id,item,status\nMT-1,Copper valve,matched\n"}
+          rows:
+            - {id: MT-1, item: "Copper valve", status: matched}
+      - do: reconcile_materials_button.click
+      - do: seal_warranty_button.click
+      - do: carrier_hold_button.click
+      - browser: reload
+        expect:
+          - {op: equals, path: warranty_status, value: hold}
+          - {op: equals, path: claim_status, value: review}
+          - {op: equals, path: warranty_revision_count, value: 1}
+
+  - id: private_45_reset_clears_reseal_counters
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: role_homeowner_button.click
+      - do: go_warranty_button.click
+      - do: customer_ack_button.click
+      - do: reset_button.click
+        expect:
+          - {op: equals, path: closure_status, value: idle}
+          - {op: equals, path: closure_count, value: 0}
+          - {op: equals, path: warranty_revision_count, value: 0}
+
+  - id: private_46_reseal_status_persists_after_reload
+    tier: persistence
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+      - do: get_quote_button.click
+      - do: approve_homeowner_button.click
+      - do: role_dispatcher_button.click
+      - do: go_dispatch_button.click
+      - do: assign_mina_button.click
+      - do: ready_parts_button.click
+      - do: dispatch_visit_button.click
+      - do: role_quality_manager_button.click
+      - do: go_quality_button.click
+      - do: permit_upload_input.upload
+        input:
+          file: {name: reseal-reload-permit.csv, mime_type: text/csv, content: "id,document,status\nPM-1,Before photos,ready\n"}
+          rows:
+            - {id: PM-1, document: "Before photos", status: ready}
+      - do: pass_qa_button.click
+      - do: issue_invoice_button.click
+      - do: role_claims_manager_button.click
+      - do: go_warranty_button.click
+      - do: preauth_claim_button.click
+      - do: materials_upload_input.upload
+        input:
+          file: {name: reseal-reload-materials.csv, mime_type: text/csv, content: "id,item,status\nMT-1,Copper valve,matched\n"}
+          rows:
+            - {id: MT-1, item: "Copper valve", status: matched}
+      - do: reconcile_materials_button.click
+      - do: seal_warranty_button.click
+      - do: carrier_hold_button.click
+      - do: approve_claim_recheck_button.click
+      - do: role_homeowner_button.click
+      - do: customer_ack_button.click
+      - do: role_claims_manager_button.click
+      - do: reseal_warranty_button.click
+      - browser: reload
+        expect:
+          - {op: equals, path: reseal_status, value: complete}
+          - {op: equals, path: warranty_status, value: resealed}
+          - {op: equals, path: closure_status, value: acknowledged}
+# density-extension:end

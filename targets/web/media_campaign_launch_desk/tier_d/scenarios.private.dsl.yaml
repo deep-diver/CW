@@ -1,0 +1,1011 @@
+dsl_version: "3.0.0"
+visibility: private
+tier_weights:
+  smoke: 1
+  core: 2
+  validation: 3
+  service: 4
+  upload: 4
+  permission: 4
+  persistence: 5
+  journey: 7
+
+scenarios:
+  - id: private_01_all_assets_initial_order
+    tier: smoke
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - table: asset_grid
+        expect_order: [A-PRE, A-RED, A-SOC, A-POD, A-OOH, A-PR]
+        expect_row_count: 6
+        expect_rows:
+          - id: A-PRE
+            cells:
+              title: "Premiere Livestream Bumper"
+              format: live
+              risk: critical
+          - id: A-PR
+            cells:
+              title: "Press Kit Stills"
+              clearance: cleared
+              version: v1
+
+  - id: private_02_filter_uncleared_assets
+    tier: smoke
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: filter_uncleared_button.click
+        expect:
+          - {op: equals, path: current_filter, value: uncleared}
+      - table: asset_grid
+        expect_order: [A-PRE, A-SOC, A-RED]
+        expect_row_count: 3
+
+  - id: private_03_select_social_asset_snapshot
+    tier: core
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: select_social_button.click
+        expect:
+          - {op: equals, path: selected_asset_id, value: A-SOC}
+          - {op: equals, path: selected_asset_title, value: "Social Vertical Teasers"}
+          - {op: equals, path: selected_region, value: APAC}
+          - {op: equals, path: selected_version, value: v7}
+          - {op: equals, path: current_page, value: markets}
+
+  - id: private_04_trailer_legal_clearance_service_score
+    tier: service
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: select_trailer_button.click
+      - do: go_slate_button.click
+      - do: role_legal_button.click
+      - do: request_legal_clearance_button.click
+        expect:
+          - {op: equals, path: legal_clearance_status, value: cleared}
+          - {op: equals, path: legal_clearance_score, value: 96}
+          - {op: equals, path: selected_asset_id, value: A-RED}
+          - {op: equals, path: service_call_count, value: 1}
+
+  - id: private_05_social_legal_clearance_service_score
+    tier: service
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: select_social_button.click
+      - do: go_slate_button.click
+      - do: role_legal_button.click
+      - do: request_legal_clearance_button.click
+        expect:
+          - {op: equals, path: legal_clearance_score, value: 91}
+          - {op: equals, path: rights_call_count, value: 1}
+
+  - id: private_06_ops_cannot_lock_asset
+    tier: permission
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: select_premiere_button.click
+      - do: go_slate_button.click
+      - do: role_ops_button.click
+      - do: lock_asset_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: embargo_status, value: idle}
+          - {op: equals, path: denied_count, value: 1}
+          - {op: equals, path: last_action, value: unauthorized_producer}
+
+  - id: private_07_legal_cannot_lock_windows
+    tier: permission
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: go_markets_button.click
+      - do: window_upload_input.upload
+        input:
+          file:
+            name: private-windows-clean.csv
+            mime_type: text/csv
+            content: |
+              id,market,local_time,blackout,owner,status
+              W-LON,London,20:00,none,ops,clear
+          rows:
+            - {id: W-LON, market: London, local_time: "20:00", blackout: none, owner: ops, status: clear}
+      - do: role_legal_button.click
+      - do: lock_windows_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: window_status, value: review}
+          - {op: equals, path: denied_count, value: 1}
+          - {op: equals, path: last_action, value: unauthorized_ops}
+
+  - id: private_08_window_upload_replaces_rows
+    tier: upload
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: go_markets_button.click
+      - do: window_upload_input.upload
+        input:
+          file:
+            name: first-windows.csv
+            mime_type: text/csv
+            content: |
+              id,market,local_time,blackout,owner,status
+              W-OLD,Paris,21:00,old-hold,ops,open
+          rows:
+            - {id: W-OLD, market: Paris, local_time: "21:00", blackout: old-hold, owner: ops, status: open}
+      - do: window_upload_input.upload
+        input:
+          file:
+            name: final-windows.csv
+            mime_type: text/csv
+            content: |
+              id,market,local_time,blackout,owner,status
+              W-FINAL,Sydney,09:00,none,ops,clear
+          rows:
+            - {id: W-FINAL, market: Sydney, local_time: "09:00", blackout: none, owner: ops, status: clear}
+        expect:
+          - {op: equals, path: window_count, value: 1}
+          - {op: equals, path: open_blackout_count, value: 0}
+          - {op: equals, path: last_window_file, value: final-windows.csv}
+      - table: window_grid
+        expect_order: [W-FINAL]
+        expect_row_count: 1
+
+  - id: private_09_delivery_ack_blocks_before_lock
+    tier: validation
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: go_traffic_button.click
+      - do: role_ops_button.click
+      - do: acknowledge_delivery_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: delivery_ack_status, value: blocked}
+          - {op: equals, path: delivery_ack_count, value: 0}
+          - {op: equals, path: last_action, value: ack_delivery_blocked}
+
+  - id: private_10_measurement_cannot_ack_delivery
+    tier: permission
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: go_traffic_button.click
+      - do: role_ops_button.click
+      - do: traffic_upload_input.upload
+        input:
+          file:
+            name: private-traffic-clean.csv
+            mime_type: text/csv
+            content: |
+              id,partner,market,format,spend,qa,status
+              P-AMZ,Amazon,global,trailer,420000,pass,staged
+          rows:
+            - {id: P-AMZ, partner: Amazon, market: global, format: trailer, spend: 420000, qa: pass, status: staged}
+      - do: lock_delivery_button.click
+      - do: role_measurement_button.click
+      - do: acknowledge_delivery_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: delivery_ack_status, value: idle}
+          - {op: equals, path: denied_count, value: 1}
+          - {op: equals, path: last_action, value: unauthorized_ops}
+
+  - id: private_11_arm_beacons_blocks_without_upload
+    tier: validation
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: go_signals_button.click
+      - do: role_measurement_button.click
+      - do: arm_beacons_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: beacon_status, value: blocked}
+          - {op: equals, path: beacon_arm_count, value: 0}
+          - {op: equals, path: last_action, value: beacon_blocked}
+
+  - id: private_12_ops_cannot_run_attribution
+    tier: permission
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: go_signals_button.click
+      - do: role_ops_button.click
+      - do: run_attribution_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: attribution_status, value: idle}
+          - {op: equals, path: denied_count, value: 1}
+          - {op: equals, path: service_call_count, value: 0}
+
+  - id: private_13_sentiment_reupload_reopens_measurement_gate
+    tier: validation
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: go_signals_button.click
+      - do: role_measurement_button.click
+      - do: sentiment_upload_input.upload
+        input:
+          file:
+            name: clean-sentiment-private.csv
+            mime_type: text/csv
+            content: |
+              id,market,volume,polarity,status
+              S-1,London,21000,positive,green
+          rows:
+            - {id: S-1, market: London, volume: 21000, polarity: positive, status: green}
+      - do: clear_sentiment_button.click
+        expect:
+          - {op: equals, path: sentiment_status, value: cleared}
+          - {op: equals, path: readiness_score, value: 10}
+      - do: sentiment_upload_input.upload
+        input:
+          file:
+            name: reopened-sentiment-private.csv
+            mime_type: text/csv
+            content: |
+              id,market,volume,polarity,status
+              S-1,London,21000,negative,watch
+          rows:
+            - {id: S-1, market: London, volume: 21000, polarity: negative, status: watch}
+        expect:
+          - {op: equals, path: sentiment_status, value: review}
+          - {op: equals, path: negative_sentiment_count, value: 1}
+          - {op: equals, path: readiness_score, value: 0}
+          - {op: equals, path: open_blockers, value: 10}
+
+  - id: private_14_finance_cannot_clear_sentiment
+    tier: permission
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: go_signals_button.click
+      - do: sentiment_upload_input.upload
+        input:
+          file:
+            name: finance-sentiment.csv
+            mime_type: text/csv
+            content: |
+              id,market,volume,polarity,status
+              S-1,London,21000,positive,green
+          rows:
+            - {id: S-1, market: London, volume: 21000, polarity: positive, status: green}
+      - do: role_finance_button.click
+      - do: clear_sentiment_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: sentiment_status, value: review}
+          - {op: equals, path: denied_count, value: 1}
+          - {op: equals, path: last_action, value: unauthorized_measurement}
+
+  - id: private_15_finance_signoff_blocks_before_escrow_lock
+    tier: validation
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: go_seal_button.click
+      - do: role_finance_button.click
+      - do: finance_signoff_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: finance_signoff_status, value: idle}
+          - {op: equals, path: signoff_count, value: 0}
+          - {op: equals, path: last_action, value: signoff_blocked}
+
+  - id: private_16_executive_signoff_blocks_before_operator_signoffs
+    tier: validation
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: go_seal_button.click
+      - do: role_executive_button.click
+      - do: executive_signoff_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: executive_signoff_status, value: idle}
+          - {op: equals, path: signoff_count, value: 0}
+          - {op: equals, path: last_action, value: executive_signoff_blocked}
+
+  - id: private_17_legal_signoff_after_asset_lock
+    tier: journey
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: select_trailer_button.click
+      - do: go_slate_button.click
+      - do: role_legal_button.click
+      - do: request_legal_clearance_button.click
+      - do: role_producer_button.click
+      - do: release_code_input.fill
+        input: {value: " red-horizon "}
+      - do: watermark_key_input.fill
+        input: {value: " red  wm "}
+      - do: lock_asset_button.click
+      - do: go_seal_button.click
+      - do: role_legal_button.click
+      - do: legal_signoff_button.click
+        expect:
+          - {op: equals, path: legal_signoff_status, value: signed}
+          - {op: equals, path: signoff_count, value: 1}
+          - {op: equals, path: readiness_score, value: 20}
+          - {op: equals, path: open_blockers, value: 8}
+
+  - id: private_18_operator_signoffs_reach_ninety_before_executive
+    tier: journey
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: select_premiere_button.click
+      - do: go_slate_button.click
+      - do: role_legal_button.click
+      - do: request_legal_clearance_button.click
+      - do: role_producer_button.click
+      - do: release_code_input.fill
+        input: {value: " op-signoffs "}
+      - do: watermark_key_input.fill
+        input: {value: " wm op "}
+      - do: lock_asset_button.click
+      - do: go_markets_button.click
+      - do: role_ops_button.click
+      - do: window_upload_input.upload
+        input:
+          file:
+            name: op-windows.csv
+            mime_type: text/csv
+            content: |
+              id,market,local_time,blackout,owner,status
+              W-LON,London,20:00,none,ops,clear
+          rows:
+            - {id: W-LON, market: London, local_time: "20:00", blackout: none, owner: ops, status: clear}
+      - do: role_ops_button.click
+      - do: lock_windows_button.click
+      - do: go_traffic_button.click
+      - do: traffic_upload_input.upload
+        input:
+          file:
+            name: op-traffic.csv
+            mime_type: text/csv
+            content: |
+              id,partner,market,format,spend,qa,status
+              P-AMZ,Amazon,global,trailer,420000,pass,staged
+          rows:
+            - {id: P-AMZ, partner: Amazon, market: global, format: trailer, spend: 420000, qa: pass, status: staged}
+      - do: lock_delivery_button.click
+      - do: acknowledge_delivery_button.click
+      - do: go_signals_button.click
+      - do: role_measurement_button.click
+      - do: beacon_upload_input.upload
+        input:
+          file:
+            name: op-beacons.csv
+            mime_type: text/csv
+            content: |
+              id,surface,event,owner,status
+              B-WEB,web,premiere_view,measurement,ready
+              B-CTV,ctv,complete_75,measurement,ready
+          rows:
+            - {id: B-WEB, surface: web, event: premiere_view, owner: measurement, status: ready}
+            - {id: B-CTV, surface: ctv, event: complete_75, owner: measurement, status: ready}
+      - do: arm_beacons_button.click
+      - do: run_attribution_button.click
+      - do: sentiment_upload_input.upload
+        input:
+          file:
+            name: op-sentiment.csv
+            mime_type: text/csv
+            content: |
+              id,market,volume,polarity,status
+              S-1,London,21000,positive,green
+          rows:
+            - {id: S-1, market: London, volume: 21000, polarity: positive, status: green}
+      - do: clear_sentiment_button.click
+      - do: role_finance_button.click
+      - do: escrow_upload_input.upload
+        input:
+          file:
+            name: op-escrow.csv
+            mime_type: text/csv
+            content: |
+              id,market,budget,invoice,status
+              E-1,global,500000,paid,ready
+          rows:
+            - {id: E-1, market: global, budget: 500000, invoice: paid, status: ready}
+      - do: lock_escrow_button.click
+      - do: go_seal_button.click
+      - do: role_legal_button.click
+      - do: legal_signoff_button.click
+      - do: role_ops_button.click
+      - do: ops_signoff_button.click
+      - do: role_measurement_button.click
+      - do: measurement_signoff_button.click
+      - do: role_finance_button.click
+      - do: finance_signoff_button.click
+        expect:
+          - {op: equals, path: legal_signoff_status, value: signed}
+          - {op: equals, path: ops_signoff_status, value: signed}
+          - {op: equals, path: measurement_signoff_status, value: signed}
+          - {op: equals, path: finance_signoff_status, value: signed}
+          - {op: equals, path: signoff_count, value: 4}
+          - {op: equals, path: readiness_score, value: 90}
+          - {op: equals, path: open_blockers, value: 1}
+
+  - id: private_19_full_launch_reload_preserves_seal
+    tier: persistence
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: select_premiere_button.click
+      - do: go_slate_button.click
+      - do: role_legal_button.click
+      - do: request_legal_clearance_button.click
+      - do: role_producer_button.click
+      - do: release_code_input.fill
+        input: {value: " reload-seal "}
+      - do: watermark_key_input.fill
+        input: {value: " reload wm "}
+      - do: lock_asset_button.click
+      - do: go_markets_button.click
+      - do: role_ops_button.click
+      - do: window_upload_input.upload
+        input:
+          file:
+            name: reload-windows.csv
+            mime_type: text/csv
+            content: |
+              id,market,local_time,blackout,owner,status
+              W-LON,London,20:00,none,ops,clear
+          rows:
+            - {id: W-LON, market: London, local_time: "20:00", blackout: none, owner: ops, status: clear}
+      - do: lock_windows_button.click
+      - do: go_traffic_button.click
+      - do: traffic_upload_input.upload
+        input:
+          file:
+            name: reload-traffic.csv
+            mime_type: text/csv
+            content: |
+              id,partner,market,format,spend,qa,status
+              P-AMZ,Amazon,global,trailer,420000,pass,staged
+          rows:
+            - {id: P-AMZ, partner: Amazon, market: global, format: trailer, spend: 420000, qa: pass, status: staged}
+      - do: lock_delivery_button.click
+      - do: acknowledge_delivery_button.click
+      - do: go_signals_button.click
+      - do: role_measurement_button.click
+      - do: beacon_upload_input.upload
+        input:
+          file:
+            name: reload-beacons.csv
+            mime_type: text/csv
+            content: |
+              id,surface,event,owner,status
+              B-WEB,web,premiere_view,measurement,ready
+              B-CTV,ctv,complete_75,measurement,ready
+          rows:
+            - {id: B-WEB, surface: web, event: premiere_view, owner: measurement, status: ready}
+            - {id: B-CTV, surface: ctv, event: complete_75, owner: measurement, status: ready}
+      - do: arm_beacons_button.click
+      - do: run_attribution_button.click
+      - do: sentiment_upload_input.upload
+        input:
+          file:
+            name: reload-sentiment.csv
+            mime_type: text/csv
+            content: |
+              id,market,volume,polarity,status
+              S-1,London,21000,positive,green
+          rows:
+            - {id: S-1, market: London, volume: 21000, polarity: positive, status: green}
+      - do: clear_sentiment_button.click
+      - do: role_finance_button.click
+      - do: escrow_upload_input.upload
+        input:
+          file:
+            name: reload-escrow.csv
+            mime_type: text/csv
+            content: |
+              id,market,budget,invoice,status
+              E-1,global,500000,paid,ready
+          rows:
+            - {id: E-1, market: global, budget: 500000, invoice: paid, status: ready}
+      - do: lock_escrow_button.click
+      - do: go_seal_button.click
+      - do: role_legal_button.click
+      - do: legal_signoff_button.click
+      - do: role_ops_button.click
+      - do: ops_signoff_button.click
+      - do: role_measurement_button.click
+      - do: measurement_signoff_button.click
+      - do: role_finance_button.click
+      - do: finance_signoff_button.click
+      - do: role_executive_button.click
+      - do: executive_signoff_button.click
+      - do: finalize_launch_button.click
+      - browser: reload
+        expect_page: seal
+        expect:
+          - {op: equals, path: current_page, value: seal}
+          - {op: unchanged, path: global_launch_status}
+          - {op: unchanged, path: launch_count}
+          - {op: unchanged, path: launch_seal_score}
+          - {op: unchanged, path: readiness_score}
+          - {op: unchanged, path: audit_count}
+
+  - id: private_20_post_seal_window_reupload_reopens_launch
+    tier: journey
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: select_premiere_button.click
+      - do: go_slate_button.click
+      - do: role_legal_button.click
+      - do: request_legal_clearance_button.click
+      - do: role_producer_button.click
+      - do: release_code_input.fill
+        input: {value: " reopen-windows "}
+      - do: watermark_key_input.fill
+        input: {value: " reopen wm "}
+      - do: lock_asset_button.click
+      - do: go_markets_button.click
+      - do: role_ops_button.click
+      - do: window_upload_input.upload
+        input:
+          file:
+            name: sealed-clean-windows.csv
+            mime_type: text/csv
+            content: |
+              id,market,local_time,blackout,owner,status
+              W-LON,London,20:00,none,ops,clear
+          rows:
+            - {id: W-LON, market: London, local_time: "20:00", blackout: none, owner: ops, status: clear}
+      - do: lock_windows_button.click
+      - do: go_traffic_button.click
+      - do: traffic_upload_input.upload
+        input:
+          file:
+            name: sealed-traffic.csv
+            mime_type: text/csv
+            content: |
+              id,partner,market,format,spend,qa,status
+              P-AMZ,Amazon,global,trailer,420000,pass,staged
+          rows:
+            - {id: P-AMZ, partner: Amazon, market: global, format: trailer, spend: 420000, qa: pass, status: staged}
+      - do: lock_delivery_button.click
+      - do: acknowledge_delivery_button.click
+      - do: go_signals_button.click
+      - do: role_measurement_button.click
+      - do: beacon_upload_input.upload
+        input:
+          file:
+            name: sealed-beacons.csv
+            mime_type: text/csv
+            content: |
+              id,surface,event,owner,status
+              B-WEB,web,premiere_view,measurement,ready
+              B-CTV,ctv,complete_75,measurement,ready
+          rows:
+            - {id: B-WEB, surface: web, event: premiere_view, owner: measurement, status: ready}
+            - {id: B-CTV, surface: ctv, event: complete_75, owner: measurement, status: ready}
+      - do: arm_beacons_button.click
+      - do: run_attribution_button.click
+      - do: sentiment_upload_input.upload
+        input:
+          file:
+            name: sealed-sentiment.csv
+            mime_type: text/csv
+            content: |
+              id,market,volume,polarity,status
+              S-1,London,21000,positive,green
+          rows:
+            - {id: S-1, market: London, volume: 21000, polarity: positive, status: green}
+      - do: clear_sentiment_button.click
+      - do: role_finance_button.click
+      - do: escrow_upload_input.upload
+        input:
+          file:
+            name: sealed-escrow.csv
+            mime_type: text/csv
+            content: |
+              id,market,budget,invoice,status
+              E-1,global,500000,paid,ready
+          rows:
+            - {id: E-1, market: global, budget: 500000, invoice: paid, status: ready}
+      - do: lock_escrow_button.click
+      - do: go_seal_button.click
+      - do: role_legal_button.click
+      - do: legal_signoff_button.click
+      - do: role_ops_button.click
+      - do: ops_signoff_button.click
+      - do: role_measurement_button.click
+      - do: measurement_signoff_button.click
+      - do: role_finance_button.click
+      - do: finance_signoff_button.click
+      - do: role_executive_button.click
+      - do: executive_signoff_button.click
+      - do: finalize_launch_button.click
+      - do: go_markets_button.click
+      - do: window_upload_input.upload
+        input:
+          file:
+            name: post-seal-blackout.csv
+            mime_type: text/csv
+            content: |
+              id,market,local_time,blackout,owner,status
+              W-LON,London,20:00,royal-premiere,ops,open
+          rows:
+            - {id: W-LON, market: London, local_time: "20:00", blackout: royal-premiere, owner: ops, status: open}
+        expect:
+          - {op: equals, path: global_launch_status, value: open}
+          - {op: equals, path: window_status, value: review}
+          - {op: equals, path: open_blackout_count, value: 1}
+          - {op: equals, path: ops_signoff_status, value: idle}
+          - {op: equals, path: executive_signoff_status, value: idle}
+          - {op: equals, path: readiness_score, value: 70}
+          - {op: equals, path: open_blockers, value: 3}
+
+  - id: private_21_repair_reopened_windows_and_reseal
+    tier: journey
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: select_premiere_button.click
+      - do: go_slate_button.click
+      - do: role_legal_button.click
+      - do: request_legal_clearance_button.click
+      - do: role_producer_button.click
+      - do: release_code_input.fill
+        input: {value: " reseal-windows "}
+      - do: watermark_key_input.fill
+        input: {value: " reseal wm "}
+      - do: lock_asset_button.click
+      - do: go_markets_button.click
+      - do: role_ops_button.click
+      - do: window_upload_input.upload
+        input:
+          file:
+            name: reseal-windows.csv
+            mime_type: text/csv
+            content: |
+              id,market,local_time,blackout,owner,status
+              W-LON,London,20:00,none,ops,clear
+          rows:
+            - {id: W-LON, market: London, local_time: "20:00", blackout: none, owner: ops, status: clear}
+      - do: lock_windows_button.click
+      - do: go_traffic_button.click
+      - do: traffic_upload_input.upload
+        input:
+          file:
+            name: reseal-traffic.csv
+            mime_type: text/csv
+            content: |
+              id,partner,market,format,spend,qa,status
+              P-AMZ,Amazon,global,trailer,420000,pass,staged
+          rows:
+            - {id: P-AMZ, partner: Amazon, market: global, format: trailer, spend: 420000, qa: pass, status: staged}
+      - do: lock_delivery_button.click
+      - do: acknowledge_delivery_button.click
+      - do: go_signals_button.click
+      - do: role_measurement_button.click
+      - do: beacon_upload_input.upload
+        input:
+          file:
+            name: reseal-beacons.csv
+            mime_type: text/csv
+            content: |
+              id,surface,event,owner,status
+              B-WEB,web,premiere_view,measurement,ready
+              B-CTV,ctv,complete_75,measurement,ready
+          rows:
+            - {id: B-WEB, surface: web, event: premiere_view, owner: measurement, status: ready}
+            - {id: B-CTV, surface: ctv, event: complete_75, owner: measurement, status: ready}
+      - do: arm_beacons_button.click
+      - do: run_attribution_button.click
+      - do: sentiment_upload_input.upload
+        input:
+          file:
+            name: reseal-sentiment.csv
+            mime_type: text/csv
+            content: |
+              id,market,volume,polarity,status
+              S-1,London,21000,positive,green
+          rows:
+            - {id: S-1, market: London, volume: 21000, polarity: positive, status: green}
+      - do: clear_sentiment_button.click
+      - do: role_finance_button.click
+      - do: escrow_upload_input.upload
+        input:
+          file:
+            name: reseal-escrow.csv
+            mime_type: text/csv
+            content: |
+              id,market,budget,invoice,status
+              E-1,global,500000,paid,ready
+          rows:
+            - {id: E-1, market: global, budget: 500000, invoice: paid, status: ready}
+      - do: lock_escrow_button.click
+      - do: go_seal_button.click
+      - do: role_legal_button.click
+      - do: legal_signoff_button.click
+      - do: role_ops_button.click
+      - do: ops_signoff_button.click
+      - do: role_measurement_button.click
+      - do: measurement_signoff_button.click
+      - do: role_finance_button.click
+      - do: finance_signoff_button.click
+      - do: role_executive_button.click
+      - do: executive_signoff_button.click
+      - do: finalize_launch_button.click
+      - do: go_markets_button.click
+      - do: window_upload_input.upload
+        input:
+          file:
+            name: reseal-open-windows.csv
+            mime_type: text/csv
+            content: |
+              id,market,local_time,blackout,owner,status
+              W-LON,London,20:00,royal-premiere,ops,open
+          rows:
+            - {id: W-LON, market: London, local_time: "20:00", blackout: royal-premiere, owner: ops, status: open}
+      - do: window_upload_input.upload
+        input:
+          file:
+            name: reseal-repaired-windows.csv
+            mime_type: text/csv
+            content: |
+              id,market,local_time,blackout,owner,status
+              W-LON,London,20:00,none,ops,clear
+          rows:
+            - {id: W-LON, market: London, local_time: "20:00", blackout: none, owner: ops, status: clear}
+      - do: role_ops_button.click
+      - do: lock_windows_button.click
+      - do: go_seal_button.click
+      - do: role_ops_button.click
+      - do: ops_signoff_button.click
+      - do: role_executive_button.click
+      - do: executive_signoff_button.click
+      - do: finalize_launch_button.click
+        expect:
+          - {op: equals, path: global_launch_status, value: sealed}
+          - {op: equals, path: readiness_score, value: 100}
+          - {op: equals, path: open_blockers, value: 0}
+          - {op: equals, path: launch_count, value: 2}
+          - {op: equals, path: launch_seal_count, value: 2}
+          - {op: equals, path: audit_count, value: 2}
+
+  - id: private_22_reset_clears_launch_state
+    tier: persistence
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: go_traffic_button.click
+      - do: role_ops_button.click
+      - do: traffic_upload_input.upload
+        input:
+          file:
+            name: reset-traffic.csv
+            mime_type: text/csv
+            content: |
+              id,partner,market,format,spend,qa,status
+              P-AMZ,Amazon,global,trailer,420000,pass,staged
+          rows:
+            - {id: P-AMZ, partner: Amazon, market: global, format: trailer, spend: 420000, qa: pass, status: staged}
+      - do: lock_delivery_button.click
+      - do: acknowledge_delivery_button.click
+      - do: reset_button.click
+        expect:
+          - {op: equals, path: current_page, value: slate}
+          - {op: equals, path: active_role, value: producer}
+          - {op: equals, path: placement_count, value: 0}
+          - {op: equals, path: delivery_status, value: idle}
+          - {op: equals, path: readiness_score, value: 0}
+          - {op: equals, path: open_blockers, value: 10}
+
+  - id: private_23_browser_back_chain_to_slate
+    tier: persistence
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: go_markets_button.click
+      - do: go_traffic_button.click
+      - do: go_signals_button.click
+      - browser: back
+        expect_page: traffic
+        expect:
+          - {op: equals, path: current_page, value: traffic}
+      - browser: back
+        expect_page: markets
+        expect:
+          - {op: equals, path: current_page, value: markets}
+      - browser: back
+        expect_page: slate
+        expect:
+          - {op: equals, path: current_page, value: slate}
+
+  - id: private_24_role_persists_across_reload
+    tier: persistence
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: go_seal_button.click
+      - do: role_executive_button.click
+      - browser: reload
+        expect_page: seal
+        expect:
+          - {op: equals, path: active_role, value: executive}
+          - {op: equals, path: current_page, value: seal}
+
+  - id: private_25_blocker_grid_after_partial_readiness
+    tier: core
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: select_trailer_button.click
+      - do: go_slate_button.click
+      - do: role_legal_button.click
+      - do: request_legal_clearance_button.click
+      - do: role_producer_button.click
+      - do: release_code_input.fill
+        input: {value: " partial-grid "}
+      - do: watermark_key_input.fill
+        input: {value: " partial wm "}
+      - do: lock_asset_button.click
+      - do: go_seal_button.click
+      - table: blocker_grid
+        expect_order: [B-ASSET, B-LEGAL, B-WINDOWS, B-DELIVERY, B-BEACONS, B-ATTRIBUTION, B-SENTIMENT, B-ESCROW, B-SIGNOFFS, B-EXECUTIVE]
+        expect_rows:
+          - id: B-ASSET
+            cells:
+              status: cleared
+          - id: B-WINDOWS
+            cells:
+              status: open
+          - id: B-EXECUTIVE
+            cells:
+              status: open
+
+  - id: private_26_producer_cannot_finalize_launch
+    tier: permission
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: go_seal_button.click
+      - do: finalize_launch_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: global_launch_status, value: idle}
+          - {op: equals, path: denied_count, value: 1}
+          - {op: equals, path: last_action, value: unauthorized_executive}
+
+  - id: private_27_traffic_reupload_qa_fail_reopens_ops_gate
+    tier: validation
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: go_traffic_button.click
+      - do: role_ops_button.click
+      - do: traffic_upload_input.upload
+        input:
+          file:
+            name: first-clean-traffic.csv
+            mime_type: text/csv
+            content: |
+              id,partner,market,format,spend,qa,status
+              P-AMZ,Amazon,global,trailer,420000,pass,staged
+          rows:
+            - {id: P-AMZ, partner: Amazon, market: global, format: trailer, spend: 420000, qa: pass, status: staged}
+      - do: lock_delivery_button.click
+      - do: acknowledge_delivery_button.click
+        expect:
+          - {op: equals, path: readiness_score, value: 10}
+      - do: traffic_upload_input.upload
+        input:
+          file:
+            name: reopened-fail-traffic.csv
+            mime_type: text/csv
+            content: |
+              id,partner,market,format,spend,qa,status
+              P-AMZ,Amazon,global,trailer,420000,fail,staged
+          rows:
+            - {id: P-AMZ, partner: Amazon, market: global, format: trailer, spend: 420000, qa: fail, status: staged}
+        expect:
+          - {op: equals, path: delivery_status, value: review}
+          - {op: equals, path: delivery_ack_status, value: idle}
+          - {op: equals, path: qa_fail_count, value: 1}
+          - {op: equals, path: readiness_score, value: 0}
+      - do: lock_delivery_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: delivery_status, value: blocked}
+          - {op: equals, path: last_action, value: delivery_blocked}
+
+  - id: private_28_launch_blocker_score_after_eight_gates
+    tier: core
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: select_premiere_button.click
+      - do: go_slate_button.click
+      - do: role_legal_button.click
+      - do: request_legal_clearance_button.click
+      - do: role_producer_button.click
+      - do: release_code_input.fill
+        input: {value: " eight-gates "}
+      - do: watermark_key_input.fill
+        input: {value: " eight wm "}
+      - do: lock_asset_button.click
+      - do: go_markets_button.click
+      - do: role_ops_button.click
+      - do: window_upload_input.upload
+        input:
+          file:
+            name: eight-windows.csv
+            mime_type: text/csv
+            content: |
+              id,market,local_time,blackout,owner,status
+              W-LON,London,20:00,none,ops,clear
+          rows:
+            - {id: W-LON, market: London, local_time: "20:00", blackout: none, owner: ops, status: clear}
+      - do: lock_windows_button.click
+      - do: go_traffic_button.click
+      - do: traffic_upload_input.upload
+        input:
+          file:
+            name: eight-traffic.csv
+            mime_type: text/csv
+            content: |
+              id,partner,market,format,spend,qa,status
+              P-AMZ,Amazon,global,trailer,420000,pass,staged
+          rows:
+            - {id: P-AMZ, partner: Amazon, market: global, format: trailer, spend: 420000, qa: pass, status: staged}
+      - do: lock_delivery_button.click
+      - do: acknowledge_delivery_button.click
+      - do: go_signals_button.click
+      - do: role_measurement_button.click
+      - do: beacon_upload_input.upload
+        input:
+          file:
+            name: eight-beacons.csv
+            mime_type: text/csv
+            content: |
+              id,surface,event,owner,status
+              B-WEB,web,premiere_view,measurement,ready
+              B-CTV,ctv,complete_75,measurement,ready
+          rows:
+            - {id: B-WEB, surface: web, event: premiere_view, owner: measurement, status: ready}
+            - {id: B-CTV, surface: ctv, event: complete_75, owner: measurement, status: ready}
+      - do: arm_beacons_button.click
+      - do: run_attribution_button.click
+      - do: sentiment_upload_input.upload
+        input:
+          file:
+            name: eight-sentiment.csv
+            mime_type: text/csv
+            content: |
+              id,market,volume,polarity,status
+              S-1,London,21000,positive,green
+          rows:
+            - {id: S-1, market: London, volume: 21000, polarity: positive, status: green}
+      - do: clear_sentiment_button.click
+      - do: role_finance_button.click
+      - do: escrow_upload_input.upload
+        input:
+          file:
+            name: eight-escrow.csv
+            mime_type: text/csv
+            content: |
+              id,market,budget,invoice,status
+              E-1,global,500000,paid,ready
+          rows:
+            - {id: E-1, market: global, budget: 500000, invoice: paid, status: ready}
+      - do: lock_escrow_button.click
+        expect:
+          - {op: equals, path: readiness_score, value: 70}
+          - {op: equals, path: open_blockers, value: 3}

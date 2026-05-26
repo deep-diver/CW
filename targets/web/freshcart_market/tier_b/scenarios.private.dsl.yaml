@@ -1,0 +1,490 @@
+dsl_version: "3.0.0"
+visibility: private
+tier_weights:
+  smoke: 1
+  core: 2
+  validation: 3
+  service: 4
+  upload: 4
+  permission: 4
+  persistence: 5
+  journey: 6
+
+scenarios:
+  - id: private_01_show_all_catalog_order
+    tier: smoke
+    steps:
+      - do: reset_button.click
+      - do: filter_greenfarm_button.click
+      - do: filter_all_button.click
+        expect:
+          - {op: equals, path: current_vendor, value: all}
+      - table: product_grid
+        expect_order: [GC-ARG-01, GC-TOM-01, GC-AVO-01, GC-YGT-01, GC-BTR-01, GC-SHR-01, GC-TUN-01, GC-OLV-01, GC-HON-01, GC-RIC-01]
+        expect_row_count: 10
+
+  - id: private_02_filter_dairypure_two_items
+    tier: smoke
+    steps:
+      - do: reset_button.click
+      - do: filter_dairypure_button.click
+        expect:
+          - {op: equals, path: current_vendor, value: DairyPure}
+      - table: product_grid
+        expect_order: [GC-YGT-01, GC-BTR-01]
+        expect_row_count: 2
+        expect_rows:
+          - id: GC-YGT-01
+            cells:
+              name: Greek Yogurt
+              price: 4500
+          - id: GC-BTR-01
+            cells:
+              name: Artisan Butter
+              price: 6800
+
+  - id: private_03_add_multiple_derived_sums
+    tier: core
+    steps:
+      - do: reset_button.click
+      - do: add_yogurt_button.click
+        expect:
+          - {op: equals, path: cart_subtotal, value: 4500}
+          - {op: equals, path: delivery_fee, value: 3000}
+      - do: add_butter_button.click
+        expect:
+          - {op: equals, path: cart_subtotal, value: 11300}
+      - do: add_honey_button.click
+        expect:
+          - {op: equals, path: cart_count, value: 3}
+          - {op: equals, path: cart_subtotal, value: 18500}
+          - {op: equals, path: delivery_fee, value: 2500}
+          - {op: equals, path: order_total, value: 21000}
+
+  - id: private_04_four_tier_mid_delivery_fee
+    tier: core
+    steps:
+      - do: reset_button.click
+      - do: add_tuna_button.click
+        expect:
+          - {op: equals, path: cart_subtotal, value: 15800}
+          - {op: equals, path: delivery_fee, value: 2500}
+      - do: add_shrimp_button.click
+        expect:
+          - {op: equals, path: cart_subtotal, value: 28300}
+          - {op: equals, path: delivery_fee, value: 2500}
+      - do: add_avocado_button.click
+        expect:
+          - {op: equals, path: cart_subtotal, value: 34800}
+          - {op: equals, path: delivery_fee, value: 1000}
+      - do: add_rice_button.click
+        expect:
+          - {op: equals, path: cart_subtotal, value: 43700}
+          - {op: equals, path: delivery_fee, value: 1000}
+
+  - id: private_05_five_items_free_delivery
+    tier: core
+    steps:
+      - do: reset_button.click
+      - do: add_tuna_button.click
+      - do: add_shrimp_button.click
+      - do: add_honey_button.click
+      - do: add_butter_button.click
+      - do: add_rice_button.click
+        expect:
+          - {op: equals, path: cart_count, value: 5}
+          - {op: equals, path: cart_subtotal, value: 51200}
+          - {op: equals, path: delivery_fee, value: 0}
+          - {op: equals, path: order_total, value: 51200}
+          - {op: equals, path: oceancatch_count, value: 2}
+
+  - id: private_06_phone_normalizes
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: add_yogurt_button.click
+      - do: go_basket_button.click
+      - do: go_checkout_button.click
+      - do: customer_phone_input.fill
+        input: {value: " 010-9876-5432 "}
+        expect:
+          - {op: equals, path: customer_phone, value: "010-9876-5432"}
+
+  - id: private_07_minimum_order_15000_rejected
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: add_olives_button.click
+        expect:
+          - {op: equals, path: cart_subtotal, value: 5400}
+      - do: go_checkout_button.click
+      - do: slot_morning_button.click
+      - do: customer_name_input.fill
+        input: {value: "Minho Kim"}
+      - do: place_order_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: order_placed, value: false}
+
+  - id: private_08_coupon_welcome10_credit
+    tier: service
+    steps:
+      - do: reset_button.click
+      - do: add_tuna_button.click
+      - do: go_checkout_button.click
+      - do: coupon_code_input.fill
+        input: {value: welcome10}
+      - do: apply_coupon_button.click
+        expect:
+          - {op: equals, path: coupon_credit, value: 4000}
+          - {op: equals, path: coupon_status, value: applied}
+          - {op: equals, path: coupon_call_count, value: 1}
+          - {op: equals, path: service_call_count, value: 1}
+
+  - id: private_09_bad_coupon_rejected
+    tier: service
+    steps:
+      - do: reset_button.click
+      - do: add_avocado_button.click
+      - do: go_checkout_button.click
+      - do: coupon_code_input.fill
+        input: {value: badcode}
+      - do: apply_coupon_button.click
+        expect:
+          - {op: equals, path: coupon_credit, value: 0}
+          - {op: equals, path: coupon_status, value: rejected}
+          - {op: equals, path: coupon_call_count, value: 1}
+
+  - id: private_10_loyalty_redeem_credit
+    tier: service
+    steps:
+      - do: reset_button.click
+      - do: add_tuna_button.click
+      - do: go_checkout_button.click
+      - do: redeem_loyalty_button.click
+        expect:
+          - {op: equals, path: loyalty_points, value: 7000}
+          - {op: equals, path: loyalty_credit, value: 5000}
+          - {op: equals, path: loyalty_call_count, value: 1}
+          - {op: equals, path: service_call_count, value: 1}
+          - {op: equals, path: last_action, value: redeem_loyalty}
+
+  - id: private_11_combined_service_calls
+    tier: service
+    steps:
+      - do: reset_button.click
+      - do: add_tuna_button.click
+      - do: add_avocado_button.click
+        expect:
+          - {op: equals, path: cart_subtotal, value: 22300}
+      - do: go_checkout_button.click
+      - do: coupon_code_input.fill
+        input: {value: green15}
+      - do: apply_coupon_button.click
+        expect:
+          - {op: equals, path: coupon_credit, value: 2000}
+          - {op: equals, path: service_call_count, value: 1}
+          - {op: equals, path: coupon_call_count, value: 1}
+          - {op: equals, path: loyalty_call_count, value: 0}
+      - do: redeem_loyalty_button.click
+        expect:
+          - {op: equals, path: loyalty_credit, value: 5000}
+          - {op: equals, path: service_call_count, value: 2}
+          - {op: equals, path: coupon_call_count, value: 1}
+          - {op: equals, path: loyalty_call_count, value: 1}
+
+  - id: private_12_express_and_gift_wrap_fees
+    tier: upload
+    steps:
+      - do: reset_button.click
+      - do: add_tuna_button.click
+        expect:
+          - {op: equals, path: order_total, value: 18300}
+      - do: go_checkout_button.click
+      - do: enable_express_button.click
+        expect:
+          - {op: equals, path: express_enabled, value: true}
+          - {op: equals, path: express_surcharge, value: 2500}
+          - {op: equals, path: order_total, value: 20800}
+      - do: enable_gift_wrap_button.click
+        expect:
+          - {op: equals, path: gift_wrap_enabled, value: true}
+          - {op: equals, path: gift_wrap_fee, value: 1500}
+          - {op: equals, path: order_total, value: 22300}
+      - do: disable_express_button.click
+        expect:
+          - {op: equals, path: express_enabled, value: false}
+          - {op: equals, path: express_surcharge, value: 0}
+          - {op: equals, path: order_total, value: 19800}
+
+  - id: private_13_customer_cannot_cancel
+    tier: permission
+    steps:
+      - do: reset_button.click
+      - do: add_tuna_button.click
+      - do: go_checkout_button.click
+      - do: slot_morning_button.click
+      - do: customer_name_input.fill
+        input: {value: "Soyeon Lee"}
+      - do: place_order_button.click
+      - do: go_orders_button.click
+      - do: cancel_order_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: last_action, value: unauthorized}
+
+  - id: private_14_customer_cannot_verify_fulfillment
+    tier: permission
+    steps:
+      - do: reset_button.click
+      - do: add_tuna_button.click
+      - do: go_checkout_button.click
+      - do: slot_afternoon_button.click
+      - do: customer_name_input.fill
+        input: {value: "Blocked User"}
+      - do: place_order_button.click
+      - do: go_orders_button.click
+      - do: verify_fulfillment_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: last_action, value: deny_verify}
+          - {op: equals, path: checklist_count, value: 0}
+
+  - id: private_15_reload_preserves_cart
+    tier: persistence
+    steps:
+      - do: reset_button.click
+      - do: add_avocado_button.click
+      - do: add_yogurt_button.click
+        expect:
+          - {op: equals, path: cart_count, value: 2}
+          - {op: equals, path: cart_subtotal, value: 11000}
+          - {op: equals, path: greenfarm_count, value: 1}
+      - browser: reload
+        expect_page: market
+        expect:
+          - {op: unchanged, path: cart_count}
+          - {op: unchanged, path: cart_subtotal}
+          - {op: unchanged, path: cart_items}
+
+  - id: private_16_reload_preserves_order_history
+    tier: persistence
+    steps:
+      - do: reset_button.click
+      - do: add_shrimp_button.click
+      - do: add_rice_button.click
+        expect:
+          - {op: equals, path: cart_subtotal, value: 21400}
+      - do: go_basket_button.click
+      - do: go_checkout_button.click
+      - do: slot_evening_button.click
+      - do: customer_name_input.fill
+        input: {value: "Persistent User"}
+      - do: place_order_button.click
+      - do: go_orders_button.click
+      - browser: reload
+        expect_page: orders
+        expect:
+          - {op: unchanged, path: order_history}
+
+  - id: private_17_browser_back_restores_market
+    tier: persistence
+    steps:
+      - do: reset_button.click
+      - do: add_butter_button.click
+      - do: go_basket_button.click
+      - browser: back
+        expect_page: market
+        expect:
+          - {op: equals, path: current_page, value: market}
+          - {op: unchanged, path: cart_count}
+
+  - id: private_18_role_persists_across_reload
+    tier: persistence
+    steps:
+      - do: reset_button.click
+      - do: role_staff_button.click
+        expect:
+          - {op: equals, path: active_role, value: staff}
+      - browser: reload
+        expect:
+          - {op: equals, path: active_role, value: staff}
+
+  - id: private_19_express_persists_across_reload
+    tier: persistence
+    steps:
+      - do: reset_button.click
+      - do: add_tuna_button.click
+      - do: go_checkout_button.click
+      - do: enable_express_button.click
+        expect:
+          - {op: equals, path: express_enabled, value: true}
+          - {op: equals, path: express_surcharge, value: 2500}
+      - browser: reload
+        expect:
+          - {op: equals, path: express_enabled, value: true}
+          - {op: equals, path: express_surcharge, value: 2500}
+
+  - id: private_20_full_gourmet_with_prep
+    tier: journey
+    steps:
+      - do: reset_button.click
+      - do: filter_greenfarm_button.click
+      - do: add_avocado_button.click
+      - do: add_tomato_button.click
+      - do: filter_all_button.click
+      - do: add_tuna_button.click
+      - do: add_shrimp_button.click
+        expect:
+          - {op: equals, path: cart_count, value: 4}
+          - {op: equals, path: greenfarm_count, value: 2}
+          - {op: equals, path: oceancatch_count, value: 2}
+      - do: go_basket_button.click
+      - do: prep_sashimi_tuna_button.click
+        expect:
+          - {op: equals, path: last_action, value: prep_sashimi}
+      - do: prep_devein_shrimp_button.click
+        expect:
+          - {op: equals, path: last_action, value: prep_devein}
+      - do: go_checkout_button.click
+      - do: coupon_code_input.fill
+        input: {value: welcome10}
+      - do: apply_coupon_button.click
+        expect:
+          - {op: equals, path: coupon_credit, value: 4000}
+      - do: redeem_loyalty_button.click
+        expect:
+          - {op: equals, path: loyalty_points, value: 7000}
+          - {op: equals, path: loyalty_credit, value: 5000}
+      - do: enable_express_button.click
+      - do: enable_gift_wrap_button.click
+      - do: slot_morning_button.click
+      - do: customer_name_input.fill
+        input: {value: "Eunjung Choi"}
+      - do: customer_phone_input.fill
+        input: {value: "010-9876-5432"}
+      - do: place_order_button.click
+        expect:
+          - {op: equals, path: order_placed, value: true}
+          - {op: equals, path: audit_count, value: 1}
+      - do: go_orders_button.click
+      - do: reset_button.click
+        expect:
+          - {op: equals, path: cart_count, value: 0}
+
+  - id: private_21_full_fulfillment_journey
+    tier: journey
+    steps:
+      - do: reset_button.click
+      - do: add_tuna_button.click
+      - do: add_butter_button.click
+      - do: add_yogurt_button.click
+        expect:
+          - {op: equals, path: cart_subtotal, value: 27100}
+      - do: go_checkout_button.click
+      - do: coupon_code_input.fill
+        input: {value: green15}
+      - do: apply_coupon_button.click
+        expect:
+          - {op: equals, path: coupon_credit, value: 2000}
+      - do: slot_afternoon_button.click
+      - do: customer_name_input.fill
+        input: {value: "Agent Test"}
+      - do: place_order_button.click
+        expect:
+          - {op: equals, path: order_placed, value: true}
+          - {op: equals, path: audit_count, value: 1}
+      - do: go_orders_button.click
+      - do: role_staff_button.click
+      - do: verify_fulfillment_button.click
+        expect:
+          - {op: equals, path: fulfillment_verified, value: true}
+          - {op: equals, path: checklist_count, value: 1}
+      - do: confirm_packed_button.click
+        expect:
+          - {op: equals, path: fulfillment_packed, value: true}
+          - {op: equals, path: checklist_count, value: 2}
+      - do: confirm_dispatched_button.click
+        expect:
+          - {op: equals, path: fulfillment_dispatched, value: true}
+          - {op: equals, path: checklist_count, value: 3}
+      - do: confirm_delivery_button.click
+        expect:
+          - {op: equals, path: last_action, value: confirm_delivery}
+          - {op: equals, path: audit_count, value: 2}
+
+  - id: private_22_reset_clears_after_full_flow
+    tier: journey
+    steps:
+      - do: reset_button.click
+      - do: add_tuna_button.click
+      - do: add_butter_button.click
+      - do: add_yogurt_button.click
+      - do: go_checkout_button.click
+      - do: coupon_code_input.fill
+        input: {value: green15}
+      - do: apply_coupon_button.click
+      - do: enable_express_button.click
+      - do: slot_afternoon_button.click
+      - do: customer_name_input.fill
+        input: {value: "Deep Cleaner"}
+      - do: place_order_button.click
+      - do: reset_button.click
+        expect:
+          - {op: equals, path: cart_items, value: []}
+          - {op: equals, path: cart_count, value: 0}
+          - {op: equals, path: cart_subtotal, value: 0}
+          - {op: equals, path: coupon_code, value: ""}
+          - {op: equals, path: coupon_credit, value: 0}
+          - {op: equals, path: express_enabled, value: false}
+          - {op: equals, path: express_surcharge, value: 0}
+          - {op: equals, path: order_placed, value: false}
+          - {op: equals, path: order_history, value: []}
+          - {op: equals, path: fulfillment_verified, value: false}
+          - {op: equals, path: checklist_count, value: 0}
+          - {op: equals, path: order_audit, value: []}
+          - {op: equals, path: audit_count, value: 0}
+
+  - id: private_23_vendor_switch_preserves_cart
+    tier: journey
+    steps:
+      - do: reset_button.click
+      - do: filter_greenfarm_button.click
+      - do: add_avocado_button.click
+        expect:
+          - {op: equals, path: greenfarm_count, value: 1}
+      - do: filter_oceancatch_button.click
+      - do: add_shrimp_button.click
+        expect:
+          - {op: equals, path: oceancatch_count, value: 1}
+      - do: filter_all_button.click
+        expect:
+          - {op: equals, path: current_vendor, value: all}
+      - do: add_rice_button.click
+        expect:
+          - {op: equals, path: cart_count, value: 3}
+          - {op: equals, path: cart_subtotal, value: 27900}
+      - do: go_basket_button.click
+      - do: remove_avocado_button.click
+        expect:
+          - {op: equals, path: cart_count, value: 2}
+          - {op: equals, path: greenfarm_count, value: 0}
+          - {op: equals, path: cart_subtotal, value: 21400}
+          - {op: equals, path: last_action, value: remove_item}
+
+  - id: private_24_double_loyalty_redeem
+    tier: service
+    steps:
+      - do: reset_button.click
+      - do: add_avocado_button.click
+      - do: go_checkout_button.click
+      - do: redeem_loyalty_button.click
+        expect:
+          - {op: equals, path: loyalty_points, value: 7000}
+          - {op: equals, path: loyalty_credit, value: 5000}
+          - {op: equals, path: loyalty_call_count, value: 1}
+      - do: redeem_loyalty_button.click
+        expect:
+          - {op: equals, path: loyalty_points, value: 2000}
+          - {op: equals, path: loyalty_credit, value: 10000}
+          - {op: equals, path: loyalty_call_count, value: 2}

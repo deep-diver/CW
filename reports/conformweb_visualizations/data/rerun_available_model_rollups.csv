@@ -1,0 +1,58 @@
+family,suite,tier,model_group,model,runs,reportable_runs,scenario_total,scenario_pass_mean,formal_mean,stepwise_mean,contract_mean,full_pass,source,aggregate_path
+Campus Registrar,campus_registrar_command,C,M,gpt-5.4-nano,10,10,29,5.8,0.19491525423728814,0.30383949023085494,0.9965517241379309,0,recovered rerun summaries,targets/web/campus_registrar_command/tier_c/cohorts/M
+Campus Registrar,campus_registrar_command,C,M,claude-haiku-4-5,10,10,29,5.5,0.1847457627118644,0.32247927899264833,0.9896551724137931,0,recovered rerun summaries,targets/web/campus_registrar_command/tier_c/cohorts/M
+Campus Registrar,campus_registrar_command,C,M,gemini-3.1-flash-lite,10,10,29,0.0,0.0,0.05257167198831429,1.0,0,recovered rerun summaries,targets/web/campus_registrar_command/tier_c/cohorts/M
+Campus Registrar,campus_registrar_command,C,T,gpt-5.4-mini,10,10,29,0.0,0.0,0.031543003192988577,1.0,0,recovered rerun summaries,targets/web/campus_registrar_command/tier_c/cohorts/T
+Campus Registrar,campus_registrar_command,C,T,claude-sonnet-4-6,10,10,29,28.7,0.990677966101695,0.9991308744221878,1.0,8,recovered rerun summaries,targets/web/campus_registrar_command/tier_c/cohorts/T
+Campus Registrar,campus_registrar_command,C,T,gemini-flash-latest,10,10,29,8.0,0.261864406779661,0.38661353689900596,1.0,0,recovered rerun summaries,targets/web/campus_registrar_command/tier_c/cohorts/T
+Campus Registrar,campus_registrar_command,D,M,gpt-5.4-nano,10,10,34,5.4,0.1494047619047619,0.2334904100787559,1.0,0,recovered rerun summaries,targets/web/campus_registrar_command/tier_d/cohorts/M
+Campus Registrar,campus_registrar_command,D,M,claude-haiku-4-5,10,10,34,7.3,0.20892857142857144,0.31412537767331,1.0,0,recovered rerun summaries,targets/web/campus_registrar_command/tier_d/cohorts/M
+Campus Registrar,campus_registrar_command,D,M,gemini-3.1-flash-lite,10,10,34,0.0,0.0,0.05706324903928287,1.0,0,recovered rerun summaries,targets/web/campus_registrar_command/tier_d/cohorts/M
+Campus Registrar,campus_registrar_command,D,T,gpt-5.4-mini,10,10,34,0.0,0.0,0.045650599231426295,1.0,0,recovered rerun summaries,targets/web/campus_registrar_command/tier_d/cohorts/T
+Campus Registrar,campus_registrar_command,D,T,claude-sonnet-4-6,10,10,34,20.5,0.5815476190476191,0.6778010352751894,1.0,1,recovered rerun summaries,targets/web/campus_registrar_command/tier_d/cohorts/T
+Campus Registrar,campus_registrar_command,D,T,gemini-flash-latest,10,10,34,10.7,0.27321428571428574,0.4222822656927449,0.9911764705882353,0,recovered rerun summaries,targets/web/campus_registrar_command/tier_d/cohorts/T
+Clinical Command,clinic_shift_command,D,F,gpt-5.4,10,10,55,53.8,0.9676328502415459,0.9934398530823316,0.9981818181818183,3,recovered rerun summaries,targets/web/clinic_shift_command/tier_d/cohorts/F
+Clinical Command,clinic_shift_command,D,F,claude-opus-4-6,10,10,55,49.9,0.8927536231884059,0.9587376642043864,0.9236363636363636,0,recovered rerun summaries,targets/web/clinic_shift_command/tier_d/cohorts/F
+Clinical Command,clinic_shift_command,D,F,gemini-3.1-pro-preview,10,10,55,33.7,0.593719806763285,0.6864718526693354,0.9781818181818182,0,recovered rerun summaries,targets/web/clinic_shift_command/tier_d/cohorts/F
+Clinical Command,clinic_shift_command,D,M,gpt-5.4-nano,10,10,55,1.0,0.006763285024154589,0.16666891601219735,0.8163636363636364,0,recovered rerun summaries,targets/web/clinic_shift_command/tier_d/cohorts/M
+Clinical Command,clinic_shift_command,D,M,claude-haiku-4-5,10,10,55,3.2,0.05362318840579709,0.17780846981574147,0.7672727272727273,0,recovered rerun summaries,targets/web/clinic_shift_command/tier_d/cohorts/M
+Clinical Command,clinic_shift_command,D,M,gemini-3.1-flash-lite,10,10,55,0.0,0.0,0.09008657287453431,1.0,0,recovered rerun summaries,targets/web/clinic_shift_command/tier_d/cohorts/M
+Clinical Command,clinic_shift_command,D,T,gpt-5.4-mini,10,10,55,0.0,0.0,0.08107791558708088,0.9454545454545455,0,recovered rerun summaries,targets/web/clinic_shift_command/tier_d/cohorts/T
+Clinical Command,clinic_shift_command,D,T,claude-sonnet-4-6,10,10,55,24.9,0.44685990338164255,0.6568908832521669,0.9254545454545454,0,recovered rerun summaries,targets/web/clinic_shift_command/tier_d/cohorts/T
+Clinical Command,clinic_shift_command,D,T,gemini-flash-latest,10,10,55,22.1,0.39855072463768115,0.5172817163030767,0.9272727272727274,0,recovered rerun summaries,targets/web/clinic_shift_command/tier_d/cohorts/T
+Grocery,freshcart_market,D,F,gpt-5.4,10,10,34,19.2,0.4310924369747899,0.7213023321631626,0.9882352941176471,0,recovered rerun summaries,targets/web/freshcart_market/tier_d/cohorts/F
+Grocery,freshcart_market,D,F,claude-opus-4-6,10,10,34,24.0,0.5462184873949579,0.8381546151290312,1.0,0,recovered rerun summaries,targets/web/freshcart_market/tier_d/cohorts/F
+Grocery,freshcart_market,D,F,gemini-3.1-pro-preview,10,10,34,9.6,0.2495798319327731,0.377910340807631,1.0,1,recovered rerun summaries,targets/web/freshcart_market/tier_d/cohorts/F
+Grocery,freshcart_market,D,M,gpt-5.4-nano,10,10,34,2.8,0.06386554621848739,0.20078703572408063,0.9058823529411765,0,recovered rerun summaries,targets/web/freshcart_market/tier_d/cohorts/M
+Grocery,freshcart_market,D,M,claude-haiku-4-5,10,10,34,1.3,0.026050420168067228,0.13067338101493703,1.0,0,recovered rerun summaries,targets/web/freshcart_market/tier_d/cohorts/M
+Grocery,freshcart_market,D,M,gemini-3.1-flash-lite,10,10,34,0.0,0.0,0.07733520375695156,1.0,0,recovered rerun summaries,targets/web/freshcart_market/tier_d/cohorts/M
+Grocery,freshcart_market,D,T,gpt-5.4-mini,10,10,34,0.9,0.014285714285714285,0.12168219594596708,0.9147058823529411,0,recovered rerun summaries,targets/web/freshcart_market/tier_d/cohorts/T
+Grocery,freshcart_market,D,T,claude-sonnet-4-6,10,10,34,12.1,0.2168067226890756,0.5031050759639715,0.5294117647058824,0,recovered rerun summaries,targets/web/freshcart_market/tier_d/cohorts/T
+Grocery,freshcart_market,D,T,gemini-flash-latest,10,10,34,5.9,0.1134453781512605,0.3422254273023101,1.0,0,recovered rerun summaries,targets/web/freshcart_market/tier_d/cohorts/T
+Media Campaign,media_campaign_launch_desk,C,F,gpt-5.4,10,10,44,40.0,0.9057142857142857,0.9934136054421769,1.0,1,recovered rerun summaries,targets/web/media_campaign_launch_desk/tier_c/cohorts/F
+Media Campaign,media_campaign_launch_desk,C,F,claude-opus-4-6,10,10,44,39.2,0.8902857142857142,0.9070020074696545,1.0,8,recovered rerun summaries,targets/web/media_campaign_launch_desk/tier_c/cohorts/F
+Media Campaign,media_campaign_launch_desk,C,F,gemini-3.1-pro-preview,10,10,44,39.3,0.8874285714285713,0.9226835734293717,0.9681818181818181,6,recovered rerun summaries,targets/web/media_campaign_launch_desk/tier_c/cohorts/F
+Media Campaign,media_campaign_launch_desk,C,M,gpt-5.4-nano,10,10,44,25.9,0.5845714285714285,0.6658663331999466,0.9022727272727273,3,recovered rerun summaries,targets/web/media_campaign_launch_desk/tier_c/cohorts/M
+Media Campaign,media_campaign_launch_desk,C,M,claude-haiku-4-5,10,10,44,9.9,0.2337142857142857,0.42176470588235293,0.6090909090909091,0,recovered rerun summaries,targets/web/media_campaign_launch_desk/tier_c/cohorts/M
+Media Campaign,media_campaign_launch_desk,C,M,gemini-3.1-flash-lite,10,10,44,0.0,0.0,0.10591381886087767,0.8772727272727273,0,recovered rerun summaries,targets/web/media_campaign_launch_desk/tier_c/cohorts/M
+Media Campaign,media_campaign_launch_desk,C,T,gpt-5.4-mini,10,10,44,0.0,0.0,0.07777653728157928,0.9386363636363637,0,recovered rerun summaries,targets/web/media_campaign_launch_desk/tier_c/cohorts/T
+Media Campaign,media_campaign_launch_desk,C,T,claude-sonnet-4-6,10,10,44,29.2,0.6748571428571428,0.7828378951580632,0.9136363636363637,0,recovered rerun summaries,targets/web/media_campaign_launch_desk/tier_c/cohorts/T
+Media Campaign,media_campaign_launch_desk,C,T,gemini-flash-latest,10,10,44,20.1,0.4622857142857143,0.594572935841003,0.8045454545454545,2,recovered rerun summaries,targets/web/media_campaign_launch_desk/tier_c/cohorts/T
+Media Campaign,media_campaign_launch_desk,D,F,gpt-5.4,10,10,48,34.3,0.6989417989417989,0.7943398797239938,0.9875,0,recovered rerun summaries,targets/web/media_campaign_launch_desk/tier_d/cohorts/F
+Media Campaign,media_campaign_launch_desk,D,F,claude-opus-4-6,10,10,48,26.8,0.5439153439153439,0.6311844865556957,1.0,0,recovered rerun summaries,targets/web/media_campaign_launch_desk/tier_d/cohorts/F
+Media Campaign,media_campaign_launch_desk,D,F,gemini-3.1-pro-preview,10,10,48,22.2,0.45396825396825397,0.6076128244139277,0.84375,0,recovered rerun summaries,targets/web/media_campaign_launch_desk/tier_d/cohorts/F
+Media Campaign,media_campaign_launch_desk,D,M,gpt-5.4-nano,10,10,48,11.4,0.20423280423280424,0.3797505828792124,1.0,0,recovered rerun summaries,targets/web/media_campaign_launch_desk/tier_d/cohorts/M
+Media Campaign,media_campaign_launch_desk,D,M,claude-haiku-4-5,10,10,48,9.1,0.1656084656084656,0.3271272532523339,0.8729166666666666,0,recovered rerun summaries,targets/web/media_campaign_launch_desk/tier_d/cohorts/M
+Media Campaign,media_campaign_launch_desk,D,M,gemini-3.1-flash-lite,10,10,48,0.0,0.0,0.07550915820718378,1.0,0,recovered rerun summaries,targets/web/media_campaign_launch_desk/tier_d/cohorts/M
+Media Campaign,media_campaign_launch_desk,D,T,gpt-5.4-mini,10,10,48,1.2,0.024867724867724865,0.10381351698773304,0.9645833333333333,0,recovered rerun summaries,targets/web/media_campaign_launch_desk/tier_d/cohorts/T
+Media Campaign,media_campaign_launch_desk,D,T,claude-sonnet-4-6,10,10,48,25.3,0.5185185185185185,0.6114907113309165,1.0,0,recovered rerun summaries,targets/web/media_campaign_launch_desk/tier_d/cohorts/T
+Media Campaign,media_campaign_launch_desk,D,T,gemini-flash-latest,10,10,48,12.9,0.25925925925925924,0.36993482199344246,0.9604166666666666,0,recovered rerun summaries,targets/web/media_campaign_launch_desk/tier_d/cohorts/T
+Travel,stayflow_concierge,D,F,gpt-5.4,10,10,28,14.4,0.42878787878787883,0.6696203970309649,1.0,0,recovered rerun summaries,targets/web/stayflow_concierge/tier_d/cohorts/F
+Travel,stayflow_concierge,D,F,claude-opus-4-6,10,10,28,12.7,0.3795454545454545,0.5980431384652857,1.0,0,recovered rerun summaries,targets/web/stayflow_concierge/tier_d/cohorts/F
+Travel,stayflow_concierge,D,F,gemini-3.1-pro-preview,10,10,28,11.6,0.3765151515151515,0.5324566300423424,1.0,2,recovered rerun summaries,targets/web/stayflow_concierge/tier_d/cohorts/F
+Travel,stayflow_concierge,D,M,gpt-5.4-nano,10,10,28,2.5,0.08333333333333334,0.18772911825131725,0.9,0,recovered rerun summaries,targets/web/stayflow_concierge/tier_d/cohorts/M
+Travel,stayflow_concierge,D,M,claude-haiku-4-5,10,10,28,3.5,0.0946969696969697,0.3248831818414145,0.7928571428571429,0,recovered rerun summaries,targets/web/stayflow_concierge/tier_d/cohorts/M
+Travel,stayflow_concierge,D,M,gemini-3.1-flash-lite,10,10,28,0.0,0.0,0.07629935751960075,0.9928571428571429,0,recovered rerun summaries,targets/web/stayflow_concierge/tier_d/cohorts/M
+Travel,stayflow_concierge,D,T,gpt-5.4-mini,10,10,28,0.0,0.0,0.044507958553100434,1.0,0,recovered rerun summaries,targets/web/stayflow_concierge/tier_d/cohorts/T
+Travel,stayflow_concierge,D,T,claude-sonnet-4-6,10,10,28,17.5,0.5598484848484848,0.7286706661914744,1.0,2,recovered rerun summaries,targets/web/stayflow_concierge/tier_d/cohorts/T
+Travel,stayflow_concierge,D,T,gemini-flash-latest,10,10,28,1.3,0.03636363636363636,0.13128436761194004,1.0,0,recovered rerun summaries,targets/web/stayflow_concierge/tier_d/cohorts/T

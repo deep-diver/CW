@@ -1,0 +1,625 @@
+dsl_version: "3.0.0"
+app:
+  id: stayflow_concierge
+  name: StayFlow Concierge
+  capability: travel_booking_service_baseline
+runtime:
+  target: web
+  start_url: /#/search
+  state_probe:
+    kind: javascript
+    expression: window.__DETOX_STATE__
+  pages:
+    search:
+      path: /#/search
+      purpose: Consumer-facing stay discovery and package selection.
+    checkout:
+      path: /#/checkout
+      purpose: Guest details, promo validation, and booking hold.
+    manage:
+      path: /#/manage
+      purpose: Agent confirmation, audit trail, and group guest manifest review.
+  session:
+    role_path: active_role
+    roles: [guest, agent]
+  persistence:
+    reload:
+      scope: local_storage
+      paths:
+        - current_page
+        - active_role
+        - properties
+        - visible_properties
+        - current_destination
+        - selected_property_id
+        - selected_property_name
+        - selected_city
+        - selected_package
+        - stay_subtotal
+        - addon_total
+        - breakfast
+        - airport_pickup
+        - flexible_cancel
+        - service_fee
+        - promo_code
+        - promo_credit
+        - total_due
+        - guest_name
+        - guest_email
+        - field_errors
+        - error_count
+        - booking_status
+        - availability_status
+        - service_call_count
+        - group_guests
+        - group_guest_count
+        - last_file
+        - booking_audit
+        - audit_count
+        - denied_count
+        - last_action
+  services:
+    promo_validate:
+      endpoint: /api/promo
+      method: GET
+      responses:
+        - id: stay20
+          match:
+            query:
+              code: STAY20
+              property: SF-SEOUL-LOFT
+          status: 200
+          json:
+            valid: true
+            credit: 80
+            status: applied
+        - id: welcome50
+          match:
+            query:
+              code: WELCOME50
+              property: SF-BUSAN-HARBOR
+          status: 200
+          json:
+            valid: true
+            credit: 50
+            status: applied
+        - id: invalid
+          match:
+            query:
+              code: BADCODE
+              property: SF-KYOTO-MACHIYA
+          status: 200
+          json:
+            valid: false
+            credit: 0
+            status: rejected
+  tables:
+    property_grid:
+      selector: '[data-testid="property-grid"]'
+      row_selector: '[data-testid="property-row"]'
+      row_id_attribute: data-property-id
+      source_path: visible_properties
+      row_id_field: id
+      columns:
+        name:
+          selector: '[data-col="name"]'
+          state_field: name
+        city:
+          selector: '[data-col="city"]'
+          state_field: city
+        package:
+          selector: '[data-col="package"]'
+          state_field: package
+        base:
+          selector: '[data-col="base"]'
+          state_field: base
+    guest_grid:
+      selector: '[data-testid="guest-grid"]'
+      row_selector: '[data-testid="guest-row"]'
+      row_id_attribute: data-guest-id
+      source_path: group_guests
+      row_id_field: id
+      columns:
+        name:
+          selector: '[data-col="name"]'
+          state_field: name
+        tier:
+          selector: '[data-col="tier"]'
+          state_field: tier
+        meal:
+          selector: '[data-col="meal"]'
+          state_field: meal
+state:
+  initial:
+    current_page: search
+    active_role: guest
+    properties:
+      - {id: SF-BUSAN-HARBOR, name: Harbor Capsule Hotel, city: Busan, package: "2 nights / studio", base: 320, available: true}
+      - {id: SF-SEOUL-LOFT, name: Han River Loft, city: Seoul, package: "2 nights / loft", base: 480, available: true}
+      - {id: SF-KYOTO-MACHIYA, name: Machiya Garden House, city: Kyoto, package: "2 nights / ryokan", base: 620, available: true}
+    visible_properties:
+      - {id: SF-BUSAN-HARBOR, name: Harbor Capsule Hotel, city: Busan, package: "2 nights / studio", base: 320, available: true}
+      - {id: SF-SEOUL-LOFT, name: Han River Loft, city: Seoul, package: "2 nights / loft", base: 480, available: true}
+      - {id: SF-KYOTO-MACHIYA, name: Machiya Garden House, city: Kyoto, package: "2 nights / ryokan", base: 620, available: true}
+    current_destination: all
+    selected_property_id: ""
+    selected_property_name: ""
+    selected_city: ""
+    selected_package: ""
+    stay_subtotal: 0
+    addon_total: 0
+    breakfast: false
+    airport_pickup: false
+    flexible_cancel: false
+    service_fee: 0
+    promo_code: ""
+    promo_credit: 0
+    total_due: 0
+    guest_name: ""
+    guest_email: ""
+    field_errors: {}
+    error_count: 0
+    booking_status: idle
+    availability_status: idle
+    service_call_count: 0
+    group_guests: []
+    group_guest_count: 0
+    last_file: ""
+    booking_audit: []
+    audit_count: 0
+    denied_count: 0
+    last_action: ready
+    __services.calls: []
+  schema:
+    current_page: {type: string, purpose: Public active route page.}
+    active_role: {type: string, purpose: Public booking role, either guest or agent.}
+    properties: {type: array, purpose: Ordered catalog of available stay packages.}
+    visible_properties: {type: array, purpose: Ordered currently rendered catalog projection.}
+    current_destination: {type: string, purpose: Public catalog destination filter.}
+    selected_property_id: {type: string, purpose: Selected stay package id.}
+    selected_property_name: {type: string, purpose: Selected stay package display name.}
+    selected_city: {type: string, purpose: Selected stay city.}
+    selected_package: {type: string, purpose: Selected package description.}
+    stay_subtotal: {type: number, purpose: Package subtotal before add-ons, fees, and promo credit.}
+    addon_total: {type: number, purpose: Public sum of selected travel add-ons.}
+    breakfast: {type: boolean, purpose: Whether breakfast is selected.}
+    airport_pickup: {type: boolean, purpose: Whether airport pickup is selected.}
+    flexible_cancel: {type: boolean, purpose: Whether flexible cancellation is selected.}
+    service_fee: {type: number, purpose: Derived service fee from current subtotal and add-ons.}
+    promo_code: {type: string, purpose: Public promo code draft.}
+    promo_credit: {type: number, purpose: Promo credit returned by the deterministic promo service.}
+    total_due: {type: number, purpose: "Derived total: stay_subtotal plus addon_total plus service_fee minus promo_credit."}
+    guest_name: {type: string, purpose: Primary guest display name.}
+    guest_email: {type: string, purpose: Primary guest email.}
+    field_errors: {type: object, purpose: Public field-level checkout errors.}
+    error_count: {type: number, purpose: Number of active checkout error keys.}
+    booking_status: {type: string, purpose: Booking lifecycle status.}
+    availability_status: {type: string, purpose: Promo and availability service status.}
+    service_call_count: {type: number, purpose: Number of promo service calls captured by the evaluator.}
+    group_guests: {type: array, purpose: Uploaded group guest manifest rows.}
+    group_guest_count: {type: number, purpose: Count of uploaded group guest rows.}
+    last_file: {type: string, purpose: Last uploaded manifest filename.}
+    booking_audit: {type: array, purpose: Ordered booking audit trail.}
+    audit_count: {type: number, purpose: Length of booking_audit.}
+    denied_count: {type: number, purpose: Count of role-denied confirmation attempts.}
+    last_action: {type: string, purpose: Last public action id.}
+    __services.calls: {type: array, purpose: Evaluator-provided service call ledger.}
+components:
+  reset_button:
+    kind: button
+    selector: '[data-testid="reset"]'
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_page, value: search}
+          - {op: equals, path: active_role, value: guest}
+          - op: equals
+            path: visible_properties
+            value:
+              - {id: SF-BUSAN-HARBOR, name: Harbor Capsule Hotel, city: Busan, package: "2 nights / studio", base: 320, available: true}
+              - {id: SF-SEOUL-LOFT, name: Han River Loft, city: Seoul, package: "2 nights / loft", base: 480, available: true}
+              - {id: SF-KYOTO-MACHIYA, name: Machiya Garden House, city: Kyoto, package: "2 nights / ryokan", base: 620, available: true}
+          - {op: equals, path: current_destination, value: all}
+          - {op: equals, path: selected_property_id, value: ""}
+          - {op: equals, path: selected_property_name, value: ""}
+          - {op: equals, path: selected_city, value: ""}
+          - {op: equals, path: selected_package, value: ""}
+          - {op: equals, path: stay_subtotal, value: 0}
+          - {op: equals, path: addon_total, value: 0}
+          - {op: equals, path: breakfast, value: false}
+          - {op: equals, path: airport_pickup, value: false}
+          - {op: equals, path: flexible_cancel, value: false}
+          - {op: equals, path: service_fee, value: 0}
+          - {op: equals, path: promo_code, value: ""}
+          - {op: equals, path: promo_credit, value: 0}
+          - {op: equals, path: total_due, value: 0}
+          - {op: equals, path: guest_name, value: ""}
+          - {op: equals, path: guest_email, value: ""}
+          - {op: equals, path: field_errors, value: {}}
+          - {op: equals, path: error_count, value: 0}
+          - {op: equals, path: booking_status, value: idle}
+          - {op: equals, path: availability_status, value: idle}
+          - {op: equals, path: service_call_count, value: 0}
+          - {op: equals, path: group_guests, value: []}
+          - {op: equals, path: group_guest_count, value: 0}
+          - {op: equals, path: last_file, value: ""}
+          - {op: equals, path: booking_audit, value: []}
+          - {op: equals, path: audit_count, value: 0}
+          - {op: equals, path: denied_count, value: 0}
+          - {op: equals, path: last_action, value: reset}
+  go_search_button:
+    kind: button
+    selector: '[data-testid="go-search"]'
+    actions:
+      click:
+        navigate_to: search
+        effects:
+          - {op: equals, path: current_page, value: search}
+          - {op: equals, path: last_action, value: nav_search}
+  go_checkout_button:
+    kind: button
+    selector: '[data-testid="go-checkout"]'
+    actions:
+      click:
+        navigate_to: checkout
+        effects:
+          - {op: equals, path: current_page, value: checkout}
+          - {op: equals, path: last_action, value: nav_checkout}
+  go_manage_button:
+    kind: button
+    selector: '[data-testid="go-manage"]'
+    actions:
+      click:
+        navigate_to: manage
+        effects:
+          - {op: equals, path: current_page, value: manage}
+          - {op: equals, path: last_action, value: nav_manage}
+  filter_seoul_button:
+    kind: button
+    selector: '[data-testid="filter-seoul"]'
+    page: search
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_destination, value: Seoul}
+          - op: equals_filter
+            path: visible_properties
+            source_path: properties
+            where:
+              - {op: equals, field: city, value: Seoul}
+              - {op: equals, field: available, value: true}
+            order_by:
+              - {field: base, direction: asc}
+          - {op: equals, path: last_action, value: filter_seoul}
+  filter_busan_button:
+    kind: button
+    selector: '[data-testid="filter-busan"]'
+    page: search
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_destination, value: Busan}
+          - op: equals_filter
+            path: visible_properties
+            source_path: properties
+            where:
+              - {op: equals, field: city, value: Busan}
+              - {op: equals, field: available, value: true}
+            order_by:
+              - {field: base, direction: asc}
+          - {op: equals, path: last_action, value: filter_busan}
+  show_all_stays_button:
+    kind: button
+    selector: '[data-testid="show-all-stays"]'
+    page: search
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_destination, value: all}
+          - op: equals_filter
+            path: visible_properties
+            source_path: properties
+            where:
+              - {op: equals, field: available, value: true}
+            order_by:
+              - {field: base, direction: asc}
+          - {op: equals, path: last_action, value: show_all_stays}
+  select_busan_button:
+    kind: button
+    selector: '[data-testid="select-busan-harbor"]'
+    page: search
+    actions:
+      click:
+        effects:
+          - {op: equals, path: selected_property_id, value: SF-BUSAN-HARBOR}
+          - {op: equals, path: selected_property_name, value: Harbor Capsule Hotel}
+          - {op: equals, path: selected_city, value: Busan}
+          - {op: equals, path: selected_package, value: "2 nights / studio"}
+          - {op: equals, path: stay_subtotal, value: 320}
+          - {op: equals, path: promo_credit, value: 0}
+          - {op: equals, path: service_fee, value: 32}
+          - op: equals_linear
+            path: total_due
+            terms:
+              - {path: stay_subtotal}
+              - {path: addon_total}
+              - {path: service_fee}
+              - {path: promo_credit, multiplier: -1}
+          - {op: equals, path: booking_status, value: selected}
+          - {op: equals, path: last_action, value: select_busan}
+  select_seoul_button:
+    kind: button
+    selector: '[data-testid="select-seoul-loft"]'
+    page: search
+    actions:
+      click:
+        effects:
+          - {op: equals, path: selected_property_id, value: SF-SEOUL-LOFT}
+          - {op: equals, path: selected_property_name, value: Han River Loft}
+          - {op: equals, path: selected_city, value: Seoul}
+          - {op: equals, path: selected_package, value: "2 nights / loft"}
+          - {op: equals, path: stay_subtotal, value: 480}
+          - {op: equals, path: promo_credit, value: 0}
+          - {op: equals, path: service_fee, value: 32}
+          - op: equals_linear
+            path: total_due
+            terms:
+              - {path: stay_subtotal}
+              - {path: addon_total}
+              - {path: service_fee}
+              - {path: promo_credit, multiplier: -1}
+          - {op: equals, path: booking_status, value: selected}
+          - {op: equals, path: last_action, value: select_seoul}
+  select_kyoto_button:
+    kind: button
+    selector: '[data-testid="select-kyoto-machiya"]'
+    page: search
+    actions:
+      click:
+        effects:
+          - {op: equals, path: selected_property_id, value: SF-KYOTO-MACHIYA}
+          - {op: equals, path: selected_property_name, value: Machiya Garden House}
+          - {op: equals, path: selected_city, value: Kyoto}
+          - {op: equals, path: selected_package, value: "2 nights / ryokan"}
+          - {op: equals, path: stay_subtotal, value: 620}
+          - {op: equals, path: promo_credit, value: 0}
+          - {op: equals, path: service_fee, value: 58}
+          - op: equals_linear
+            path: total_due
+            terms:
+              - {path: stay_subtotal}
+              - {path: addon_total}
+              - {path: service_fee}
+              - {path: promo_credit, multiplier: -1}
+          - {op: equals, path: booking_status, value: selected}
+          - {op: equals, path: last_action, value: select_kyoto}
+  add_breakfast_button:
+    kind: button
+    selector: '[data-testid="add-breakfast"]'
+    actions:
+      click:
+        preconditions:
+          - {op: equals, path: breakfast, value: false}
+        effects:
+          - {op: equals, path: breakfast, value: true}
+          - {op: changed_by, path: addon_total, by: 42}
+          - op: equals_piecewise_linear
+            path: service_fee
+            cases:
+              - when:
+                  - {op: relation, path: stay_subtotal, operator: ">=", value: 600}
+                formula: {constant: 58}
+            default: {constant: 32}
+          - op: equals_linear
+            path: total_due
+            terms:
+              - {path: stay_subtotal}
+              - {path: addon_total}
+              - {path: service_fee}
+              - {path: promo_credit, multiplier: -1}
+          - {op: equals, path: last_action, value: add_breakfast}
+  add_pickup_button:
+    kind: button
+    selector: '[data-testid="add-pickup"]'
+    actions:
+      click:
+        preconditions:
+          - {op: equals, path: airport_pickup, value: false}
+        effects:
+          - {op: equals, path: airport_pickup, value: true}
+          - {op: changed_by, path: addon_total, by: 55}
+          - op: equals_piecewise_linear
+            path: service_fee
+            cases:
+              - when:
+                  - {op: relation, path: stay_subtotal, operator: ">=", value: 600}
+                formula: {constant: 58}
+            default: {constant: 32}
+          - op: equals_linear
+            path: total_due
+            terms:
+              - {path: stay_subtotal}
+              - {path: addon_total}
+              - {path: service_fee}
+              - {path: promo_credit, multiplier: -1}
+          - {op: equals, path: last_action, value: add_pickup}
+  add_flexible_button:
+    kind: button
+    selector: '[data-testid="add-flexible"]'
+    actions:
+      click:
+        preconditions:
+          - {op: equals, path: flexible_cancel, value: false}
+        effects:
+          - {op: equals, path: flexible_cancel, value: true}
+          - {op: changed_by, path: addon_total, by: 70}
+          - op: equals_piecewise_linear
+            path: service_fee
+            cases:
+              - when:
+                  - {op: relation, path: stay_subtotal, operator: ">=", value: 600}
+                formula: {constant: 58}
+            default: {constant: 32}
+          - op: equals_linear
+            path: total_due
+            terms:
+              - {path: stay_subtotal}
+              - {path: addon_total}
+              - {path: service_fee}
+              - {path: promo_credit, multiplier: -1}
+          - {op: equals, path: last_action, value: add_flexible}
+  promo_code_input:
+    kind: input
+    selector: '[data-testid="promo-code"]'
+    page: checkout
+    actions:
+      fill:
+        effects:
+          - {op: equals_normalized, path: promo_code, value_from: input.value, normalizers: [trim, uppercase]}
+          - {op: equals, path: last_action, value: edit_promo}
+  apply_promo_button:
+    kind: button
+    selector: '[data-testid="apply-promo"]'
+    page: checkout
+    actions:
+      click:
+        preconditions:
+          - {op: relation, path: selected_property_id, operator: "!=", value: ""}
+          - {op: relation, path: promo_code, operator: "!=", value: ""}
+        effects:
+          - {op: changed_by, path: service_call_count, by: 1}
+          - op: equals_count_where
+            path: service_call_count
+            source_path: __services.calls
+            where:
+              - {op: equals, field: service, value: promo_validate}
+          - {op: one_of, path: availability_status, values: [applied, rejected]}
+          - op: equals_linear
+            path: total_due
+            terms:
+              - {path: stay_subtotal}
+              - {path: addon_total}
+              - {path: service_fee}
+              - {path: promo_credit, multiplier: -1}
+          - {op: equals, path: last_action, value: apply_promo}
+  guest_name_input:
+    kind: input
+    selector: '[data-testid="guest-name"]'
+    page: checkout
+    actions:
+      fill:
+        effects:
+          - {op: equals, path: guest_name, value_from: input.value}
+          - {op: removed_object_fields, path: field_errors, fields: [name, form]}
+          - {op: equals_object_key_count, path: error_count, source_path: field_errors}
+          - {op: equals, path: last_action, value: edit_guest_name}
+  guest_email_input:
+    kind: input
+    selector: '[data-testid="guest-email"]'
+    page: checkout
+    actions:
+      fill:
+        effects:
+          - {op: equals_normalized, path: guest_email, value_from: input.value, normalizers: [trim, lowercase]}
+          - {op: removed_object_fields, path: field_errors, fields: [email, form]}
+          - {op: equals_object_key_count, path: error_count, source_path: field_errors}
+          - {op: equals, path: last_action, value: edit_guest_email}
+  validate_guest_button:
+    kind: button
+    selector: '[data-testid="validate-guest"]'
+    page: checkout
+    actions:
+      click:
+        preconditions:
+          - {op: relation, path: guest_name, operator: "!=", value: ""}
+          - {op: relation, path: guest_email, operator: "!=", value: ""}
+        effects:
+          - {op: equals, path: field_errors, value: {}}
+          - {op: equals_object_key_count, path: error_count, source_path: field_errors}
+          - {op: equals, path: booking_status, value: guest_validated}
+          - {op: equals, path: last_action, value: validate_guest}
+        rejected_when:
+          - {op: equals, path: guest_name, value: ""}
+        rejected_effects:
+          - {op: updated_object_fields, path: field_errors, updates: {name: Guest name required}}
+          - {op: equals_object_key_count, path: error_count, source_path: field_errors}
+          - {op: equals, path: booking_status, value: validation_failed}
+          - {op: equals, path: last_action, value: reject_guest_name}
+  hold_booking_button:
+    kind: button
+    selector: '[data-testid="hold-booking"]'
+    page: checkout
+    actions:
+      click:
+        preconditions:
+          - {op: equals, path: booking_status, value: guest_validated}
+          - {op: relation, path: selected_property_id, operator: "!=", value: ""}
+        effects:
+          - {op: equals, path: booking_status, value: held}
+          - op: appended_object
+            path: booking_audit
+            value:
+              event: held
+              property: {from_path: selected_property_id}
+              total: {from_path: total_due}
+          - {op: equals_length, path: audit_count, source_path: booking_audit}
+          - {op: equals, path: last_action, value: hold_booking}
+  group_upload_input:
+    kind: input
+    selector: '[data-testid="group-upload"]'
+    page: manage
+    actions:
+      upload:
+        file_schema:
+          format: csv
+          columns:
+            - {name: id, type: string}
+            - {name: name, type: string}
+            - {name: tier, type: string}
+            - {name: meal, type: string}
+        effects:
+          - {op: equals, path: group_guests, value_from: input.rows}
+          - {op: equals_length, path: group_guest_count, source_path: group_guests}
+          - {op: equals, path: last_file, value_from: input.file.name}
+          - {op: equals, path: last_action, value: upload_group}
+  role_guest_button:
+    kind: button
+    selector: '[data-testid="role-guest"]'
+    actions:
+      click:
+        effects:
+          - {op: equals, path: active_role, value: guest}
+          - {op: equals, path: last_action, value: role_guest}
+  role_agent_button:
+    kind: button
+    selector: '[data-testid="role-agent"]'
+    actions:
+      click:
+        effects:
+          - {op: equals, path: active_role, value: agent}
+          - {op: equals, path: last_action, value: role_agent}
+  confirm_booking_button:
+    kind: button
+    selector: '[data-testid="confirm-booking"]'
+    page: manage
+    actions:
+      click:
+        allowed_roles: [agent]
+        preconditions:
+          - {op: equals, path: booking_status, value: held}
+        effects:
+          - {op: equals, path: booking_status, value: confirmed}
+          - op: appended_object
+            path: booking_audit
+            value:
+              event: confirmed
+              property: {from_path: selected_property_id}
+              guests: {from_path: group_guest_count}
+          - {op: equals_length, path: audit_count, source_path: booking_audit}
+          - {op: equals, path: last_action, value: confirm_booking}
+        unauthorized_effects:
+          - {op: unchanged, path: booking_status}
+          - {op: unchanged, path: booking_audit}
+          - {op: unchanged, path: audit_count}
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_confirm}

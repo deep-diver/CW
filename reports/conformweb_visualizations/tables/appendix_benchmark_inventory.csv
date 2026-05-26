@@ -1,0 +1,25 @@
+instance_id,family,tier,contract_tokens,num_selectors,num_actions,num_state_paths,num_routes,num_roles,num_service_fixtures,num_upload_specs,num_rendered_tables,has_persistence,has_browser_history,num_scoring_scenarios,num_probe_scenarios,median_steps_per_scenario,p90_steps_per_scenario,behavioral_coupling_score
+stayflow_concierge_tier_a,Travel,A,2303,32,23.0,33.0,3.0,2,1.0,10,2.0,1,0,23,0,5.0,9.0,31.867799632783573
+stayflow_concierge_tier_b,Travel,B,3017,46,31.0,41.0,4.0,2,2.0,10,3.0,1,0,29,0,6.0,13.2,45.7257144975813
+stayflow_concierge_tier_c,Travel,C,3703,61,36.0,57.0,6.0,3,4.0,18,6.0,1,0,25,0,9.0,13.800000000000004,79.41290651720593
+stayflow_concierge_tier_d,Travel,D,4266,65,37.0,62.0,6.0,3,4.0,18,7.0,1,0,28,0,8.5,18.90000000000001,81.92649778163954
+freshcart_market_tier_a,Grocery,A,2251,40,30.0,23.0,3.0,2,1.0,0,2.0,1,1,24,0,5.5,8.7,37.897834737245745
+freshcart_market_tier_b,Grocery,B,3628,57,46.0,39.0,4.0,2,2.0,0,2.0,1,1,29,0,5.0,10.399999999999999,44.44835651275528
+freshcart_market_tier_c,Grocery,C,5441,69,58.0,51.0,5.0,3,4.0,0,2.0,1,1,31,0,6.0,11.0,61.03507544822375
+freshcart_market_tier_d,Grocery,D,5964,73,59.0,56.0,5.0,3,4.0,0,3.0,1,1,34,0,6.0,11.7,63.155417958361994
+clinic_shift_command_tier_a,Clinical Command,A,0,22,25.0,0.0,0.0,0,0.0,0,0.0,0,0,23,0,8.0,17.200000000000003,10.0
+clinic_shift_command_tier_b,Clinical Command,B,3939,66,34.0,47.0,4.0,4,2.0,17,6.0,1,0,33,0,5.0,13.000000000000004,52.92258807698117
+clinic_shift_command_tier_c,Clinical Command,C,6631,109,50.0,92.0,5.0,5,5.0,47,12.0,1,0,52,0,5.0,17.799999999999997,91.81443327408631
+clinic_shift_command_tier_d,Clinical Command,D,7119,113,51.0,97.0,5.0,5,5.0,47,13.0,1,0,55,0,5.0,18.0,93.66665163356863
+campus_registrar_command_tier_a,Campus Registrar,A,1923,39,23.0,27.0,3.0,2,1.0,0,3.0,1,0,24,0,4.0,7.0,23.76598388453229
+campus_registrar_command_tier_b,Campus Registrar,B,3080,66,27.0,44.0,4.0,4,0.0,11,7.0,1,0,12,0,6.5,12.600000000000001,51.54613449687233
+campus_registrar_command_tier_c,Campus Registrar,C,4666,81,29.0,64.0,5.0,5,1.0,15,10.0,1,1,29,0,9.0,27.4,93.42488101316299
+campus_registrar_command_tier_d,Campus Registrar,D,5424,97,38.0,84.0,6.0,6,3.0,26,11.0,1,0,34,0,7.0,37.0,100.0
+media_campaign_launch_desk_tier_a,Media Campaign,A,1915,39,23.0,27.0,3.0,2,1.0,0,3.0,1,0,24,0,5.0,10.399999999999999,29.521715651946284
+media_campaign_launch_desk_tier_b,Media Campaign,B,2539,56,22.0,38.0,4.0,4,0.0,11,6.0,1,0,12,0,6.0,20.800000000000004,52.103163660191164
+media_campaign_launch_desk_tier_c,Media Campaign,C,3163,66,28.0,47.0,5.0,5,0.0,11,7.0,1,0,44,0,6.0,19.400000000000006,58.677929774708836
+media_campaign_launch_desk_tier_d,Media Campaign,D,4635,89,40.0,74.0,5.0,6,2.0,40,9.0,1,0,48,0,5.0,30.000000000000043,84.14212305640994
+homefix_hub_tier_a,Home Services,A,1585,28,18.0,50.0,3.0,2,1.0,3,2.0,1,1,24,0,5.0,10.7,41.513795809738724
+homefix_hub_tier_b,Home Services,B,1915,41,24.0,50.0,4.0,4,1.0,3,4.0,1,1,29,0,5.0,12.0,51.85880470624304
+homefix_hub_tier_c,Home Services,C,2714,57,34.0,55.0,5.0,5,1.0,8,6.0,1,1,49,0,9.0,17.0,79.8909596383837
+homefix_hub_tier_d,Home Services,D,3376,71,42.0,54.0,6.0,6,2.0,11,8.0,1,1,64,0,8.0,24.0,90.73462547871254

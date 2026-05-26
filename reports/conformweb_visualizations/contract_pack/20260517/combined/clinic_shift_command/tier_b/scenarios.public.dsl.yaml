@@ -1,0 +1,235 @@
+dsl_version: "3.0.0"
+visibility: public
+tier_weights:
+  smoke: 1
+  core: 2
+  validation: 3
+  service: 4
+  upload: 4
+  permission: 4
+  persistence: 5
+  journey: 6
+
+scenarios:
+  - id: public_01_filter_critical_queue
+    tier: smoke
+    difficulty: B
+    steps:
+      - do: reset_button.click
+      - do: filter_critical_button.click
+        expect:
+          - {op: equals, path: current_filter, value: critical}
+          - {op: equals, path: last_action, value: filter_critical}
+      - table: patient_queue
+        expect_order: [CVC-206, CVC-205, CVC-202]
+        expect_row_count: 3
+        expect_rows:
+          - id: CVC-206
+            cells:
+              name: Ava Chen
+              acuity: 1
+              room_need: isolation
+              risk: red
+          - id: CVC-205
+            cells:
+              lane: lab
+              wait_mins: 22
+
+  - id: public_02_charge_assigns_isolation_room
+    tier: core
+    difficulty: B
+    steps:
+      - do: reset_button.click
+      - do: select_ava_button.click
+        expect:
+          - {op: equals, path: selected_patient_id, value: CVC-206}
+          - {op: equals, path: selected_room_need, value: isolation}
+          - {op: equals, path: current_page, value: chart}
+      - do: role_charge_nurse_button.click
+      - do: assign_isolation_button.click
+        expect:
+          - {op: equals, path: assigned_room_id, value: R-ISO2}
+          - {op: equals, path: assigned_room_name, value: "Isolation 2"}
+          - {op: equals, path: selected_patient_status, value: roomed}
+      - do: go_capacity_button.click
+      - table: room_board
+        expect_rows:
+          - id: R-ISO2
+            cells:
+              status: occupied
+              occupant: Ava Chen
+
+  - id: public_03_coordinator_cannot_save_assessment
+    tier: permission
+    difficulty: B
+    steps:
+      - do: reset_button.click
+      - do: select_june_button.click
+      - do: pain_score_input.fill
+        input: {value: "6"}
+      - do: disposition_input.fill
+        input: {value: "  labs and fever panel  "}
+        expect:
+          - {op: equals, path: disposition, value: "labs and fever panel"}
+      - do: save_assessment_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: assessment_status, value: idle}
+          - {op: equals, path: denied_count, value: 1}
+          - {op: equals, path: last_action, value: unauthorized_clinical}
+
+  - id: public_04_clinician_records_assessment_and_order
+    tier: journey
+    difficulty: B
+    steps:
+      - do: reset_button.click
+      - do: select_june_button.click
+      - do: role_clinician_button.click
+      - do: pain_score_input.fill
+        input: {value: "6"}
+      - do: disposition_input.fill
+        input: {value: "CBC stat before discharge"}
+      - do: save_assessment_button.click
+        expect:
+          - {op: equals, path: assessment_status, value: recorded}
+          - {op: equals, path: selected_patient_status, value: assessed}
+      - do: place_lab_order_button.click
+        expect:
+          - {op: equals, path: diagnostic_order_count, value: 1}
+          - {op: equals, path: order_status, value: ordered}
+      - do: go_capacity_button.click
+      - table: order_grid
+        expect_order: [O-1]
+        expect_row_count: 1
+        expect_rows:
+          - id: O-1
+            cells:
+              patient: June Park
+              type: CBC
+              priority: stat
+              status: ordered
+
+  - id: public_05_billing_prior_auth_approved
+    tier: service
+    difficulty: B
+    steps:
+      - do: reset_button.click
+      - do: select_omar_button.click
+      - do: role_billing_button.click
+      - do: auth_key_input.fill
+        input: {value: " ortho-77 "}
+        expect:
+          - {op: equals, path: auth_key, value: ORTHO-77}
+      - do: request_auth_button.click
+        expect:
+          - {op: equals, path: authorization_status, value: approved}
+          - {op: equals, path: auth_call_count, value: 1}
+          - {op: equals, path: service_call_count, value: 1}
+
+  - id: public_06_referral_upload_counts
+    tier: upload
+    difficulty: B
+    steps:
+      - do: reset_button.click
+      - do: go_chart_button.click
+      - do: referral_upload_input.upload
+        input:
+          file:
+            name: referrals-public.csv
+            mime_type: text/csv
+            content: |
+              id,document,priority,status
+              RF-1,Cardiology packet,stat,ready
+              RF-2,Outside labs,routine,pending
+          rows:
+            - {id: RF-1, document: Cardiology packet, priority: stat, status: ready}
+            - {id: RF-2, document: Outside labs, priority: routine, status: pending}
+        expect:
+          - {op: equals, path: referral_doc_count, value: 2}
+          - {op: equals, path: last_referral_file, value: referrals-public.csv}
+          - {op: equals, path: last_action, value: upload_referrals}
+      - do: go_handoff_button.click
+      - table: referral_grid
+        expect_order: [RF-1, RF-2]
+        expect_row_count: 2
+        expect_rows:
+          - id: RF-1
+            cells:
+              document: Cardiology packet
+              priority: stat
+              status: ready
+
+  - id: public_07_charge_escalates_delayed_room
+    tier: core
+    difficulty: B
+    steps:
+      - do: reset_button.click
+      - do: select_ava_button.click
+      - do: role_charge_nurse_button.click
+      - do: escalate_delay_button.click
+        expect:
+          - {op: equals, path: escalation_count, value: 1}
+          - {op: equals, path: last_action, value: escalate_delay}
+      - do: go_handoff_button.click
+      - table: escalation_grid
+        expect_order: [E-1]
+        expect_row_count: 1
+        expect_rows:
+          - id: E-1
+            cells:
+              patient: Ava Chen
+              reason: delayed_room
+              owner: charge_nurse
+              status: open
+
+  - id: public_08_capacity_route_persists
+    tier: persistence
+    difficulty: B
+    steps:
+      - do: reset_button.click
+      - do: go_capacity_button.click
+        expect:
+          - {op: equals, path: current_page, value: capacity}
+      - do: go_handoff_button.click
+      - browser: back
+        expect_page: capacity
+        expect:
+          - {op: equals, path: current_page, value: capacity}
+
+  - id: public_09_release_diagnostics_after_clearance
+    tier: journey
+    difficulty: B
+    steps:
+      - do: reset_button.click
+      - do: select_ava_button.click
+      - do: role_charge_nurse_button.click
+      - do: assign_isolation_button.click
+      - do: verify_insurance_button.click
+      - do: role_billing_button.click
+      - do: request_auth_button.click
+      - do: role_clinician_button.click
+      - do: pain_score_input.fill
+        input: {value: "8"}
+      - do: disposition_input.fill
+        input: {value: "STAT CBC and cardiac workup"}
+      - do: save_assessment_button.click
+      - do: place_lab_order_button.click
+      - do: release_diagnostics_button.click
+        expect:
+          - {op: equals, path: order_status, value: released}
+          - {op: equals, path: released_order_count, value: 1}
+          - {op: equals, path: selected_patient_status, value: diagnostic_ready}
+          - {op: equals, path: last_action, value: release_diagnostics}
+      - do: go_capacity_button.click
+      - table: order_grid
+        expect_order: [O-1]
+        expect_row_count: 1
+        expect_rows:
+          - id: O-1
+            cells:
+              patient: Ava Chen
+              status: released
+      - browser: reload
+        expect_page: capacity
+        expect:
+          - {op: equals, path: current_page, value: capacity}

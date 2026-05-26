@@ -1,0 +1,274 @@
+{
+  "batch_root": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/campus_registrar_command/cohorts/_batches/rerun_missing_20260525T122900Z",
+  "generated_at": "2026-05-26T00:29:58+00:00",
+  "total_tasks": 10,
+  "evaluated": 10,
+  "rows": [
+    {
+      "target_tier": "C",
+      "model_tier": "T",
+      "slug": "gpt54_mini",
+      "model": "gpt-5.4-mini",
+      "rep": 1,
+      "subject": "repeat_tier_c_t_gpt54_mini_r01",
+      "candidate_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/campus_registrar_command/tier_c/cohorts/T/rerun_missing_20260525T122900Z/candidates/gpt54_mini/r01",
+      "eval_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/campus_registrar_command/tier_c/cohorts/T/rerun_missing_20260525T122900Z/runs/gpt54_mini/r01",
+      "run_id": "20260526-000814-61e91cba",
+      "passed": false,
+      "scenarios_passed": 0,
+      "scenarios_total": 29,
+      "formal_ratio": 0.0,
+      "stepwise_ratio": 0.0525716719883143,
+      "contract_ratio": 1.0,
+      "first_failure": "public_01_filter_queue_and_select_nova",
+      "failure_breakdown": {
+        "assertion_state_equals": 29
+      },
+      "summary_path": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/campus_registrar_command/tier_c/cohorts/T/rerun_missing_20260525T122900Z/runs/gpt54_mini/r01/20260526-000814-61e91cba/summary.json",
+      "status": "ok"
+    },
+    {
+      "target_tier": "C",
+      "model_tier": "T",
+      "slug": "gpt54_mini",
+      "model": "gpt-5.4-mini",
+      "rep": 2,
+      "subject": "repeat_tier_c_t_gpt54_mini_r02",
+      "candidate_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/campus_registrar_command/tier_c/cohorts/T/rerun_missing_20260525T122900Z/candidates/gpt54_mini/r02",
+      "eval_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/campus_registrar_command/tier_c/cohorts/T/rerun_missing_20260525T122900Z/runs/gpt54_mini/r02",
+      "run_id": "20260526-001002-7bb59ef3",
+      "passed": false,
+      "scenarios_passed": 0,
+      "scenarios_total": 29,
+      "formal_ratio": 0.0,
+      "stepwise_ratio": 0.0,
+      "contract_ratio": 0.0,
+      "first_failure": "public_01_filter_queue_and_select_nova",
+      "failure_breakdown": {
+        "invalid_state_hook": 29
+      },
+      "summary_path": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/campus_registrar_command/tier_c/cohorts/T/rerun_missing_20260525T122900Z/runs/gpt54_mini/r02/20260526-001002-7bb59ef3/summary.json",
+      "status": "ok"
+    },
+    {
+      "target_tier": "C",
+      "model_tier": "T",
+      "slug": "gpt54_mini",
+      "model": "gpt-5.4-mini",
+      "rep": 3,
+      "subject": "repeat_tier_c_t_gpt54_mini_r03",
+      "candidate_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/campus_registrar_command/tier_c/cohorts/T/rerun_missing_20260525T122900Z/candidates/gpt54_mini/r03",
+      "eval_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/campus_registrar_command/tier_c/cohorts/T/rerun_missing_20260525T122900Z/runs/gpt54_mini/r03",
+      "run_id": "20260526-001019-a7cad682",
+      "passed": false,
+      "scenarios_passed": 0,
+      "scenarios_total": 29,
+      "formal_ratio": 0.0,
+      "stepwise_ratio": 0.0525716719883143,
+      "contract_ratio": 1.0,
+      "first_failure": "public_01_filter_queue_and_select_nova",
+      "failure_breakdown": {
+        "assertion_state_equals": 29
+      },
+      "summary_path": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/campus_registrar_command/tier_c/cohorts/T/rerun_missing_20260525T122900Z/runs/gpt54_mini/r03/20260526-001019-a7cad682/summary.json",
+      "status": "ok"
+    },
+    {
+      "target_tier": "C",
+      "model_tier": "T",
+      "slug": "gpt54_mini",
+      "model": "gpt-5.4-mini",
+      "rep": 4,
+      "subject": "repeat_tier_c_t_gpt54_mini_r04",
+      "candidate_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/campus_registrar_command/tier_c/cohorts/T/rerun_missing_20260525T122900Z/candidates/gpt54_mini/r04",
+      "eval_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/campus_registrar_command/tier_c/cohorts/T/rerun_missing_20260525T122900Z/runs/gpt54_mini/r04",
+      "run_id": "20260526-001054-a4230721",
+      "passed": false,
+      "scenarios_passed": 0,
+      "scenarios_total": 29,
+      "formal_ratio": 0.0,
+      "stepwise_ratio": 0.0525716719883143,
+      "contract_ratio": 1.0,
+      "first_failure": "public_01_filter_queue_and_select_nova",
+      "failure_breakdown": {
+        "assertion_state_equals": 29
+      },
+      "summary_path": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/campus_registrar_command/tier_c/cohorts/T/rerun_missing_20260525T122900Z/runs/gpt54_mini/r04/20260526-001054-a4230721/summary.json",
+      "status": "ok"
+    },
+    {
+      "target_tier": "C",
+      "model_tier": "T",
+      "slug": "gpt54_mini",
+      "model": "gpt-5.4-mini",
+      "rep": 5,
+      "subject": "repeat_tier_c_t_gpt54_mini_r05",
+      "candidate_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/campus_registrar_command/tier_c/cohorts/T/rerun_missing_20260525T122900Z/candidates/gpt54_mini/r05",
+      "eval_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/campus_registrar_command/tier_c/cohorts/T/rerun_missing_20260525T122900Z/runs/gpt54_mini/r05",
+      "run_id": "20260526-001152-cb091a66",
+      "passed": false,
+      "scenarios_passed": 0,
+      "scenarios_total": 29,
+      "formal_ratio": 0.0,
+      "stepwise_ratio": 0.0525716719883143,
+      "contract_ratio": 1.0,
+      "first_failure": "public_01_filter_queue_and_select_nova",
+      "failure_breakdown": {
+        "assertion_state_equals": 29
+      },
+      "summary_path": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/campus_registrar_command/tier_c/cohorts/T/rerun_missing_20260525T122900Z/runs/gpt54_mini/r05/20260526-001152-cb091a66/summary.json",
+      "status": "ok"
+    },
+    {
+      "target_tier": "C",
+      "model_tier": "T",
+      "slug": "gpt54_mini",
+      "model": "gpt-5.4-mini",
+      "rep": 6,
+      "subject": "repeat_tier_c_t_gpt54_mini_r06",
+      "candidate_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/campus_registrar_command/tier_c/cohorts/T/rerun_missing_20260525T122900Z/candidates/gpt54_mini/r06",
+      "eval_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/campus_registrar_command/tier_c/cohorts/T/rerun_missing_20260525T122900Z/runs/gpt54_mini/r06",
+      "run_id": "20260526-001222-1e11cc02",
+      "passed": false,
+      "scenarios_passed": 0,
+      "scenarios_total": 29,
+      "formal_ratio": 0.0,
+      "stepwise_ratio": 0.0525716719883143,
+      "contract_ratio": 1.0,
+      "first_failure": "public_01_filter_queue_and_select_nova",
+      "failure_breakdown": {
+        "assertion_state_equals": 29
+      },
+      "summary_path": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/campus_registrar_command/tier_c/cohorts/T/rerun_missing_20260525T122900Z/runs/gpt54_mini/r06/20260526-001222-1e11cc02/summary.json",
+      "status": "ok"
+    },
+    {
+      "target_tier": "C",
+      "model_tier": "T",
+      "slug": "gpt54_mini",
+      "model": "gpt-5.4-mini",
+      "rep": 7,
+      "subject": "repeat_tier_c_t_gpt54_mini_r07",
+      "candidate_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/campus_registrar_command/tier_c/cohorts/T/rerun_missing_20260525T122900Z/candidates/gpt54_mini/r07",
+      "eval_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/campus_registrar_command/tier_c/cohorts/T/rerun_missing_20260525T122900Z/runs/gpt54_mini/r07",
+      "run_id": "20260526-001436-23df5381",
+      "passed": false,
+      "scenarios_passed": 0,
+      "scenarios_total": 29,
+      "formal_ratio": 0.0,
+      "stepwise_ratio": 0.0,
+      "contract_ratio": 0.0,
+      "first_failure": "public_01_filter_queue_and_select_nova",
+      "failure_breakdown": {
+        "invalid_state_hook": 29
+      },
+      "summary_path": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/campus_registrar_command/tier_c/cohorts/T/rerun_missing_20260525T122900Z/runs/gpt54_mini/r07/20260526-001436-23df5381/summary.json",
+      "status": "ok"
+    },
+    {
+      "target_tier": "C",
+      "model_tier": "T",
+      "slug": "gpt54_mini",
+      "model": "gpt-5.4-mini",
+      "rep": 8,
+      "subject": "repeat_tier_c_t_gpt54_mini_r08",
+      "candidate_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/campus_registrar_command/tier_c/cohorts/T/rerun_missing_20260525T122900Z/candidates/gpt54_mini/r08",
+      "eval_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/campus_registrar_command/tier_c/cohorts/T/rerun_missing_20260525T122900Z/runs/gpt54_mini/r08",
+      "run_id": "20260526-001454-f90285c3",
+      "passed": false,
+      "scenarios_passed": 0,
+      "scenarios_total": 29,
+      "formal_ratio": 0.0,
+      "stepwise_ratio": 0.0,
+      "contract_ratio": 0.0,
+      "first_failure": "public_01_filter_queue_and_select_nova",
+      "failure_breakdown": {
+        "invalid_state_hook": 29
+      },
+      "summary_path": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/campus_registrar_command/tier_c/cohorts/T/rerun_missing_20260525T122900Z/runs/gpt54_mini/r08/20260526-001454-f90285c3/summary.json",
+      "status": "ok"
+    },
+    {
+      "target_tier": "C",
+      "model_tier": "T",
+      "slug": "gpt54_mini",
+      "model": "gpt-5.4-mini",
+      "rep": 9,
+      "subject": "repeat_tier_c_t_gpt54_mini_r09",
+      "candidate_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/campus_registrar_command/tier_c/cohorts/T/rerun_missing_20260525T122900Z/candidates/gpt54_mini/r09",
+      "eval_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/campus_registrar_command/tier_c/cohorts/T/rerun_missing_20260525T122900Z/runs/gpt54_mini/r09",
+      "run_id": "20260526-001511-1be1a2d6",
+      "passed": false,
+      "scenarios_passed": 0,
+      "scenarios_total": 29,
+      "formal_ratio": 0.0,
+      "stepwise_ratio": 0.0,
+      "contract_ratio": 0.0,
+      "first_failure": "public_01_filter_queue_and_select_nova",
+      "failure_breakdown": {
+        "invalid_state_hook": 29
+      },
+      "summary_path": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/campus_registrar_command/tier_c/cohorts/T/rerun_missing_20260525T122900Z/runs/gpt54_mini/r09/20260526-001511-1be1a2d6/summary.json",
+      "status": "ok"
+    },
+    {
+      "target_tier": "C",
+      "model_tier": "T",
+      "slug": "gpt54_mini",
+      "model": "gpt-5.4-mini",
+      "rep": 10,
+      "subject": "repeat_tier_c_t_gpt54_mini_r10",
+      "candidate_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/campus_registrar_command/tier_c/cohorts/T/rerun_missing_20260525T122900Z/candidates/gpt54_mini/r10",
+      "eval_dir": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/campus_registrar_command/tier_c/cohorts/T/rerun_missing_20260525T122900Z/runs/gpt54_mini/r10",
+      "run_id": "20260526-001522-1b4aea21",
+      "passed": false,
+      "scenarios_passed": 0,
+      "scenarios_total": 29,
+      "formal_ratio": 0.0,
+      "stepwise_ratio": 0.0525716719883143,
+      "contract_ratio": 1.0,
+      "first_failure": "public_01_filter_queue_and_select_nova",
+      "failure_breakdown": {
+        "assertion_state_equals": 29
+      },
+      "summary_path": "/Users/chansungpark/Developers/backup/b/detoxbench/targets/web/campus_registrar_command/tier_c/cohorts/T/rerun_missing_20260525T122900Z/runs/gpt54_mini/r10/20260526-001522-1b4aea21/summary.json",
+      "status": "ok"
+    }
+  ],
+  "model_stats": [
+    {
+      "group": "tier_C/model_tier_T/gpt54_mini",
+      "target_tier": "C",
+      "model_tier": "T",
+      "slug": "gpt54_mini",
+      "model": "gpt-5.4-mini",
+      "runs": 10,
+      "evaluated": 10,
+      "generation_or_eval_missing": 0,
+      "scenario_pass_mean": 0.0,
+      "scenario_pass_sd": 0.0,
+      "formal_mean": 0.0,
+      "formal_sd": 0.0,
+      "stepwise_mean": 0.031543003192988577,
+      "stepwise_sd": 0.027147894679069366,
+      "contract_mean": 0.6,
+      "contract_sd": 0.5163977794943223,
+      "first_failures": {
+        "public_01_filter_queue_and_select_nova": 10
+      }
+    }
+  ],
+  "tier_group_stats": [
+    {
+      "target_tier": "C",
+      "model_tier": "T",
+      "evaluated": 10,
+      "formal_mean": 0.0,
+      "formal_sd": 0.0,
+      "stepwise_mean": 0.031543003192988577,
+      "stepwise_sd": 0.027147894679069366,
+      "contract_mean": 0.6,
+      "contract_sd": 0.5163977794943223
+    }
+  ]
+}

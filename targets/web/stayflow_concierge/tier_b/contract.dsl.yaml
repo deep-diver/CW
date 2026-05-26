@@ -1,0 +1,731 @@
+dsl_version: "3.0.0"
+app:
+  id: stayflow_concierge_tier_b
+  name: StayFlow Concierge Tier B
+  capability: multi_city_travel_concierge
+runtime:
+  target: web
+  start_url: /#/builder
+  state_probe:
+    kind: javascript
+    expression: window.__DETOX_STATE__
+  pages:
+    builder:
+      path: /#/builder
+      purpose: Multi-city stay catalog and itinerary builder.
+    travelers:
+      path: /#/travelers
+      purpose: Primary guest, arrival details, and traveler manifest intake.
+    quote:
+      path: /#/quote
+      purpose: Live quote, promo validation, and booking hold workflow.
+    ops:
+      path: /#/ops
+      purpose: Agent checklist, confirmation, audit trail, and manifest review.
+  session:
+    role_path: active_role
+    roles: [guest, agent]
+  persistence:
+    reload:
+      scope: local_storage
+      paths:
+        - current_page
+        - active_role
+        - stay_catalog
+        - visible_stays
+        - current_city_filter
+        - itinerary_legs
+        - leg_count
+        - trip_route_key
+        - trip_subtotal
+        - addon_total
+        - service_fee
+        - promo_code
+        - promo_credit
+        - total_due
+        - promo_status
+        - quote_status
+        - quote_id
+        - quote_risk
+        - quote_call_count
+        - promo_call_count
+        - service_call_count
+        - primary_guest_name
+        - primary_guest_email
+        - arrival_time
+        - travelers
+        - traveler_count
+        - child_count
+        - mobility_count
+        - last_file
+        - field_errors
+        - error_count
+        - booking_status
+        - itinerary_checked
+        - manifest_checked
+        - deposit_checked
+        - checklist_completed_count
+        - booking_audit
+        - audit_count
+        - denied_count
+        - last_action
+  services:
+    quote_check:
+      endpoint: /api/tier-b-quote
+      method: GET
+      responses:
+        - id: busan
+          match: {query: {route: BUSAN}}
+          status: 200
+          json: {quote_id: Q-B-320, status: ready, risk: simple}
+        - id: busan_seoul
+          match: {query: {route: BUSAN_SEOUL}}
+          status: 200
+          json: {quote_id: Q-BS-884, status: ready, risk: balanced}
+        - id: busan_seoul_kyoto
+          match: {query: {route: BUSAN_SEOUL_KYOTO}}
+          status: 200
+          json: {quote_id: Q-BSK-991, status: ready, risk: complex}
+    promo_validate:
+      endpoint: /api/tier-b-promo
+      method: GET
+      responses:
+        - id: multi120
+          match: {query: {code: MULTI120, route: BUSAN_SEOUL}}
+          status: 200
+          json: {valid: true, credit: 120, status: applied}
+        - id: grand200
+          match: {query: {code: GRAND200, route: BUSAN_SEOUL_KYOTO}}
+          status: 200
+          json: {valid: true, credit: 200, status: applied}
+        - id: invalid
+          match: {query: {code: BADCODE}}
+          status: 200
+          json: {valid: false, credit: 0, status: rejected}
+  tables:
+    stay_grid:
+      selector: '[data-testid="stay-grid"]'
+      row_selector: '[data-testid="stay-row"]'
+      row_id_attribute: data-stay-id
+      source_path: visible_stays
+      row_id_field: id
+      columns:
+        name: {selector: '[data-col="name"]', state_field: name}
+        city: {selector: '[data-col="city"]', state_field: city}
+        nights: {selector: '[data-col="nights"]', state_field: nights}
+        base: {selector: '[data-col="base"]', state_field: base}
+    itinerary_grid:
+      selector: '[data-testid="itinerary-grid"]'
+      row_selector: '[data-testid="itinerary-row"]'
+      row_id_attribute: data-leg-id
+      source_path: itinerary_legs
+      row_id_field: id
+      columns:
+        city: {selector: '[data-col="city"]', state_field: city}
+        stay: {selector: '[data-col="stay"]', state_field: stay}
+        addon: {selector: '[data-col="addon"]', state_field: addon}
+        leg_total: {selector: '[data-col="leg_total"]', state_field: leg_total}
+    traveler_grid:
+      selector: '[data-testid="traveler-grid"]'
+      row_selector: '[data-testid="traveler-row"]'
+      row_id_attribute: data-traveler-id
+      source_path: travelers
+      row_id_field: id
+      columns:
+        name: {selector: '[data-col="name"]', state_field: name}
+        type: {selector: '[data-col="type"]', state_field: type}
+        meal: {selector: '[data-col="meal"]', state_field: meal}
+        mobility: {selector: '[data-col="mobility"]', state_field: mobility}
+state:
+  initial:
+    current_page: builder
+    active_role: guest
+    stay_catalog:
+      - {id: ST-BUSAN-HARBOR, city: Busan, name: Harbor Capsule Hotel, nights: 2, base: 320, available: true}
+      - {id: ST-SEOUL-LOFT, city: Seoul, name: Han River Loft, nights: 2, base: 480, available: true}
+      - {id: ST-KYOTO-MACHIYA, city: Kyoto, name: Machiya Garden House, nights: 2, base: 620, available: true}
+    visible_stays:
+      - {id: ST-BUSAN-HARBOR, city: Busan, name: Harbor Capsule Hotel, nights: 2, base: 320, available: true}
+      - {id: ST-SEOUL-LOFT, city: Seoul, name: Han River Loft, nights: 2, base: 480, available: true}
+      - {id: ST-KYOTO-MACHIYA, city: Kyoto, name: Machiya Garden House, nights: 2, base: 620, available: true}
+    current_city_filter: all
+    itinerary_legs: []
+    leg_count: 0
+    trip_route_key: ""
+    trip_subtotal: 0
+    addon_total: 0
+    service_fee: 0
+    promo_code: ""
+    promo_credit: 0
+    total_due: 0
+    promo_status: idle
+    quote_status: idle
+    quote_id: ""
+    quote_risk: none
+    quote_call_count: 0
+    promo_call_count: 0
+    service_call_count: 0
+    primary_guest_name: ""
+    primary_guest_email: ""
+    arrival_time: ""
+    travelers: []
+    traveler_count: 0
+    child_count: 0
+    mobility_count: 0
+    last_file: ""
+    field_errors: {}
+    error_count: 0
+    booking_status: idle
+    itinerary_checked: false
+    manifest_checked: false
+    deposit_checked: false
+    checklist_completed_count: 0
+    booking_audit: []
+    audit_count: 0
+    denied_count: 0
+    last_action: ready
+    __services.calls: []
+  schema:
+    current_page: {type: string, purpose: Public active route.}
+    active_role: {type: string, purpose: Public session role, guest or agent.}
+    stay_catalog: {type: array, purpose: Ordered catalog of city stay packages.}
+    visible_stays: {type: array, purpose: Current filtered catalog projection.}
+    current_city_filter: {type: string, purpose: Current catalog city filter.}
+    itinerary_legs: {type: array, purpose: Ordered multi-city trip legs.}
+    leg_count: {type: number, purpose: Number of itinerary legs.}
+    trip_route_key: {type: string, purpose: Public route key used for quote and promo services.}
+    trip_subtotal: {type: number, purpose: Sum of base rates across itinerary legs.}
+    addon_total: {type: number, purpose: Sum of per-leg concierge add-ons.}
+    service_fee: {type: number, purpose: Public piecewise service fee for the current itinerary.}
+    promo_code: {type: string, purpose: Normalized promo code draft.}
+    promo_credit: {type: number, purpose: Promo credit returned by service validation.}
+    total_due: {type: number, purpose: "Derived total: trip_subtotal plus addon_total plus service_fee minus promo_credit."}
+    promo_status: {type: string, purpose: Promo validation status.}
+    quote_status: {type: string, purpose: Quote lifecycle status.}
+    quote_id: {type: string, purpose: Quote identifier returned by quote service.}
+    quote_risk: {type: string, purpose: Quote risk label returned by quote service.}
+    quote_call_count: {type: number, purpose: Number of quote service calls.}
+    promo_call_count: {type: number, purpose: Number of promo validation calls.}
+    service_call_count: {type: number, purpose: Number of deterministic service calls.}
+    primary_guest_name: {type: string, purpose: Primary guest display name.}
+    primary_guest_email: {type: string, purpose: Normalized primary guest email.}
+    arrival_time: {type: string, purpose: Normalized arrival time note.}
+    travelers: {type: array, purpose: Uploaded traveler manifest rows.}
+    traveler_count: {type: number, purpose: Count of traveler rows.}
+    child_count: {type: number, purpose: Count of child traveler rows.}
+    mobility_count: {type: number, purpose: Count of travelers requiring mobility assistance.}
+    last_file: {type: string, purpose: Last uploaded traveler manifest filename.}
+    field_errors: {type: object, purpose: Public structured validation errors.}
+    error_count: {type: number, purpose: Number of active field error keys.}
+    booking_status: {type: string, purpose: Multi-city booking lifecycle.}
+    itinerary_checked: {type: boolean, purpose: Agent checklist flag for itinerary review.}
+    manifest_checked: {type: boolean, purpose: Agent checklist flag for manifest review.}
+    deposit_checked: {type: boolean, purpose: Agent checklist flag for deposit review.}
+    checklist_completed_count: {type: number, purpose: Number of completed agent checklist items.}
+    booking_audit: {type: array, purpose: Ordered public booking audit trail.}
+    audit_count: {type: number, purpose: Number of audit entries.}
+    denied_count: {type: number, purpose: Number of role-denied confirmation attempts.}
+    last_action: {type: string, purpose: Last public action id.}
+    __services.calls: {type: array, purpose: Evaluator-provided service call ledger.}
+
+x-derived:
+  leg_count: &derive_leg_count {op: equals_length, path: leg_count, source_path: itinerary_legs}
+  trip_subtotal: &derive_trip_subtotal {op: equals_sum, path: trip_subtotal, source_path: itinerary_legs, field: base}
+  addon_total: &derive_addon_total {op: equals_sum, path: addon_total, source_path: itinerary_legs, field: addon}
+  service_fee: &derive_service_fee
+    op: equals_piecewise_linear
+    path: service_fee
+    cases:
+      - when: [{op: relation, path: trip_subtotal, operator: ">=", value: 1100}]
+        formula: {constant: 112}
+      - when: [{op: relation, path: trip_subtotal, operator: ">=", value: 700}]
+        formula: {constant: 78}
+      - when: [{op: relation, path: trip_subtotal, operator: ">=", value: 600}]
+        formula: {constant: 64}
+      - when: [{op: relation, path: trip_subtotal, operator: ">", value: 0}]
+        formula: {constant: 44}
+    default: {constant: 0}
+  total_due: &derive_total_due
+    op: equals_linear
+    path: total_due
+    terms:
+      - {path: trip_subtotal}
+      - {path: addon_total}
+      - {path: service_fee}
+      - {path: promo_credit, multiplier: -1}
+  traveler_count: &derive_traveler_count {op: equals_length, path: traveler_count, source_path: travelers}
+  child_count: &derive_child_count
+    op: equals_count_where
+    path: child_count
+    source_path: travelers
+    where: [{op: equals, field: type, value: child}]
+  mobility_count: &derive_mobility_count
+    op: equals_count_where
+    path: mobility_count
+    source_path: travelers
+    where: [{op: equals, field: mobility, value: "yes"}]
+  error_count: &derive_error_count {op: equals_object_key_count, path: error_count, source_path: field_errors}
+  service_call_count: &derive_service_call_count {op: equals_length, path: service_call_count, source_path: __services.calls}
+  quote_call_count: &derive_quote_call_count
+    op: equals_count_where
+    path: quote_call_count
+    source_path: __services.calls
+    where: [{op: equals, field: service, value: quote_check}]
+  promo_call_count: &derive_promo_call_count
+    op: equals_count_where
+    path: promo_call_count
+    source_path: __services.calls
+    where: [{op: equals, field: service, value: promo_validate}]
+
+components:
+  reset_button:
+    kind: button
+    selector: '[data-testid="reset"]'
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_page, value: builder}
+          - {op: equals, path: active_role, value: guest}
+          - {op: equals, path: visible_stays, value: [{id: ST-BUSAN-HARBOR, city: Busan, name: Harbor Capsule Hotel, nights: 2, base: 320, available: true}, {id: ST-SEOUL-LOFT, city: Seoul, name: Han River Loft, nights: 2, base: 480, available: true}, {id: ST-KYOTO-MACHIYA, city: Kyoto, name: Machiya Garden House, nights: 2, base: 620, available: true}]}
+          - {op: equals, path: current_city_filter, value: all}
+          - {op: equals, path: itinerary_legs, value: []}
+          - {op: equals, path: leg_count, value: 0}
+          - {op: equals, path: trip_route_key, value: ""}
+          - {op: equals, path: trip_subtotal, value: 0}
+          - {op: equals, path: addon_total, value: 0}
+          - {op: equals, path: service_fee, value: 0}
+          - {op: equals, path: promo_code, value: ""}
+          - {op: equals, path: promo_credit, value: 0}
+          - {op: equals, path: total_due, value: 0}
+          - {op: equals, path: promo_status, value: idle}
+          - {op: equals, path: quote_status, value: idle}
+          - {op: equals, path: quote_id, value: ""}
+          - {op: equals, path: quote_risk, value: none}
+          - {op: equals, path: quote_call_count, value: 0}
+          - {op: equals, path: promo_call_count, value: 0}
+          - {op: equals, path: service_call_count, value: 0}
+          - {op: equals, path: primary_guest_name, value: ""}
+          - {op: equals, path: primary_guest_email, value: ""}
+          - {op: equals, path: arrival_time, value: ""}
+          - {op: equals, path: travelers, value: []}
+          - {op: equals, path: traveler_count, value: 0}
+          - {op: equals, path: child_count, value: 0}
+          - {op: equals, path: mobility_count, value: 0}
+          - {op: equals, path: last_file, value: ""}
+          - {op: equals, path: field_errors, value: {}}
+          - {op: equals, path: error_count, value: 0}
+          - {op: equals, path: booking_status, value: idle}
+          - {op: equals, path: itinerary_checked, value: false}
+          - {op: equals, path: manifest_checked, value: false}
+          - {op: equals, path: deposit_checked, value: false}
+          - {op: equals, path: checklist_completed_count, value: 0}
+          - {op: equals, path: booking_audit, value: []}
+          - {op: equals, path: audit_count, value: 0}
+          - {op: equals, path: denied_count, value: 0}
+          - {op: equals, path: last_action, value: reset}
+  go_builder_button:
+    kind: button
+    selector: '[data-testid="go-builder"]'
+    actions:
+      click:
+        navigate_to: builder
+        effects: [{op: equals, path: current_page, value: builder}, {op: equals, path: last_action, value: nav_builder}]
+  go_travelers_button:
+    kind: button
+    selector: '[data-testid="go-travelers"]'
+    actions:
+      click:
+        navigate_to: travelers
+        effects: [{op: equals, path: current_page, value: travelers}, {op: equals, path: last_action, value: nav_travelers}]
+  go_quote_button:
+    kind: button
+    selector: '[data-testid="go-quote"]'
+    actions:
+      click:
+        navigate_to: quote
+        effects: [{op: equals, path: current_page, value: quote}, {op: equals, path: last_action, value: nav_quote}]
+  go_ops_button:
+    kind: button
+    selector: '[data-testid="go-ops"]'
+    actions:
+      click:
+        navigate_to: ops
+        effects: [{op: equals, path: current_page, value: ops}, {op: equals, path: last_action, value: nav_ops}]
+  role_guest_button:
+    kind: button
+    selector: '[data-testid="role-guest"]'
+    actions:
+      click:
+        effects: [{op: equals, path: active_role, value: guest}, {op: equals, path: last_action, value: role_guest}]
+  role_agent_button:
+    kind: button
+    selector: '[data-testid="role-agent"]'
+    actions:
+      click:
+        effects: [{op: equals, path: active_role, value: agent}, {op: equals, path: last_action, value: role_agent}]
+  filter_all_button:
+    kind: button
+    selector: '[data-testid="filter-all"]'
+    page: builder
+    actions:
+      click:
+        effects:
+          - {op: equals_filter, path: visible_stays, source_path: stay_catalog, where: [{op: equals, field: available, value: true}], order_by: [{field: base, direction: asc}]}
+          - {op: equals, path: current_city_filter, value: all}
+          - {op: equals, path: last_action, value: filter_all}
+  filter_seoul_button:
+    kind: button
+    selector: '[data-testid="filter-seoul"]'
+    page: builder
+    actions:
+      click:
+        effects:
+          - {op: equals_filter, path: visible_stays, source_path: stay_catalog, where: [{op: equals, field: city, value: Seoul}], order_by: [{field: base, direction: asc}]}
+          - {op: equals, path: current_city_filter, value: Seoul}
+          - {op: equals, path: last_action, value: filter_seoul}
+  filter_busan_button:
+    kind: button
+    selector: '[data-testid="filter-busan"]'
+    page: builder
+    actions:
+      click:
+        effects:
+          - {op: equals_filter, path: visible_stays, source_path: stay_catalog, where: [{op: equals, field: city, value: Busan}], order_by: [{field: base, direction: asc}]}
+          - {op: equals, path: current_city_filter, value: Busan}
+          - {op: equals, path: last_action, value: filter_busan}
+  add_busan_leg_button:
+    kind: button
+    selector: '[data-testid="add-busan-leg"]'
+    page: builder
+    actions:
+      click:
+        preconditions: [{op: equals, path: leg_count, value: 0}]
+        effects:
+          - op: appended_object
+            path: itinerary_legs
+            value: {id: LEG-BUSAN, city: Busan, stay: Harbor Capsule Hotel, nights: 2, base: 320, addon: 0, leg_total: 320, breakfast: false, pickup: false, flexible: false}
+          - *derive_leg_count
+          - {op: equals, path: trip_route_key, value: BUSAN}
+          - *derive_trip_subtotal
+          - *derive_addon_total
+          - *derive_service_fee
+          - *derive_total_due
+          - {op: equals, path: promo_credit, value: 0}
+          - {op: equals, path: promo_status, value: idle}
+          - {op: equals, path: quote_status, value: draft_changed}
+          - {op: equals, path: booking_status, value: drafting}
+          - {op: equals, path: last_action, value: add_busan_leg}
+  add_seoul_leg_button:
+    kind: button
+    selector: '[data-testid="add-seoul-leg"]'
+    page: builder
+    actions:
+      click:
+        preconditions: [{op: equals, path: trip_route_key, value: BUSAN}]
+        effects:
+          - op: appended_object
+            path: itinerary_legs
+            value: {id: LEG-SEOUL, city: Seoul, stay: Han River Loft, nights: 2, base: 480, addon: 0, leg_total: 480, breakfast: false, pickup: false, flexible: false}
+          - *derive_leg_count
+          - {op: equals, path: trip_route_key, value: BUSAN_SEOUL}
+          - *derive_trip_subtotal
+          - *derive_addon_total
+          - *derive_service_fee
+          - *derive_total_due
+          - {op: equals, path: promo_credit, value: 0}
+          - {op: equals, path: promo_status, value: idle}
+          - {op: equals, path: quote_status, value: draft_changed}
+          - {op: equals, path: booking_status, value: drafting}
+          - {op: equals, path: last_action, value: add_seoul_leg}
+  add_kyoto_leg_button:
+    kind: button
+    selector: '[data-testid="add-kyoto-leg"]'
+    page: builder
+    actions:
+      click:
+        preconditions: [{op: equals, path: trip_route_key, value: BUSAN_SEOUL}]
+        effects:
+          - op: appended_object
+            path: itinerary_legs
+            value: {id: LEG-KYOTO, city: Kyoto, stay: Machiya Garden House, nights: 2, base: 620, addon: 0, leg_total: 620, breakfast: false, pickup: false, flexible: false}
+          - *derive_leg_count
+          - {op: equals, path: trip_route_key, value: BUSAN_SEOUL_KYOTO}
+          - *derive_trip_subtotal
+          - *derive_addon_total
+          - *derive_service_fee
+          - *derive_total_due
+          - {op: equals, path: promo_credit, value: 0}
+          - {op: equals, path: promo_status, value: idle}
+          - {op: equals, path: quote_status, value: draft_changed}
+          - {op: equals, path: booking_status, value: drafting}
+          - {op: equals, path: last_action, value: add_kyoto_leg}
+  remove_seoul_leg_button:
+    kind: button
+    selector: '[data-testid="remove-seoul-leg"]'
+    page: builder
+    actions:
+      click:
+        preconditions: [{op: equals, path: trip_route_key, value: BUSAN_SEOUL_KYOTO}]
+        effects:
+          - {op: removed_first_where, path: itinerary_legs, where: [{op: equals, field: id, value: LEG-SEOUL}]}
+          - *derive_leg_count
+          - {op: equals, path: trip_route_key, value: BUSAN_KYOTO}
+          - *derive_trip_subtotal
+          - *derive_addon_total
+          - *derive_service_fee
+          - *derive_total_due
+          - {op: equals, path: promo_credit, value: 0}
+          - {op: equals, path: promo_status, value: idle}
+          - {op: equals, path: quote_status, value: draft_changed}
+          - {op: equals, path: last_action, value: remove_seoul_leg}
+  add_busan_breakfast_button:
+    kind: button
+    selector: '[data-testid="add-busan-breakfast"]'
+    actions:
+      click:
+        preconditions: [{op: equals, path: trip_route_key, value: BUSAN_SEOUL}]
+        effects:
+          - {op: updated_first_where, path: itinerary_legs, where: [{op: equals, field: id, value: LEG-BUSAN}], updates: {breakfast: true, addon: 42, leg_total: 362}}
+          - *derive_addon_total
+          - *derive_trip_subtotal
+          - *derive_service_fee
+          - *derive_total_due
+          - {op: equals, path: quote_status, value: draft_changed}
+          - {op: equals, path: last_action, value: add_busan_breakfast}
+  add_seoul_pickup_button:
+    kind: button
+    selector: '[data-testid="add-seoul-pickup"]'
+    actions:
+      click:
+        preconditions: [{op: equals, path: trip_route_key, value: BUSAN_SEOUL}]
+        effects:
+          - {op: updated_first_where, path: itinerary_legs, where: [{op: equals, field: id, value: LEG-SEOUL}], updates: {pickup: true, addon: 55, leg_total: 535}}
+          - *derive_addon_total
+          - *derive_trip_subtotal
+          - *derive_service_fee
+          - *derive_total_due
+          - {op: equals, path: quote_status, value: draft_changed}
+          - {op: equals, path: last_action, value: add_seoul_pickup}
+  add_kyoto_flexible_button:
+    kind: button
+    selector: '[data-testid="add-kyoto-flexible"]'
+    actions:
+      click:
+        preconditions: [{op: equals, path: trip_route_key, value: BUSAN_SEOUL_KYOTO}]
+        effects:
+          - {op: updated_first_where, path: itinerary_legs, where: [{op: equals, field: id, value: LEG-KYOTO}], updates: {flexible: true, addon: 70, leg_total: 690}}
+          - *derive_addon_total
+          - *derive_trip_subtotal
+          - *derive_service_fee
+          - *derive_total_due
+          - {op: equals, path: quote_status, value: draft_changed}
+          - {op: equals, path: last_action, value: add_kyoto_flexible}
+  request_quote_button:
+    kind: button
+    selector: '[data-testid="request-quote"]'
+    page: quote
+    actions:
+      click:
+        preconditions: [{op: relation, path: leg_count, operator: ">", value: 0}]
+        effects:
+          - *derive_service_call_count
+          - *derive_quote_call_count
+          - {op: one_of, path: quote_status, values: [ready, rejected]}
+          - {op: one_of, path: quote_id, values: [Q-B-320, Q-BS-884, Q-BSK-991, ""]}
+          - {op: one_of, path: quote_risk, values: [simple, balanced, complex, rejected]}
+          - {op: equals, path: booking_status, value: quoted}
+          - {op: equals, path: last_action, value: request_quote}
+  promo_code_input:
+    kind: input
+    selector: '[data-testid="promo-code"]'
+    page: quote
+    actions:
+      fill:
+        effects:
+          - {op: equals_normalized, path: promo_code, value_from: input.value, normalizers: [trim, uppercase]}
+          - {op: equals, path: last_action, value: edit_promo}
+  apply_promo_button:
+    kind: button
+    selector: '[data-testid="apply-promo"]'
+    page: quote
+    actions:
+      click:
+        preconditions:
+          - {op: equals, path: quote_status, value: ready}
+          - {op: relation, path: promo_code, operator: "!=", value: ""}
+        effects:
+          - *derive_service_call_count
+          - *derive_promo_call_count
+          - {op: one_of, path: promo_status, values: [applied, rejected]}
+          - *derive_total_due
+          - {op: equals, path: last_action, value: apply_promo}
+  primary_guest_name_input:
+    kind: input
+    selector: '[data-testid="primary-guest-name"]'
+    page: travelers
+    actions:
+      fill:
+        effects:
+          - {op: equals, path: primary_guest_name, value_from: input.value}
+          - {op: removed_object_fields, path: field_errors, fields: [name, form]}
+          - *derive_error_count
+          - {op: equals, path: last_action, value: edit_primary_guest_name}
+  primary_guest_email_input:
+    kind: input
+    selector: '[data-testid="primary-guest-email"]'
+    page: travelers
+    actions:
+      fill:
+        effects:
+          - {op: equals_normalized, path: primary_guest_email, value_from: input.value, normalizers: [trim, lowercase]}
+          - {op: removed_object_fields, path: field_errors, fields: [email, form]}
+          - *derive_error_count
+          - {op: equals, path: last_action, value: edit_primary_guest_email}
+  arrival_time_input:
+    kind: input
+    selector: '[data-testid="arrival-time"]'
+    page: travelers
+    actions:
+      fill:
+        effects:
+          - {op: equals_normalized, path: arrival_time, value_from: input.value, normalizers: [trim, collapse_whitespace]}
+          - {op: removed_object_fields, path: field_errors, fields: [arrival_time, form]}
+          - *derive_error_count
+          - {op: equals, path: last_action, value: edit_arrival_time}
+  traveler_upload_input:
+    kind: input
+    selector: '[data-testid="traveler-upload"]'
+    page: travelers
+    actions:
+      upload:
+        file_schema:
+          format: csv
+          columns:
+            - {name: id, type: string}
+            - {name: name, type: string}
+            - {name: type, type: string}
+            - {name: meal, type: string}
+            - {name: mobility, type: string}
+        effects:
+          - {op: equals, path: travelers, value_from: input.rows}
+          - *derive_traveler_count
+          - *derive_child_count
+          - *derive_mobility_count
+          - {op: equals, path: last_file, value_from: input.file.name}
+          - {op: removed_object_fields, path: field_errors, fields: [travelers, form]}
+          - *derive_error_count
+          - {op: equals, path: last_action, value: upload_travelers}
+  validate_trip_button:
+    kind: button
+    selector: '[data-testid="validate-trip"]'
+    page: travelers
+    actions:
+      click:
+        preconditions:
+          - {op: relation, path: primary_guest_name, operator: "!=", value: ""}
+          - {op: relation, path: primary_guest_email, operator: "!=", value: ""}
+          - {op: relation, path: arrival_time, operator: "!=", value: ""}
+          - {op: relation, path: traveler_count, operator: ">", value: 0}
+          - {op: relation, path: leg_count, operator: ">", value: 0}
+        effects:
+          - {op: equals, path: field_errors, value: {}}
+          - *derive_error_count
+          - {op: equals, path: booking_status, value: guest_validated}
+          - {op: equals, path: last_action, value: validate_trip}
+        rejected_when:
+          - {op: equals, path: arrival_time, value: ""}
+        rejected_effects:
+          - {op: updated_object_fields, path: field_errors, updates: {arrival_time: Arrival time required}}
+          - *derive_error_count
+          - {op: equals, path: booking_status, value: validation_failed}
+          - {op: equals, path: last_action, value: reject_arrival_time}
+  hold_booking_button:
+    kind: button
+    selector: '[data-testid="hold-booking"]'
+    page: quote
+    actions:
+      click:
+        preconditions:
+          - {op: equals, path: booking_status, value: guest_validated}
+          - {op: equals, path: quote_status, value: ready}
+        effects:
+          - {op: equals, path: booking_status, value: held}
+          - {op: appended_object, path: booking_audit, value: {id: {after_path: audit_count}, event: hold, role: {from_path: active_role}, route: {from_path: trip_route_key}}}
+          - {op: equals_length, path: audit_count, source_path: booking_audit}
+          - {op: equals, path: last_action, value: hold_booking}
+  check_itinerary_button:
+    kind: button
+    selector: '[data-testid="check-itinerary"]'
+    page: ops
+    actions:
+      click:
+        allowed_roles: [agent]
+        preconditions: [{op: equals, path: itinerary_checked, value: false}]
+        effects:
+          - {op: equals, path: itinerary_checked, value: true}
+          - {op: changed_by, path: checklist_completed_count, by: 1}
+          - {op: equals, path: last_action, value: check_itinerary}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: deny_check_itinerary}
+  check_manifest_button:
+    kind: button
+    selector: '[data-testid="check-manifest"]'
+    page: ops
+    actions:
+      click:
+        allowed_roles: [agent]
+        preconditions: [{op: equals, path: manifest_checked, value: false}]
+        effects:
+          - {op: equals, path: manifest_checked, value: true}
+          - {op: changed_by, path: checklist_completed_count, by: 1}
+          - {op: equals, path: last_action, value: check_manifest}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: deny_check_manifest}
+  check_deposit_button:
+    kind: button
+    selector: '[data-testid="check-deposit"]'
+    page: ops
+    actions:
+      click:
+        allowed_roles: [agent]
+        preconditions: [{op: equals, path: deposit_checked, value: false}]
+        effects:
+          - {op: equals, path: deposit_checked, value: true}
+          - {op: changed_by, path: checklist_completed_count, by: 1}
+          - {op: equals, path: last_action, value: check_deposit}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: deny_check_deposit}
+  confirm_booking_button:
+    kind: button
+    selector: '[data-testid="confirm-booking"]'
+    page: ops
+    actions:
+      click:
+        allowed_roles: [agent]
+        preconditions:
+          - {op: equals, path: booking_status, value: held}
+          - {op: equals, path: checklist_completed_count, value: 3}
+        effects:
+          - {op: equals, path: booking_status, value: confirmed}
+          - {op: appended_object, path: booking_audit, value: {id: {after_path: audit_count}, event: confirm, role: {from_path: active_role}, route: {from_path: trip_route_key}}}
+          - {op: equals_length, path: audit_count, source_path: booking_audit}
+          - {op: equals, path: last_action, value: confirm_booking}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: deny_confirm_booking}
+  expire_quote_button:
+    kind: button
+    selector: '[data-testid="expire-quote"]'
+    page: quote
+    actions:
+      click:
+        effects:
+          - {op: equals, path: quote_status, value: expired}
+          - {op: equals, path: booking_status, value: quote_expired}
+          - {op: equals, path: promo_credit, value: 0}
+          - {op: equals, path: promo_status, value: idle}
+          - *derive_total_due
+          - {op: equals, path: last_action, value: expire_quote}

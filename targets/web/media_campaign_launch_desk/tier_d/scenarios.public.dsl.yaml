@@ -1,0 +1,622 @@
+dsl_version: "3.0.0"
+visibility: public
+tier_weights:
+  smoke: 1
+  core: 2
+  validation: 3
+  service: 4
+  upload: 4
+  permission: 4
+  persistence: 5
+  journey: 7
+
+scenarios:
+  - id: public_01_filter_embargo_risk_assets
+    tier: smoke
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: filter_embargo_risk_button.click
+        expect:
+          - {op: equals, path: current_filter, value: embargo_risk}
+          - {op: equals, path: last_action, value: filter_embargo_risk}
+      - table: asset_grid
+        expect_order: [A-PRE, A-SOC, A-RED]
+        expect_row_count: 3
+        expect_rows:
+          - id: A-PRE
+            cells:
+              title: "Premiere Livestream Bumper"
+              risk: critical
+              embargo: "T-01:30"
+          - id: A-RED
+            cells:
+              format: trailer
+              clearance: review
+
+  - id: public_02_select_premiere_asset_snapshot
+    tier: core
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: select_premiere_button.click
+        expect:
+          - {op: equals, path: selected_asset_id, value: A-PRE}
+          - {op: equals, path: selected_asset_title, value: "Premiere Livestream Bumper"}
+          - {op: equals, path: selected_format, value: live}
+          - {op: equals, path: selected_region, value: EMEA}
+          - {op: equals, path: selected_risk, value: critical}
+          - {op: equals, path: current_page, value: markets}
+
+  - id: public_03_legal_service_clears_selected_asset
+    tier: service
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: select_premiere_button.click
+      - do: go_slate_button.click
+      - do: role_legal_button.click
+      - do: request_legal_clearance_button.click
+        expect:
+          - {op: equals, path: legal_clearance_status, value: cleared}
+          - {op: equals, path: legal_clearance_score, value: 88}
+          - {op: equals, path: selected_clearance, value: cleared}
+          - {op: equals, path: rights_call_count, value: 1}
+          - {op: equals, path: service_call_count, value: 1}
+
+  - id: public_04_producer_cannot_request_legal_clearance
+    tier: permission
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: select_trailer_button.click
+      - do: go_slate_button.click
+      - do: request_legal_clearance_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: legal_clearance_status, value: idle}
+          - {op: equals, path: denied_count, value: 1}
+          - {op: equals, path: last_action, value: unauthorized_legal}
+
+  - id: public_05_release_code_watermark_and_asset_lock
+    tier: journey
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: select_trailer_button.click
+      - do: go_slate_button.click
+      - do: role_legal_button.click
+      - do: request_legal_clearance_button.click
+      - do: role_producer_button.click
+      - do: release_code_input.fill
+        input: {value: " premiere-delta "}
+        expect:
+          - {op: equals, path: release_code, value: PREMIERE-DELTA}
+      - do: watermark_key_input.fill
+        input: {value: " rh  trailer  wm7 "}
+        expect:
+          - {op: equals, path: watermark_key, value: "RH TRAILER WM7"}
+      - do: lock_asset_button.click
+        expect:
+          - {op: equals, path: embargo_status, value: locked}
+          - {op: equals, path: readiness_score, value: 10}
+          - {op: equals, path: open_blockers, value: 9}
+          - {op: equals, path: last_action, value: lock_asset}
+
+  - id: public_06_asset_lock_blocks_without_release_code
+    tier: validation
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: select_social_button.click
+      - do: go_slate_button.click
+      - do: role_legal_button.click
+      - do: request_legal_clearance_button.click
+      - do: role_producer_button.click
+      - do: lock_asset_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: embargo_status, value: blocked}
+          - {op: equals, path: validation_errors, value: {asset_lock: "Legal clearance, release code, and watermark are required"}}
+          - {op: equals, path: readiness_score, value: 0}
+          - {op: equals, path: last_action, value: asset_lock_blocked}
+
+  - id: public_07_blackout_upload_blocks_window_lock
+    tier: upload
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: go_markets_button.click
+      - do: role_ops_button.click
+      - do: window_upload_input.upload
+        input:
+          file:
+            name: windows-open-public.csv
+            mime_type: text/csv
+            content: |
+              id,market,local_time,blackout,owner,status
+              W-LON,London,20:00,royal-premiere,ops,open
+              W-SEO,Seoul,05:00,none,ops,clear
+          rows:
+            - {id: W-LON, market: London, local_time: "20:00", blackout: royal-premiere, owner: ops, status: open}
+            - {id: W-SEO, market: Seoul, local_time: "05:00", blackout: none, owner: ops, status: clear}
+        expect:
+          - {op: equals, path: window_count, value: 2}
+          - {op: equals, path: open_blackout_count, value: 1}
+          - {op: equals, path: window_status, value: review}
+          - {op: equals, path: last_window_file, value: windows-open-public.csv}
+      - do: lock_windows_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: window_status, value: blocked}
+          - {op: equals, path: readiness_score, value: 0}
+          - {op: equals, path: last_action, value: windows_blocked}
+      - table: window_grid
+        expect_order: [W-LON, W-SEO]
+        expect_row_count: 2
+        expect_rows:
+          - id: W-LON
+            cells:
+              market: London
+              status: open
+
+  - id: public_08_clean_blackout_windows_lock
+    tier: upload
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: go_markets_button.click
+      - do: role_ops_button.click
+      - do: window_upload_input.upload
+        input:
+          file:
+            name: windows-clean-public.csv
+            mime_type: text/csv
+            content: |
+              id,market,local_time,blackout,owner,status
+              W-LON,London,20:00,none,ops,clear
+              W-SEO,Seoul,05:00,none,ops,clear
+              W-LAX,Los Angeles,18:00,none,ops,clear
+          rows:
+            - {id: W-LON, market: London, local_time: "20:00", blackout: none, owner: ops, status: clear}
+            - {id: W-SEO, market: Seoul, local_time: "05:00", blackout: none, owner: ops, status: clear}
+            - {id: W-LAX, market: Los Angeles, local_time: "18:00", blackout: none, owner: ops, status: clear}
+        expect:
+          - {op: equals, path: open_blackout_count, value: 0}
+      - do: lock_windows_button.click
+        expect:
+          - {op: equals, path: window_status, value: locked}
+          - {op: equals, path: window_lock_count, value: 1}
+          - {op: equals, path: readiness_score, value: 10}
+          - {op: equals, path: open_blockers, value: 9}
+
+  - id: public_09_traffic_manifest_qa_failure_blocks_delivery
+    tier: validation
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: go_traffic_button.click
+      - do: role_ops_button.click
+      - do: traffic_upload_input.upload
+        input:
+          file:
+            name: traffic-fail-public.csv
+            mime_type: text/csv
+            content: |
+              id,partner,market,format,spend,qa,status
+              P-AMZ,Amazon,global,trailer,420000,pass,staged
+              P-TTK,TikTok,APAC,social,185000,fail,staged
+          rows:
+            - {id: P-AMZ, partner: Amazon, market: global, format: trailer, spend: 420000, qa: pass, status: staged}
+            - {id: P-TTK, partner: TikTok, market: APAC, format: social, spend: 185000, qa: fail, status: staged}
+        expect:
+          - {op: equals, path: placement_count, value: 2}
+          - {op: equals, path: qa_fail_count, value: 1}
+      - do: lock_delivery_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: delivery_status, value: blocked}
+          - {op: equals, path: last_action, value: delivery_blocked}
+
+  - id: public_10_delivery_lock_and_acknowledgement
+    tier: journey
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: go_traffic_button.click
+      - do: role_ops_button.click
+      - do: traffic_upload_input.upload
+        input:
+          file:
+            name: traffic-clean-public.csv
+            mime_type: text/csv
+            content: |
+              id,partner,market,format,spend,qa,status
+              P-AMZ,Amazon,global,trailer,420000,pass,staged
+              P-TTK,TikTok,APAC,social,185000,pass,staged
+              P-MAX,Max,EMEA,live,250000,pass,staged
+          rows:
+            - {id: P-AMZ, partner: Amazon, market: global, format: trailer, spend: 420000, qa: pass, status: staged}
+            - {id: P-TTK, partner: TikTok, market: APAC, format: social, spend: 185000, qa: pass, status: staged}
+            - {id: P-MAX, partner: Max, market: EMEA, format: live, spend: 250000, qa: pass, status: staged}
+      - do: lock_delivery_button.click
+        expect:
+          - {op: equals, path: delivery_status, value: locked}
+          - {op: equals, path: delivery_lock_count, value: 1}
+          - {op: equals, path: readiness_score, value: 0}
+      - do: acknowledge_delivery_button.click
+        expect:
+          - {op: equals, path: delivery_ack_status, value: acknowledged}
+          - {op: equals, path: delivery_ack_count, value: 1}
+          - {op: equals, path: readiness_score, value: 10}
+      - table: traffic_grid
+        expect_order: [P-AMZ, P-TTK, P-MAX]
+        expect_row_count: 3
+        expect_rows:
+          - id: P-MAX
+            cells:
+              partner: Max
+              qa: pass
+
+  - id: public_11_beacon_arm_and_attribution_health
+    tier: service
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: go_signals_button.click
+      - do: role_measurement_button.click
+      - do: beacon_upload_input.upload
+        input:
+          file:
+            name: beacons-public.csv
+            mime_type: text/csv
+            content: |
+              id,surface,event,owner,status
+              B-WEB,web,premiere_view,measurement,ready
+              B-CTV,ctv,complete_75,measurement,ready
+          rows:
+            - {id: B-WEB, surface: web, event: premiere_view, owner: measurement, status: ready}
+            - {id: B-CTV, surface: ctv, event: complete_75, owner: measurement, status: ready}
+        expect:
+          - {op: equals, path: beacon_count, value: 2}
+          - {op: equals, path: beacon_status, value: review}
+      - do: arm_beacons_button.click
+        expect:
+          - {op: equals, path: beacon_status, value: armed}
+          - {op: equals, path: beacon_arm_count, value: 1}
+          - {op: equals, path: readiness_score, value: 10}
+      - do: run_attribution_button.click
+        expect:
+          - {op: equals, path: attribution_status, value: healthy}
+          - {op: equals, path: attribution_score, value: 94}
+          - {op: equals, path: attribution_call_count, value: 1}
+          - {op: equals, path: service_call_count, value: 1}
+          - {op: equals, path: readiness_score, value: 20}
+
+  - id: public_12_negative_sentiment_blocks_clearance
+    tier: validation
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: go_signals_button.click
+      - do: role_measurement_button.click
+      - do: sentiment_upload_input.upload
+        input:
+          file:
+            name: sentiment-negative-public.csv
+            mime_type: text/csv
+            content: |
+              id,market,volume,polarity,status
+              S-1,London,21000,positive,green
+              S-2,Seoul,8800,negative,watch
+          rows:
+            - {id: S-1, market: London, volume: 21000, polarity: positive, status: green}
+            - {id: S-2, market: Seoul, volume: 8800, polarity: negative, status: watch}
+        expect:
+          - {op: equals, path: negative_sentiment_count, value: 1}
+      - do: clear_sentiment_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: sentiment_status, value: blocked}
+          - {op: equals, path: last_action, value: sentiment_blocked}
+
+  - id: public_13_clean_sentiment_clears_watch
+    tier: upload
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: go_signals_button.click
+      - do: role_measurement_button.click
+      - do: sentiment_upload_input.upload
+        input:
+          file:
+            name: sentiment-clean-public.csv
+            mime_type: text/csv
+            content: |
+              id,market,volume,polarity,status
+              S-1,London,21000,positive,green
+              S-2,Seoul,8800,neutral,green
+          rows:
+            - {id: S-1, market: London, volume: 21000, polarity: positive, status: green}
+            - {id: S-2, market: Seoul, volume: 8800, polarity: neutral, status: green}
+      - do: clear_sentiment_button.click
+        expect:
+          - {op: equals, path: sentiment_status, value: cleared}
+          - {op: equals, path: sentiment_clear_count, value: 1}
+          - {op: equals, path: readiness_score, value: 10}
+      - table: sentiment_grid
+        expect_order: [S-1, S-2]
+        expect_row_count: 2
+
+  - id: public_14_unpaid_invoice_blocks_escrow_lock
+    tier: validation
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: go_signals_button.click
+      - do: role_finance_button.click
+      - do: escrow_upload_input.upload
+        input:
+          file:
+            name: escrow-unpaid-public.csv
+            mime_type: text/csv
+            content: |
+              id,market,budget,invoice,status
+              E-1,global,500000,paid,ready
+              E-2,APAC,220000,unpaid,hold
+          rows:
+            - {id: E-1, market: global, budget: 500000, invoice: paid, status: ready}
+            - {id: E-2, market: APAC, budget: 220000, invoice: unpaid, status: hold}
+        expect:
+          - {op: equals, path: unpaid_invoice_count, value: 1}
+      - do: lock_escrow_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: escrow_status, value: blocked}
+          - {op: equals, path: last_action, value: escrow_blocked}
+
+  - id: public_15_clean_escrow_lock
+    tier: upload
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: go_signals_button.click
+      - do: role_finance_button.click
+      - do: escrow_upload_input.upload
+        input:
+          file:
+            name: escrow-clean-public.csv
+            mime_type: text/csv
+            content: |
+              id,market,budget,invoice,status
+              E-1,global,500000,paid,ready
+              E-2,APAC,220000,paid,ready
+          rows:
+            - {id: E-1, market: global, budget: 500000, invoice: paid, status: ready}
+            - {id: E-2, market: APAC, budget: 220000, invoice: paid, status: ready}
+      - do: lock_escrow_button.click
+        expect:
+          - {op: equals, path: escrow_status, value: locked}
+          - {op: equals, path: escrow_lock_count, value: 1}
+          - {op: equals, path: readiness_score, value: 10}
+      - table: escrow_grid
+        expect_order: [E-1, E-2]
+        expect_rows:
+          - id: E-2
+            cells:
+              invoice: paid
+              status: ready
+
+  - id: public_16_readiness_ledger_initial_state
+    tier: core
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: go_seal_button.click
+        expect:
+          - {op: equals, path: readiness_score, value: 0}
+          - {op: equals, path: open_blockers, value: 10}
+          - {op: equals, path: global_launch_status, value: idle}
+      - table: blocker_grid
+        expect_order: [B-ASSET, B-LEGAL, B-WINDOWS, B-DELIVERY, B-BEACONS, B-ATTRIBUTION, B-SENTIMENT, B-ESCROW, B-SIGNOFFS, B-EXECUTIVE]
+        expect_row_count: 10
+        expect_rows:
+          - id: B-ASSET
+            cells:
+              label: Asset locked to release code
+              status: open
+          - id: B-EXECUTIVE
+            cells:
+              owner: executive
+              status: open
+
+  - id: public_17_full_public_global_launch_seal
+    tier: journey
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: select_premiere_button.click
+      - do: go_slate_button.click
+      - do: role_legal_button.click
+      - do: request_legal_clearance_button.click
+      - do: role_producer_button.click
+      - do: release_code_input.fill
+        input: {value: " premiere-global "}
+      - do: watermark_key_input.fill
+        input: {value: " global slate wm9 "}
+      - do: lock_asset_button.click
+      - do: go_markets_button.click
+      - do: role_ops_button.click
+      - do: window_upload_input.upload
+        input:
+          file:
+            name: public-full-windows.csv
+            mime_type: text/csv
+            content: |
+              id,market,local_time,blackout,owner,status
+              W-LON,London,20:00,none,ops,clear
+              W-SEO,Seoul,05:00,none,ops,clear
+              W-LAX,Los Angeles,18:00,none,ops,clear
+          rows:
+            - {id: W-LON, market: London, local_time: "20:00", blackout: none, owner: ops, status: clear}
+            - {id: W-SEO, market: Seoul, local_time: "05:00", blackout: none, owner: ops, status: clear}
+            - {id: W-LAX, market: Los Angeles, local_time: "18:00", blackout: none, owner: ops, status: clear}
+      - do: lock_windows_button.click
+      - do: go_traffic_button.click
+      - do: traffic_upload_input.upload
+        input:
+          file:
+            name: public-full-traffic.csv
+            mime_type: text/csv
+            content: |
+              id,partner,market,format,spend,qa,status
+              P-AMZ,Amazon,global,trailer,420000,pass,staged
+              P-TTK,TikTok,APAC,social,185000,pass,staged
+              P-MAX,Max,EMEA,live,250000,pass,staged
+          rows:
+            - {id: P-AMZ, partner: Amazon, market: global, format: trailer, spend: 420000, qa: pass, status: staged}
+            - {id: P-TTK, partner: TikTok, market: APAC, format: social, spend: 185000, qa: pass, status: staged}
+            - {id: P-MAX, partner: Max, market: EMEA, format: live, spend: 250000, qa: pass, status: staged}
+      - do: lock_delivery_button.click
+      - do: acknowledge_delivery_button.click
+      - do: go_signals_button.click
+      - do: role_measurement_button.click
+      - do: beacon_upload_input.upload
+        input:
+          file:
+            name: public-full-beacons.csv
+            mime_type: text/csv
+            content: |
+              id,surface,event,owner,status
+              B-WEB,web,premiere_view,measurement,ready
+              B-CTV,ctv,complete_75,measurement,ready
+          rows:
+            - {id: B-WEB, surface: web, event: premiere_view, owner: measurement, status: ready}
+            - {id: B-CTV, surface: ctv, event: complete_75, owner: measurement, status: ready}
+      - do: arm_beacons_button.click
+      - do: run_attribution_button.click
+      - do: sentiment_upload_input.upload
+        input:
+          file:
+            name: public-full-sentiment.csv
+            mime_type: text/csv
+            content: |
+              id,market,volume,polarity,status
+              S-1,London,21000,positive,green
+              S-2,Seoul,8800,neutral,green
+          rows:
+            - {id: S-1, market: London, volume: 21000, polarity: positive, status: green}
+            - {id: S-2, market: Seoul, volume: 8800, polarity: neutral, status: green}
+      - do: clear_sentiment_button.click
+      - do: role_finance_button.click
+      - do: escrow_upload_input.upload
+        input:
+          file:
+            name: public-full-escrow.csv
+            mime_type: text/csv
+            content: |
+              id,market,budget,invoice,status
+              E-1,global,500000,paid,ready
+              E-2,APAC,220000,paid,ready
+          rows:
+            - {id: E-1, market: global, budget: 500000, invoice: paid, status: ready}
+            - {id: E-2, market: APAC, budget: 220000, invoice: paid, status: ready}
+      - do: lock_escrow_button.click
+      - do: go_seal_button.click
+      - do: role_legal_button.click
+      - do: legal_signoff_button.click
+      - do: role_ops_button.click
+      - do: ops_signoff_button.click
+      - do: role_measurement_button.click
+      - do: measurement_signoff_button.click
+      - do: role_finance_button.click
+      - do: finance_signoff_button.click
+      - do: role_executive_button.click
+      - do: executive_signoff_button.click
+        expect:
+          - {op: equals, path: readiness_score, value: 100}
+          - {op: equals, path: open_blockers, value: 0}
+          - {op: equals, path: signoff_count, value: 5}
+      - do: finalize_launch_button.click
+        expect:
+          - {op: equals, path: global_launch_status, value: sealed}
+          - {op: equals, path: launch_seal_score, value: 100}
+          - {op: equals, path: open_launch_blockers, value: 0}
+          - {op: equals, path: launch_count, value: 1}
+          - {op: equals, path: launch_seal_count, value: 1}
+          - {op: equals, path: audit_count, value: 1}
+          - {op: equals, path: service_call_count, value: 2}
+      - table: launch_grid
+        expect_order: [L-1]
+        expect_row_count: 1
+        expect_rows:
+          - id: L-1
+            cells:
+              slate: "Premiere Livestream Bumper"
+              markets: global
+              status: sealed
+              seal: green
+      - table: audit_grid
+        expect_order: [AU-1]
+        expect_row_count: 1
+        expect_rows:
+          - id: AU-1
+            cells:
+              event: global_launch_sealed
+              actor: executive
+              status: sealed
+
+  - id: public_18_browser_back_preserves_route_state
+    tier: persistence
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: go_markets_button.click
+        expect:
+          - {op: equals, path: current_page, value: markets}
+      - do: go_traffic_button.click
+      - browser: back
+        expect_page: markets
+        expect:
+          - {op: equals, path: current_page, value: markets}
+
+  - id: public_19_reload_preserves_locked_delivery
+    tier: persistence
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: go_traffic_button.click
+      - do: role_ops_button.click
+      - do: traffic_upload_input.upload
+        input:
+          file:
+            name: reload-traffic-public.csv
+            mime_type: text/csv
+            content: |
+              id,partner,market,format,spend,qa,status
+              P-AMZ,Amazon,global,trailer,420000,pass,staged
+          rows:
+            - {id: P-AMZ, partner: Amazon, market: global, format: trailer, spend: 420000, qa: pass, status: staged}
+      - do: lock_delivery_button.click
+      - do: acknowledge_delivery_button.click
+      - browser: reload
+        expect_page: traffic
+        expect:
+          - {op: equals, path: current_page, value: traffic}
+          - {op: unchanged, path: delivery_status}
+          - {op: unchanged, path: delivery_ack_status}
+          - {op: unchanged, path: placement_count}
+
+  - id: public_20_launch_blocks_before_executive_signoff
+    tier: validation
+    difficulty: D
+    steps:
+      - do: reset_button.click
+      - do: go_seal_button.click
+      - do: role_executive_button.click
+      - do: finalize_launch_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: global_launch_status, value: blocked}
+          - {op: equals, path: launch_count, value: 0}
+          - {op: equals, path: last_action, value: launch_blocked}

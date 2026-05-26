@@ -1,0 +1,271 @@
+dsl_version: "3.0.0"
+visibility: private
+tier_weights:
+  smoke: 1
+  core: 2
+  validation: 3
+  service: 4
+  permission: 4
+  persistence: 5
+  journey: 6
+
+scenarios:
+  - id: private_01_all_queue_order
+    tier: smoke
+    steps:
+      - do: reset_button.click
+      - table: patient_queue
+        expect_order: [CVC-102, CVC-103, CVC-105, CVC-101, CVC-104]
+        expect_row_count: 5
+        expect_rows:
+          - id: CVC-102
+            cells:
+              name: Leo Ortiz
+              lane: urgent
+              status: waiting
+          - id: CVC-104
+            cells:
+              name: Noor Patel
+              lane: primary
+              wait_mins: 35
+
+  - id: private_02_filter_primary_queue
+    tier: smoke
+    steps:
+      - do: reset_button.click
+      - do: filter_primary_button.click
+        expect:
+          - {op: equals, path: current_lane, value: primary}
+      - table: patient_queue
+        expect_order: [CVC-101, CVC-104]
+        expect_row_count: 2
+
+  - id: private_03_filter_imaging_queue
+    tier: smoke
+    steps:
+      - do: reset_button.click
+      - do: filter_imaging_button.click
+        expect:
+          - {op: equals, path: current_lane, value: imaging}
+      - table: patient_queue
+        expect_order: [CVC-103]
+        expect_row_count: 1
+        expect_rows:
+          - id: CVC-103
+            cells:
+              name: Grace Lim
+              acuity: 2
+
+  - id: private_04_select_grace_assign_lab
+    tier: core
+    steps:
+      - do: reset_button.click
+      - do: select_grace_button.click
+        expect:
+          - {op: equals, path: selected_patient_id, value: CVC-103}
+          - {op: equals, path: insurance_code, value: CASH}
+      - do: assign_lab_button.click
+        expect:
+          - {op: equals, path: assigned_room_id, value: R-LAB}
+          - {op: equals, path: assigned_room_name, value: "Lab Bay"}
+          - {op: equals, path: selected_patient_status, value: roomed}
+
+  - id: private_05_cleaning_room_rejected
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: select_mina_button.click
+      - do: assign_exam2_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: assigned_room_id, value: ""}
+          - {op: equals, path: last_action, value: room_unavailable}
+
+  - id: private_06_cash_insurance_self_pay
+    tier: service
+    steps:
+      - do: reset_button.click
+      - do: select_grace_button.click
+      - do: verify_insurance_button.click
+        expect:
+          - {op: equals, path: insurance_status, value: self_pay}
+          - {op: equals, path: copay_due, value: 80}
+          - {op: equals, path: insurance_call_count, value: 1}
+
+  - id: private_07_bad_plan_needs_review
+    tier: service
+    steps:
+      - do: reset_button.click
+      - do: select_theo_button.click
+      - do: verify_insurance_button.click
+        expect:
+          - {op: equals, path: insurance_code, value: BADPLAN}
+          - {op: equals, path: insurance_status, value: needs_review}
+          - {op: equals, path: copay_due, value: 0}
+
+  - id: private_08_missing_vitals_rejected
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: select_leo_button.click
+      - do: role_clinician_button.click
+      - do: save_vitals_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: vitals_status, value: incomplete}
+          - {op: equals, path: last_action, value: reject_vitals}
+
+  - id: private_09_clinician_handoff_table_note
+    tier: core
+    steps:
+      - do: reset_button.click
+      - do: select_mina_button.click
+      - do: role_clinician_button.click
+      - do: chart_note_input.fill
+        input: {value: "Call family after fever panel."}
+      - do: create_handoff_button.click
+        expect:
+          - {op: equals, path: handoff_count, value: 1}
+      - do: go_rooms_button.click
+      - table: handoff_grid
+        expect_order: [H-1]
+        expect_rows:
+          - id: H-1
+            cells:
+              patient: Mina Han
+              note: Call family after fever panel.
+
+  - id: private_10_coordinator_cannot_discharge
+    tier: permission
+    steps:
+      - do: reset_button.click
+      - do: select_leo_button.click
+      - do: verify_insurance_button.click
+      - do: discharge_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: discharge_status, value: idle}
+          - {op: equals, path: denied_count, value: 1}
+          - {op: equals, path: last_action, value: unauthorized_clinical}
+
+  - id: private_11_clinician_cannot_assign_room
+    tier: permission
+    steps:
+      - do: reset_button.click
+      - do: select_grace_button.click
+      - do: role_clinician_button.click
+      - do: assign_lab_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: assigned_room_id, value: ""}
+          - {op: equals, path: denied_count, value: 1}
+          - {op: equals, path: last_action, value: unauthorized_assign}
+
+  - id: private_12_rooms_board_initial
+    tier: smoke
+    steps:
+      - do: reset_button.click
+      - do: go_rooms_button.click
+      - table: room_board
+        expect_order: [R-EXAM1, R-EXAM2, R-LAB, R-ISO]
+        expect_row_count: 4
+        expect_rows:
+          - id: R-EXAM1
+            cells:
+              name: Exam 1
+              status: ready
+          - id: R-EXAM2
+            cells:
+              status: cleaning
+          - id: R-ISO
+            cells:
+              occupant: Walk-in hold
+
+  - id: private_13_reload_preserves_chart_state
+    tier: persistence
+    steps:
+      - do: reset_button.click
+      - do: select_leo_button.click
+      - do: assign_exam1_button.click
+      - do: verify_insurance_button.click
+      - browser: reload
+        expect_page: chart
+        expect:
+          - {op: unchanged, path: selected_patient_id}
+          - {op: unchanged, path: assigned_room_id}
+          - {op: unchanged, path: insurance_status}
+          - {op: unchanged, path: current_page}
+
+  - id: private_14_role_persists_across_reload
+    tier: persistence
+    steps:
+      - do: reset_button.click
+      - do: role_clinician_button.click
+        expect:
+          - {op: equals, path: active_role, value: clinician}
+      - browser: reload
+        expect:
+          - {op: equals, path: active_role, value: clinician}
+
+  - id: private_15_browser_back_restores_queue
+    tier: persistence
+    steps:
+      - do: reset_button.click
+      - do: go_rooms_button.click
+      - do: go_chart_button.click
+      - browser: back
+        expect_page: rooms
+        expect:
+          - {op: equals, path: current_page, value: rooms}
+      - browser: back
+        expect_page: queue
+        expect:
+          - {op: equals, path: current_page, value: queue}
+
+  - id: private_16_full_urgent_visit_journey
+    tier: journey
+    steps:
+      - do: reset_button.click
+      - do: filter_urgent_button.click
+      - do: select_leo_button.click
+      - do: assign_exam1_button.click
+      - do: verify_insurance_button.click
+      - do: role_clinician_button.click
+      - do: temperature_input.fill
+        input: {value: "36.8"}
+      - do: systolic_input.fill
+        input: {value: "118"}
+      - do: save_vitals_button.click
+      - do: chart_note_input.fill
+        input: {value: "Return precautions reviewed."}
+      - do: create_handoff_button.click
+      - do: discharge_button.click
+        expect:
+          - {op: equals, path: discharge_status, value: complete}
+          - {op: equals, path: handoff_count, value: 1}
+          - {op: equals, path: insurance_status, value: approved}
+          - {op: equals, path: selected_patient_status, value: discharged}
+
+  - id: private_17_reset_clears_operational_state
+    tier: journey
+    steps:
+      - do: reset_button.click
+      - do: select_grace_button.click
+      - do: assign_lab_button.click
+      - do: verify_insurance_button.click
+      - do: role_clinician_button.click
+      - do: temperature_input.fill
+        input: {value: "37.1"}
+      - do: systolic_input.fill
+        input: {value: "124"}
+      - do: save_vitals_button.click
+      - do: chart_note_input.fill
+        input: {value: "Imaging callback pending."}
+      - do: create_handoff_button.click
+      - do: reset_button.click
+        expect:
+          - {op: equals, path: selected_patient_id, value: ""}
+          - {op: equals, path: assigned_room_id, value: ""}
+          - {op: equals, path: insurance_status, value: idle}
+          - {op: equals, path: handoff_count, value: 0}
+          - {op: equals, path: active_role, value: coordinator}

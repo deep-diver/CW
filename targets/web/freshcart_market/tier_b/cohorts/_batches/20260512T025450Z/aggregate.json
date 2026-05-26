@@ -1,0 +1,110 @@
+{
+  "batch_id": "20260512T025450Z",
+  "generated": 60,
+  "models": [
+    {
+      "key": "claude_opus46",
+      "model_tier": "F",
+      "slug": "claude_opus46",
+      "provider": "anthropic",
+      "model": "claude-opus-4-6",
+      "n": 10,
+      "mean_ratio": 0.6963963963963964,
+      "std_ratio": 0.10676932132529715,
+      "mean_stepwise": 0.9295130357630357,
+      "std_stepwise": 0.024777830445537226,
+      "mean_contract": 1.0,
+      "std_contract": 0.0,
+      "full_pass_count": 1
+    },
+    {
+      "key": "claude_sonnet46",
+      "model_tier": "T",
+      "slug": "claude_sonnet46",
+      "provider": "anthropic",
+      "model": "claude-sonnet-4-6",
+      "n": 10,
+      "mean_ratio": 0.16756756756756755,
+      "std_ratio": 0.1442817161320394,
+      "mean_stepwise": 0.40052113802113803,
+      "std_stepwise": 0.2697523583078272,
+      "mean_contract": 0.6275862068965518,
+      "std_contract": 0.3205227596861311,
+      "full_pass_count": 0
+    },
+    {
+      "key": "gemini31_pro_preview",
+      "model_tier": "F",
+      "slug": "gemini31_pro_preview",
+      "provider": "google",
+      "model": "gemini-3.1-pro-preview",
+      "n": 10,
+      "mean_ratio": 0.1837837837837838,
+      "std_ratio": 0.38933097183843424,
+      "mean_stepwise": 0.26888011388011385,
+      "std_stepwise": 0.3832343353783638,
+      "mean_contract": 1.0,
+      "std_contract": 0.0,
+      "full_pass_count": 1
+    },
+    {
+      "key": "gemini_flash_latest",
+      "model_tier": "T",
+      "slug": "gemini_flash_latest",
+      "provider": "google",
+      "model": "gemini-flash-latest",
+      "n": 10,
+      "mean_ratio": 0.06846846846846846,
+      "std_ratio": 0.11975921759149086,
+      "mean_stepwise": 0.23831324831324832,
+      "std_stepwise": 0.2492796548527789,
+      "mean_contract": 0.9275862068965517,
+      "std_contract": 0.1953684892995213,
+      "full_pass_count": 0
+    },
+    {
+      "key": "gpt54",
+      "model_tier": "F",
+      "slug": "gpt54",
+      "provider": "openai",
+      "model": "gpt-5.4",
+      "n": 10,
+      "mean_ratio": 0.4477477477477477,
+      "std_ratio": 0.3436582370128055,
+      "mean_stepwise": 0.6603351565851565,
+      "std_stepwise": 0.39803806306597866,
+      "mean_contract": 0.993103448275862,
+      "std_contract": 0.021808811449437106,
+      "full_pass_count": 1
+    },
+    {
+      "key": "gpt54_mini",
+      "model_tier": "T",
+      "slug": "gpt54_mini",
+      "provider": "openai",
+      "model": "gpt-5.4-mini",
+      "n": 10,
+      "mean_ratio": 0.0,
+      "std_ratio": 0.0,
+      "mean_stepwise": 0.0870982995982996,
+      "std_stepwise": 0.0,
+      "mean_contract": 1.0,
+      "std_contract": 0.0,
+      "full_pass_count": 0
+    }
+  ],
+  "tier_stats": [
+    {
+      "model_tier": "F",
+      "n": 30,
+      "mean_ratio": 0.44264264264264264,
+      "std_ratio": 0.3640747783080075
+    },
+    {
+      "model_tier": "T",
+      "n": 30,
+      "mean_ratio": 0.07867867867867867,
+      "std_ratio": 0.12572459346603576
+    }
+  ]
+}

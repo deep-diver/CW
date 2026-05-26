@@ -1,0 +1,436 @@
+dsl_version: "3.0.0"
+visibility: public
+tier_weights:
+  smoke: 1
+  core: 2
+  validation: 3
+  upload: 4
+  permission: 4
+  service: 4
+  persistence: 5
+  journey: 6
+
+scenarios:
+  - id: public_01_filter_queue_and_select_nova
+    tier: smoke
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: filter_clearance_risk_button.click
+        expect:
+          - {op: equals, path: current_filter, value: clearance_risk}
+          - {op: equals, path: last_action, value: filter_clearance_risk}
+      - table: candidate_queue
+        expect_order: [CAND-NOVA, CAND-ORION, CAND-LENA]
+        expect_row_count: 3
+      - do: select_nova_button.click
+        expect:
+          - {op: equals, path: selected_candidate_id, value: CAND-NOVA}
+          - {op: equals, path: selected_candidate_name, value: "Nova Chen"}
+          - {op: equals, path: selected_program, value: "Data Science BS"}
+          - {op: equals, path: selected_catalog_version, value: CAT-2026A}
+          - {op: equals, path: current_page, value: audit}
+
+  - id: public_02_audit_plan_and_resolve_two_collisions
+    tier: core
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: select_nova_button.click
+      - do: run_degree_audit_button.click
+        expect:
+          - {op: equals, path: audit_status, value: gaps_found}
+          - {op: equals, path: deficiency_count, value: 3}
+          - {op: equals, path: requirement_count, value: 4}
+          - {op: equals, path: readiness_score, value: 18}
+      - table: requirement_grid
+        expect_order: [REQ-CAPSTONE, REQ-RESIDENCY, REQ-ETHICS, REQ-GPA]
+        expect_row_count: 4
+      - do: plan_completion_button.click
+        expect:
+          - {op: equals, path: schedule_status, value: conflict}
+          - {op: equals, path: schedule_count, value: 4}
+          - {op: equals, path: schedule_credit_total, value: 13}
+          - {op: equals, path: collision_count, value: 2}
+      - do: resolve_schedule_button.click
+        expect:
+          - {op: equals, path: schedule_status, value: resolved}
+          - {op: equals, path: collision_count, value: 0}
+          - {op: equals, path: schedule_credit_total, value: 13}
+          - {op: equals, path: last_action, value: resolve_schedule}
+      - table: schedule_grid
+        expect_order: [SCH-DS498, SCH-STAT421, SCH-ETH310, SCH-RES299]
+        expect_row_count: 4
+
+  - id: public_03_catalog_mismatch_then_correct_lock
+    tier: validation
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: select_nova_button.click
+      - do: catalog_version_input.fill
+        input: {value: " cat-2026b "}
+      - do: role_registrar_button.click
+      - do: lock_catalog_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: catalog_version_input, value: CAT-2026B}
+          - {op: equals, path: catalog_lock_status, value: stale}
+          - {op: equals, path: validation_errors, value: {catalog: "Catalog version mismatch"}}
+          - {op: equals, path: last_action, value: catalog_mismatch}
+      - do: catalog_version_input.fill
+        input: {value: " CAT-2026A "}
+      - do: lock_catalog_button.click
+        expect:
+          - {op: equals, path: catalog_version_input, value: CAT-2026A}
+          - {op: equals, path: catalog_lock_status, value: locked}
+          - {op: equals, path: selected_catalog_version, value: CAT-2026A}
+          - {op: equals, path: validation_errors, value: {}}
+
+  - id: public_04_transfer_upload_and_advisor_staging
+    tier: upload
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: select_nova_button.click
+      - do: go_articulation_button.click
+      - do: transfer_upload_input.upload
+        input:
+          file:
+            name: nova-transfer.csv
+            mime_type: text/csv
+            content: |
+              id,course,credits,residency,status
+              TR-CAP,DSX 498,4,4,accepted
+              TR-ETH,PHIL 340,3,0,accepted
+              TR-RES,RES 200,2,2,review
+          rows:
+            - {id: TR-CAP, course: DSX 498, credits: 4, residency: 4, status: accepted}
+            - {id: TR-ETH, course: PHIL 340, credits: 3, residency: 0, status: accepted}
+            - {id: TR-RES, course: RES 200, credits: 2, residency: 2, status: review}
+        expect:
+          - {op: equals, path: transfer_count, value: 3}
+          - {op: equals, path: transfer_credit_total, value: 9}
+          - {op: equals, path: last_transfer_file, value: nova-transfer.csv}
+      - table: transfer_grid
+        expect_order: [TR-CAP, TR-ETH, TR-RES]
+        expect_row_count: 3
+      - do: stage_equivalencies_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: denied_count, value: 1}
+          - {op: equals, path: equivalency_status, value: idle}
+      - do: role_advisor_button.click
+      - do: stage_equivalencies_button.click
+        expect:
+          - {op: equals, path: equivalency_status, value: staged}
+          - {op: equals, path: equivalency_count, value: 3}
+          - {op: equals, path: transfer_applied_credits, value: 9}
+          - {op: equals, path: residency_credit_total, value: 6}
+          - {op: equals, path: readiness_score, value: 42}
+      - table: equivalency_grid
+        expect_order: [EQ-CAPSTONE, EQ-ETHICS, EQ-RESIDENCY]
+        expect_row_count: 3
+
+  - id: public_05_finalize_equivalencies_requires_catalog_lock
+    tier: validation
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: select_nova_button.click
+      - do: go_articulation_button.click
+      - do: transfer_upload_input.upload
+        input:
+          file: {name: nova-transfer.csv, mime_type: text/csv, content: "id,course,credits,residency,status\nTR-CAP,DSX 498,4,4,accepted\nTR-ETH,PHIL 340,3,0,accepted\nTR-RES,RES 200,2,2,review\n"}
+          rows:
+            - {id: TR-CAP, course: DSX 498, credits: 4, residency: 4, status: accepted}
+            - {id: TR-ETH, course: PHIL 340, credits: 3, residency: 0, status: accepted}
+            - {id: TR-RES, course: RES 200, credits: 2, residency: 2, status: review}
+      - do: role_advisor_button.click
+      - do: stage_equivalencies_button.click
+      - do: finalize_equivalencies_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: equivalency_status, value: blocked}
+          - {op: equals, path: validation_errors, value: {equivalency: "Catalog lock required"}}
+      - do: go_audit_button.click
+      - do: catalog_version_input.fill
+        input: {value: CAT-2026A}
+      - do: role_registrar_button.click
+      - do: lock_catalog_button.click
+      - do: go_articulation_button.click
+      - do: role_advisor_button.click
+      - do: stage_equivalencies_button.click
+      - do: finalize_equivalencies_button.click
+        expect:
+          - {op: equals, path: equivalency_status, value: locked}
+          - {op: equals, path: audit_status, value: satisfied}
+          - {op: equals, path: deficiency_count, value: 0}
+          - {op: equals, path: readiness_score, value: 58}
+          - {op: equals, path: validation_errors, value: {}}
+      - table: requirement_grid
+        expect_order: [REQ-CAPSTONE, REQ-RESIDENCY, REQ-ETHICS, REQ-GPA]
+        expect_row_count: 4
+
+  - id: public_06_exception_packet_requires_resolved_schedule_and_locked_equivalencies
+    tier: journey
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: select_nova_button.click
+      - do: run_degree_audit_button.click
+      - do: plan_completion_button.click
+      - do: resolve_schedule_button.click
+      - do: catalog_version_input.fill
+        input: {value: CAT-2026A}
+      - do: role_registrar_button.click
+      - do: lock_catalog_button.click
+      - do: go_articulation_button.click
+      - do: transfer_upload_input.upload
+        input:
+          file: {name: nova-transfer.csv, mime_type: text/csv, content: "id,course,credits,residency,status\nTR-CAP,DSX 498,4,4,accepted\nTR-ETH,PHIL 340,3,0,accepted\nTR-RES,RES 200,2,2,review\n"}
+          rows:
+            - {id: TR-CAP, course: DSX 498, credits: 4, residency: 4, status: accepted}
+            - {id: TR-ETH, course: PHIL 340, credits: 3, residency: 0, status: accepted}
+            - {id: TR-RES, course: RES 200, credits: 2, residency: 2, status: review}
+      - do: role_advisor_button.click
+      - do: stage_equivalencies_button.click
+      - do: finalize_equivalencies_button.click
+      - do: assemble_exception_packet_button.click
+        expect:
+          - {op: equals, path: exception_packet_status, value: assembled}
+          - {op: equals, path: exception_count, value: 2}
+          - {op: equals, path: readiness_score, value: 68}
+      - table: exception_grid
+        expect_order: [EX-CAT, EX-RES]
+        expect_row_count: 2
+
+  - id: public_07_bursar_clearance_after_exception_packet
+    tier: service
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: select_nova_button.click
+      - do: go_reconcile_button.click
+      - do: role_bursar_button.click
+      - do: run_bursar_clearance_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: finance_status, value: blocked}
+          - {op: equals, path: validation_errors, value: {finance: "Exception packet required"}}
+      - do: go_audit_button.click
+      - do: run_degree_audit_button.click
+      - do: plan_completion_button.click
+      - do: resolve_schedule_button.click
+      - do: catalog_version_input.fill
+        input: {value: CAT-2026A}
+      - do: role_registrar_button.click
+      - do: lock_catalog_button.click
+      - do: go_articulation_button.click
+      - do: transfer_upload_input.upload
+        input:
+          file: {name: nova-transfer.csv, mime_type: text/csv, content: "id,course,credits,residency,status\nTR-CAP,DSX 498,4,4,accepted\nTR-ETH,PHIL 340,3,0,accepted\nTR-RES,RES 200,2,2,review\n"}
+          rows:
+            - {id: TR-CAP, course: DSX 498, credits: 4, residency: 4, status: accepted}
+            - {id: TR-ETH, course: PHIL 340, credits: 3, residency: 0, status: accepted}
+            - {id: TR-RES, course: RES 200, credits: 2, residency: 2, status: review}
+      - do: role_advisor_button.click
+      - do: stage_equivalencies_button.click
+      - do: finalize_equivalencies_button.click
+      - do: assemble_exception_packet_button.click
+      - do: go_reconcile_button.click
+      - do: role_bursar_button.click
+      - do: run_bursar_clearance_button.click
+        expect:
+          - {op: equals, path: finance_status, value: cleared}
+          - {op: equals, path: sap_status, value: clear}
+          - {op: equals, path: balance_status, value: zero_balance}
+          - {op: equals, path: finance_trace_id, value: BUR-NOVA-042}
+          - {op: equals, path: service_call_count, value: 1}
+          - {op: equals, path: bursar_call_count, value: 1}
+          - {op: equals, path: readiness_score, value: 74}
+
+  - id: public_08_reconciliation_mismatch_blocks_then_corrects_lock
+    tier: upload
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: select_nova_button.click
+      - do: go_reconcile_button.click
+      - do: reconciliation_upload_input.upload
+        input:
+          file:
+            name: mismatch-worksheet.csv
+            mime_type: text/csv
+            content: |
+              id,requirement,manifest_status,registrar_status,status
+              RC-CAP,REQ-CAPSTONE,met,met,match
+              RC-RES,REQ-RESIDENCY,met,short,mismatch
+              RC-ETH,REQ-ETHICS,met,met,match
+          rows:
+            - {id: RC-CAP, requirement: REQ-CAPSTONE, manifest_status: met, registrar_status: met, status: match}
+            - {id: RC-RES, requirement: REQ-RESIDENCY, manifest_status: met, registrar_status: short, status: mismatch}
+            - {id: RC-ETH, requirement: REQ-ETHICS, manifest_status: met, registrar_status: met, status: match}
+        expect:
+          - {op: equals, path: reconciliation_count, value: 3}
+          - {op: equals, path: mismatch_count, value: 1}
+          - {op: equals, path: reconciliation_status, value: uploaded}
+      - do: role_registrar_button.click
+      - do: lock_reconciliation_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: reconciliation_status, value: blocked}
+          - {op: equals, path: validation_errors, value: {reconciliation: "Resolve worksheet mismatches"}}
+      - do: reconciliation_upload_input.upload
+        input:
+          file:
+            name: corrected-worksheet.csv
+            mime_type: text/csv
+            content: |
+              id,requirement,manifest_status,registrar_status,status
+              RC-CAP,REQ-CAPSTONE,met,met,match
+              RC-RES,REQ-RESIDENCY,met,met,match
+              RC-ETH,REQ-ETHICS,met,met,match
+          rows:
+            - {id: RC-CAP, requirement: REQ-CAPSTONE, manifest_status: met, registrar_status: met, status: match}
+            - {id: RC-RES, requirement: REQ-RESIDENCY, manifest_status: met, registrar_status: met, status: match}
+            - {id: RC-ETH, requirement: REQ-ETHICS, manifest_status: met, registrar_status: met, status: match}
+      - do: lock_reconciliation_button.click
+        expect:
+          - {op: equals, path: reconciliation_status, value: locked}
+          - {op: equals, path: mismatch_count, value: 0}
+          - {op: equals, path: readiness_score, value: 82}
+          - {op: equals, path: validation_errors, value: {}}
+      - table: reconciliation_grid
+        expect_order: [RC-CAP, RC-RES, RC-ETH]
+        expect_row_count: 3
+
+  - id: public_09_full_clearance_release_survives_reload
+    tier: journey
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: select_nova_button.click
+      - do: run_degree_audit_button.click
+      - do: plan_completion_button.click
+      - do: resolve_schedule_button.click
+      - do: catalog_version_input.fill
+        input: {value: CAT-2026A}
+      - do: role_registrar_button.click
+      - do: lock_catalog_button.click
+      - do: go_articulation_button.click
+      - do: transfer_upload_input.upload
+        input:
+          file: {name: nova-transfer.csv, mime_type: text/csv, content: "id,course,credits,residency,status\nTR-CAP,DSX 498,4,4,accepted\nTR-ETH,PHIL 340,3,0,accepted\nTR-RES,RES 200,2,2,review\n"}
+          rows:
+            - {id: TR-CAP, course: DSX 498, credits: 4, residency: 4, status: accepted}
+            - {id: TR-ETH, course: PHIL 340, credits: 3, residency: 0, status: accepted}
+            - {id: TR-RES, course: RES 200, credits: 2, residency: 2, status: review}
+      - do: role_advisor_button.click
+      - do: stage_equivalencies_button.click
+      - do: finalize_equivalencies_button.click
+      - do: assemble_exception_packet_button.click
+      - do: go_reconcile_button.click
+      - do: role_bursar_button.click
+      - do: run_bursar_clearance_button.click
+      - do: reconciliation_upload_input.upload
+        input:
+          file: {name: corrected-worksheet.csv, mime_type: text/csv, content: "id,requirement,manifest_status,registrar_status,status\nRC-CAP,REQ-CAPSTONE,met,met,match\nRC-RES,REQ-RESIDENCY,met,met,match\nRC-ETH,REQ-ETHICS,met,met,match\n"}
+          rows:
+            - {id: RC-CAP, requirement: REQ-CAPSTONE, manifest_status: met, registrar_status: met, status: match}
+            - {id: RC-RES, requirement: REQ-RESIDENCY, manifest_status: met, registrar_status: met, status: match}
+            - {id: RC-ETH, requirement: REQ-ETHICS, manifest_status: met, registrar_status: met, status: match}
+      - do: role_registrar_button.click
+      - do: lock_reconciliation_button.click
+      - do: go_clearance_button.click
+      - do: role_dean_button.click
+      - do: dean_vote_button.click
+      - do: role_registrar_button.click
+      - do: registrar_seal_button.click
+      - do: publish_release_button.click
+      - browser: reload
+        expect_page: clearance
+        expect:
+          - {op: equals, path: release_status, value: published}
+          - {op: equals, path: release_count, value: 2}
+          - {op: equals, path: registrar_seal_status, value: sealed}
+          - {op: equals, path: finance_trace_id, value: BUR-NOVA-042}
+          - {op: equals, path: dean_packet_hash, value: DEAN-CAND-NOVA-RC3-B1}
+          - {op: equals, path: seal_manifest_hash, value: SEAL-CAND-NOVA-DEAN-CAND-NOVA-RC3-B1}
+          - {op: equals, path: release_hold_reason, value: ""}
+          - {op: equals, path: open_blockers, value: 0}
+          - {op: equals, path: readiness_score, value: 100}
+          - {op: equals, path: audit_count, value: 3}
+      - table: release_grid
+        expect_order: [REL-NOVA-COMM, REL-NOVA-ARCHIVE]
+        expect_row_count: 2
+      - table: audit_grid
+        expect_order: [AUD-DEAN, AUD-SEAL, AUD-REL]
+        expect_row_count: 3
+
+  - id: public_10_browser_back_from_clearance_returns_to_reconcile
+    tier: persistence
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: select_nova_button.click
+      - do: go_articulation_button.click
+      - do: go_reconcile_button.click
+      - do: go_clearance_button.click
+      - browser: back
+        expect_page: reconcile
+        expect:
+          - {op: equals, path: current_page, value: reconcile}
+          - {op: equals, path: selected_candidate_id, value: CAND-NOVA}
+
+  - id: public_11_reset_cleans_after_complex_workflow
+    tier: persistence
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: select_nova_button.click
+      - do: run_degree_audit_button.click
+      - do: plan_completion_button.click
+      - do: go_articulation_button.click
+      - do: transfer_upload_input.upload
+        input:
+          file: {name: nova-transfer.csv, mime_type: text/csv, content: "id,course,credits,residency,status\nTR-CAP,DSX 498,4,4,accepted\n"}
+          rows:
+            - {id: TR-CAP, course: DSX 498, credits: 4, residency: 4, status: accepted}
+      - do: reset_button.click
+        expect:
+          - {op: equals, path: current_page, value: command}
+          - {op: equals, path: selected_candidate_id, value: ""}
+          - {op: equals, path: requirement_count, value: 0}
+          - {op: equals, path: schedule_count, value: 0}
+          - {op: equals, path: transfer_count, value: 0}
+          - {op: equals, path: release_count, value: 0}
+          - {op: equals, path: open_blockers, value: 8}
+          - {op: equals, path: denied_count, value: 0}
+
+  - id: public_12_final_actions_are_role_gated
+    tier: permission
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: select_nova_button.click
+      - do: go_clearance_button.click
+      - do: registrar_seal_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: denied_count, value: 1}
+          - {op: equals, path: registrar_seal_status, value: idle}
+          - {op: equals, path: last_action, value: unauthorized_registrar}
+      - do: role_dean_button.click
+      - do: publish_release_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: denied_count, value: 2}
+          - {op: equals, path: release_status, value: idle}
+          - {op: equals, path: last_action, value: unauthorized_registrar}
+      - do: role_registrar_button.click
+      - do: registrar_seal_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: registrar_seal_status, value: blocked}
+          - {op: equals, path: last_action, value: seal_requires_dean}

@@ -1,0 +1,1508 @@
+dsl_version: "3.0.0"
+
+app:
+  id: clinic_shift_command
+  name: Clinic Shift Command Tier C
+  capability: ambulatory_clinic_incident_command
+  ui_ux_brief: |
+    Clinic Shift Command Tier C should look like a premium incident-command
+    console for a high-acuity ambulatory clinic network. A desktop screenshot
+    should immediately read as more sophisticated than Tier B: a layered command
+    header, patient risk radar, live floor-map visualization, capacity forecast
+    bands, diagnostics release queue, transport ETA lane, staffing exception
+    upload, wristband/transport reconciliation, diversion matrix, escalation
+    ledger, computed readiness gauge, blocker ledger, dual sign-off, final
+    command-clearance timeline, and audit trail
+    should all be visible as coordinated product surfaces. Use a bright clinical
+    canvas with polished navy/teal structure, cyan data accents, amber/red surge
+    states, crisp cards, sparklines or SVG-like visual widgets, mini floor-map
+    tiles, matrix tables, and role-aware action clusters. Avoid a generic
+    dashboard, landing page, dark test harness, or plain table dump. The UI/UX
+    should feel like a real healthcare SaaS product used by charge nurses,
+    clinicians, billing, transport coordinators, and operations directors during
+    a live incident.
+
+runtime:
+  target: web
+  start_url: /#/command
+
+  state_probe:
+    kind: javascript
+    expression: window.__DETOX_STATE__
+
+  pages:
+    command:
+      path: /#/command
+      purpose: Live triage queue, role console, risk telemetry, and selected patient snapshot.
+    chart:
+      path: /#/chart
+      purpose: Patient chart workspace for insurance, prior authorization, assessment, orders, and referral upload.
+    capacity:
+      path: /#/capacity
+      purpose: Room capacity board and diagnostic order tracking.
+    handoff:
+      path: /#/handoff
+      purpose: Escalations, referral packets, and charge-nurse shift handoff.
+    surge:
+      path: /#/surge
+      purpose: Incident command, staffing exceptions, transport ETA, surge activation, and final clearance.
+
+  session:
+    role_path: active_role
+    roles: [coordinator, clinician, charge_nurse, billing, operations_director]
+
+  persistence:
+    reload:
+      scope: local_storage
+      paths:
+        - current_page
+        - active_role
+        - patients
+        - visible_patients
+        - current_filter
+        - rooms
+        - selected_patient_id
+        - selected_patient_name
+        - selected_lane
+        - selected_acuity
+        - selected_patient_status
+        - selected_room_need
+        - selected_risk
+        - assigned_room_id
+        - assigned_room_name
+        - insurance_code
+        - insurance_status
+        - copay_due
+        - auth_required
+        - auth_key
+        - authorization_status
+        - service_call_count
+        - insurance_call_count
+        - auth_call_count
+        - risk_score
+        - risk_band
+        - risk_protocol
+        - risk_call_count
+        - forecast_status
+        - forecast_level
+        - forecast_minutes
+        - forecast_call_count
+        - transport_status
+        - transport_eta
+        - transport_call_count
+        - transport_ack_status
+        - transport_ack_count
+        - pain_score
+        - disposition
+        - assessment_status
+        - order_status
+        - diagnostic_orders
+        - diagnostic_order_count
+        - released_order_count
+        - release_block_count
+        - referral_docs
+        - referral_doc_count
+        - last_referral_file
+        - escalation_tasks
+        - escalation_count
+        - closed_escalation_count
+        - handoff_packets
+        - handoff_packet_count
+        - handoff_status
+        - handoff_block_count
+        - staffing_rows
+        - staffing_count
+        - short_staff_count
+        - last_staffing_file
+        - reconciliation_rows
+        - reconciliation_count
+        - mismatch_count
+        - last_reconciliation_file
+        - reconciliation_status
+        - reconciliation_lock_count
+        - reconciliation_block_count
+        - diversion_rows
+        - diversion_count
+        - open_diversion_count
+        - last_diversion_file
+        - diversion_status
+        - diversion_resolve_count
+        - surge_tasks
+        - surge_task_count
+        - closed_surge_task_count
+        - surge_status
+        - surge_block_count
+        - nurse_signoff_status
+        - director_signoff_status
+        - signoff_count
+        - clearance_readiness_score
+        - open_clearance_blockers
+        - clearance_blocker_rows
+        - command_audit
+        - audit_count
+        - final_clearance_status
+        - final_clearance_count
+        - validation_errors
+        - denied_count
+        - room_block_count
+        - last_action
+
+  services:
+    insurance_verify:
+      endpoint: /api/insurance
+      method: GET
+      responses:
+        - id: hmo_approved
+          match:
+            query:
+              code: HMO-A
+          status: 200
+          json: {status: approved, copay: 20}
+        - id: ppo_approved
+          match:
+            query:
+              code: PPO-B
+          status: 200
+          json: {status: approved, copay: 35}
+        - id: cash_self_pay
+          match:
+            query:
+              code: CASH
+          status: 200
+          json: {status: self_pay, copay: 120}
+        - id: plan_review
+          match:
+            query:
+              code: BADPLAN
+          status: 200
+          json: {status: needs_review, copay: 0}
+    prior_auth:
+      endpoint: /api/prior-auth
+      method: GET
+      responses:
+        - id: cardio_stat
+          match:
+            query:
+              auth: CARD-STAT
+          status: 200
+          json: {status: approved}
+        - id: ortho_approved
+          match:
+            query:
+              auth: ORTHO-77
+          status: 200
+          json: {status: approved}
+        - id: denied
+          match:
+            query:
+              auth: BAD-AUTH
+          status: 200
+          json: {status: denied}
+    risk_score:
+      endpoint: /api/risk-score
+      method: GET
+      responses:
+        - id: ava_critical
+          match:
+            query:
+              patient: CVC-206
+          status: 200
+          json: {score: 94, band: critical, protocol: cardiac_isolation}
+        - id: omar_procedure
+          match:
+            query:
+              patient: CVC-202
+          status: 200
+          json: {score: 78, band: high, protocol: ortho_procedure}
+        - id: june_lab
+          match:
+            query:
+              patient: CVC-205
+          status: 200
+          json: {score: 64, band: watch, protocol: fever_lab}
+    capacity_forecast:
+      endpoint: /api/capacity-forecast
+      method: GET
+      responses:
+        - id: west_surge
+          match:
+            query:
+              zone: west
+          status: 200
+          json: {status: surge, level: 3, minutes: 18}
+        - id: diagnostics_watch
+          match:
+            query:
+              zone: diagnostics
+          status: 200
+          json: {status: watch, level: 2, minutes: 34}
+    transport_eta:
+      endpoint: /api/transport-eta
+      method: GET
+      responses:
+        - id: stat_eta
+          match:
+            query:
+              mode: STAT
+          status: 200
+          json: {status: accepted, eta: 12}
+        - id: routine_eta
+          match:
+            query:
+              mode: ROUTINE
+          status: 200
+          json: {status: queued, eta: 38}
+
+  tables:
+    patient_queue:
+      selector: '[data-testid="patient-queue"]'
+      row_selector: '[data-testid="patient-row"]'
+      row_id_attribute: data-patient-id
+      source_path: visible_patients
+      row_id_field: id
+      columns:
+        name: {selector: '[data-col="name"]', state_field: name}
+        lane: {selector: '[data-col="lane"]', state_field: lane}
+        acuity: {selector: '[data-col="acuity"]', state_field: acuity}
+        status: {selector: '[data-col="status"]', state_field: status}
+        wait_mins: {selector: '[data-col="wait_mins"]', state_field: wait_mins}
+        room_need: {selector: '[data-col="room_need"]', state_field: room_need}
+        risk: {selector: '[data-col="risk"]', state_field: risk}
+    room_board:
+      selector: '[data-testid="room-board"]'
+      row_selector: '[data-testid="room-row"]'
+      row_id_attribute: data-room-id
+      source_path: rooms
+      row_id_field: id
+      columns:
+        name: {selector: '[data-col="name"]', state_field: name}
+        zone: {selector: '[data-col="zone"]', state_field: zone}
+        status: {selector: '[data-col="status"]', state_field: status}
+        occupant: {selector: '[data-col="occupant"]', state_field: occupant}
+        equipment: {selector: '[data-col="equipment"]', state_field: equipment}
+    order_grid:
+      selector: '[data-testid="order-grid"]'
+      row_selector: '[data-testid="order-row"]'
+      row_id_attribute: data-order-id
+      source_path: diagnostic_orders
+      row_id_field: id
+      columns:
+        patient: {selector: '[data-col="patient"]', state_field: patient}
+        type: {selector: '[data-col="type"]', state_field: type}
+        priority: {selector: '[data-col="priority"]', state_field: priority}
+        status: {selector: '[data-col="status"]', state_field: status}
+    referral_grid:
+      selector: '[data-testid="referral-grid"]'
+      row_selector: '[data-testid="referral-row"]'
+      row_id_attribute: data-referral-id
+      source_path: referral_docs
+      row_id_field: id
+      columns:
+        document: {selector: '[data-col="document"]', state_field: document}
+        priority: {selector: '[data-col="priority"]', state_field: priority}
+        status: {selector: '[data-col="status"]', state_field: status}
+    escalation_grid:
+      selector: '[data-testid="escalation-grid"]'
+      row_selector: '[data-testid="escalation-row"]'
+      row_id_attribute: data-escalation-id
+      source_path: escalation_tasks
+      row_id_field: id
+      columns:
+        patient: {selector: '[data-col="patient"]', state_field: patient}
+        reason: {selector: '[data-col="reason"]', state_field: reason}
+        owner: {selector: '[data-col="owner"]', state_field: owner}
+        status: {selector: '[data-col="status"]', state_field: status}
+    handoff_packet_grid:
+      selector: '[data-testid="handoff-packet-grid"]'
+      row_selector: '[data-testid="handoff-packet-row"]'
+      row_id_attribute: data-packet-id
+      source_path: handoff_packets
+      row_id_field: id
+      columns:
+        patient: {selector: '[data-col="patient"]', state_field: patient}
+        referral_file: {selector: '[data-col="referral_file"]', state_field: referral_file}
+        status: {selector: '[data-col="status"]', state_field: status}
+    staffing_grid:
+      selector: '[data-testid="staffing-grid"]'
+      row_selector: '[data-testid="staffing-row"]'
+      row_id_attribute: data-staffing-id
+      source_path: staffing_rows
+      row_id_field: id
+      columns:
+        unit: {selector: '[data-col="unit"]', state_field: unit}
+        nurse: {selector: '[data-col="nurse"]', state_field: nurse}
+        gap: {selector: '[data-col="gap"]', state_field: gap}
+        status: {selector: '[data-col="status"]', state_field: status}
+    reconciliation_grid:
+      selector: '[data-testid="reconciliation-grid"]'
+      row_selector: '[data-testid="reconciliation-row"]'
+      row_id_attribute: data-reconciliation-id
+      source_path: reconciliation_rows
+      row_id_field: id
+      columns:
+        patient: {selector: '[data-col="patient"]', state_field: patient}
+        wristband: {selector: '[data-col="wristband"]', state_field: wristband}
+        transport: {selector: '[data-col="transport"]', state_field: transport}
+        status: {selector: '[data-col="status"]', state_field: status}
+    diversion_grid:
+      selector: '[data-testid="diversion-grid"]'
+      row_selector: '[data-testid="diversion-row"]'
+      row_id_attribute: data-diversion-id
+      source_path: diversion_rows
+      row_id_field: id
+      columns:
+        site: {selector: '[data-col="site"]', state_field: site}
+        service: {selector: '[data-col="service"]', state_field: service}
+        status: {selector: '[data-col="status"]', state_field: status}
+        eta: {selector: '[data-col="eta"]', state_field: eta}
+    clearance_blocker_grid:
+      selector: '[data-testid="clearance-blocker-grid"]'
+      row_selector: '[data-testid="clearance-blocker-row"]'
+      row_id_attribute: data-blocker-id
+      source_path: clearance_blocker_rows
+      row_id_field: id
+      columns:
+        label: {selector: '[data-col="label"]', state_field: label}
+        status: {selector: '[data-col="status"]', state_field: status}
+    surge_grid:
+      selector: '[data-testid="surge-grid"]'
+      row_selector: '[data-testid="surge-row"]'
+      row_id_attribute: data-surge-id
+      source_path: surge_tasks
+      row_id_field: id
+      columns:
+        zone: {selector: '[data-col="zone"]', state_field: zone}
+        action: {selector: '[data-col="action"]', state_field: action}
+        owner: {selector: '[data-col="owner"]', state_field: owner}
+        status: {selector: '[data-col="status"]', state_field: status}
+    audit_grid:
+      selector: '[data-testid="audit-grid"]'
+      row_selector: '[data-testid="audit-row"]'
+      row_id_attribute: data-audit-id
+      source_path: command_audit
+      row_id_field: id
+      columns:
+        event: {selector: '[data-col="event"]', state_field: event}
+        role: {selector: '[data-col="role"]', state_field: role}
+        patient: {selector: '[data-col="patient"]', state_field: patient}
+
+state:
+  initial:
+    current_page: command
+    active_role: coordinator
+    patients:
+      - {id: CVC-206, name: "Ava Chen", lane: urgent, acuity: 1, status: waiting, wait_mins: 3, room_need: isolation, risk: red, complaint: "Chest pressure with fever", insurance_code: PPO-B, auth_required: true, auth_key: CARD-STAT}
+      - {id: CVC-205, name: "June Park", lane: lab, acuity: 2, status: waiting, wait_mins: 22, room_need: lab, risk: orange, complaint: "Fever panel follow-up", insurance_code: HMO-A, auth_required: false, auth_key: ""}
+      - {id: CVC-202, name: "Omar Haddad", lane: procedure, acuity: 2, status: waiting, wait_mins: 16, room_need: procedure, risk: orange, complaint: "Fracture reduction review", insurance_code: PPO-B, auth_required: true, auth_key: ORTHO-77}
+      - {id: CVC-204, name: "Paul Rivers", lane: imaging, acuity: 3, status: waiting, wait_mins: 34, room_need: imaging, risk: yellow, complaint: "CT authorization hold", insurance_code: BADPLAN, auth_required: true, auth_key: BAD-AUTH}
+      - {id: CVC-201, name: "Lina Torres", lane: primary, acuity: 3, status: waiting, wait_mins: 28, room_need: exam, risk: yellow, complaint: "Uncontrolled migraine", insurance_code: HMO-A, auth_required: false, auth_key: ""}
+      - {id: CVC-203, name: "Nia Brooks", lane: followup, acuity: 4, status: waiting, wait_mins: 47, room_need: exam, risk: green, complaint: "Post-op wound check", insurance_code: CASH, auth_required: false, auth_key: ""}
+    visible_patients:
+      - {id: CVC-206, name: "Ava Chen", lane: urgent, acuity: 1, status: waiting, wait_mins: 3, room_need: isolation, risk: red, complaint: "Chest pressure with fever", insurance_code: PPO-B, auth_required: true, auth_key: CARD-STAT}
+      - {id: CVC-205, name: "June Park", lane: lab, acuity: 2, status: waiting, wait_mins: 22, room_need: lab, risk: orange, complaint: "Fever panel follow-up", insurance_code: HMO-A, auth_required: false, auth_key: ""}
+      - {id: CVC-202, name: "Omar Haddad", lane: procedure, acuity: 2, status: waiting, wait_mins: 16, room_need: procedure, risk: orange, complaint: "Fracture reduction review", insurance_code: PPO-B, auth_required: true, auth_key: ORTHO-77}
+      - {id: CVC-204, name: "Paul Rivers", lane: imaging, acuity: 3, status: waiting, wait_mins: 34, room_need: imaging, risk: yellow, complaint: "CT authorization hold", insurance_code: BADPLAN, auth_required: true, auth_key: BAD-AUTH}
+      - {id: CVC-201, name: "Lina Torres", lane: primary, acuity: 3, status: waiting, wait_mins: 28, room_need: exam, risk: yellow, complaint: "Uncontrolled migraine", insurance_code: HMO-A, auth_required: false, auth_key: ""}
+      - {id: CVC-203, name: "Nia Brooks", lane: followup, acuity: 4, status: waiting, wait_mins: 47, room_need: exam, risk: green, complaint: "Post-op wound check", insurance_code: CASH, auth_required: false, auth_key: ""}
+    current_filter: all
+    rooms:
+      - {id: R-ISO2, name: "Isolation 2", zone: west, status: ready, occupant: "", equipment: negative-pressure}
+      - {id: R-PROC, name: "Procedure A", zone: procedure, status: ready, occupant: "", equipment: casting-cart}
+      - {id: R-LAB2, name: "Lab Draw 2", zone: diagnostics, status: ready, occupant: "", equipment: phlebotomy}
+      - {id: R-IMG, name: "Imaging Hold", zone: diagnostics, status: cleaning, occupant: "", equipment: wheelchair}
+      - {id: R-OBS, name: "Observation 1", zone: east, status: occupied, occupant: "Walk-in infusion", equipment: monitor}
+    selected_patient_id: ""
+    selected_patient_name: ""
+    selected_lane: ""
+    selected_acuity: 0
+    selected_patient_status: ""
+    selected_room_need: ""
+    selected_risk: ""
+    assigned_room_id: ""
+    assigned_room_name: ""
+    insurance_code: ""
+    insurance_status: idle
+    copay_due: 0
+    auth_required: false
+    auth_key: ""
+    authorization_status: idle
+    service_call_count: 0
+    insurance_call_count: 0
+    auth_call_count: 0
+    risk_score: 0
+    risk_band: idle
+    risk_protocol: ""
+    risk_call_count: 0
+    forecast_status: idle
+    forecast_level: 0
+    forecast_minutes: 0
+    forecast_call_count: 0
+    transport_status: idle
+    transport_eta: 0
+    transport_call_count: 0
+    transport_ack_status: idle
+    transport_ack_count: 0
+    pain_score: ""
+    disposition: ""
+    assessment_status: idle
+    order_status: idle
+    diagnostic_orders: []
+    diagnostic_order_count: 0
+    released_order_count: 0
+    release_block_count: 0
+    referral_docs: []
+    referral_doc_count: 0
+    last_referral_file: ""
+    escalation_tasks: []
+    escalation_count: 0
+    closed_escalation_count: 0
+    handoff_packets: []
+    handoff_packet_count: 0
+    handoff_status: idle
+    handoff_block_count: 0
+    staffing_rows: []
+    staffing_count: 0
+    short_staff_count: 0
+    last_staffing_file: ""
+    reconciliation_rows: []
+    reconciliation_count: 0
+    mismatch_count: 0
+    last_reconciliation_file: ""
+    reconciliation_status: idle
+    reconciliation_lock_count: 0
+    reconciliation_block_count: 0
+    diversion_rows: []
+    diversion_count: 0
+    open_diversion_count: 0
+    last_diversion_file: ""
+    diversion_status: idle
+    diversion_resolve_count: 0
+    surge_tasks: []
+    surge_task_count: 0
+    closed_surge_task_count: 0
+    surge_status: idle
+    surge_block_count: 0
+    nurse_signoff_status: idle
+    director_signoff_status: idle
+    signoff_count: 0
+    clearance_readiness_score: 0
+    open_clearance_blockers: 8
+    clearance_blocker_rows:
+      - {id: B-HANDOFF, label: Handoff packet ready, status: open}
+      - {id: B-TRANSPORT, label: Transport accepted, status: open}
+      - {id: B-ACK, label: Transport acknowledged, status: open}
+      - {id: B-RECON, label: Reconciliation locked, status: open}
+      - {id: B-DIVERSION, label: Diversion resolved, status: open}
+      - {id: B-SURGE, label: Surge closed, status: open}
+      - {id: B-SIGNOFF-NURSE, label: Charge nurse sign-off, status: open}
+      - {id: B-SIGNOFF-DIRECTOR, label: Operations director sign-off, status: open}
+    command_audit: []
+    audit_count: 0
+    final_clearance_status: idle
+    final_clearance_count: 0
+    validation_errors: {}
+    denied_count: 0
+    room_block_count: 0
+    last_action: ready
+    __services.calls: []
+
+  schema:
+    current_page: {type: string, purpose: Active route page.}
+    active_role: {type: string, purpose: Current clinic role.}
+    patients: {type: array, purpose: Ordered master queue.}
+    visible_patients: {type: array, purpose: Current queue projection.}
+    current_filter: {type: string, purpose: Active queue filter.}
+    rooms: {type: array, purpose: Capacity board rooms.}
+    selected_patient_id: {type: string, purpose: Active patient id.}
+    selected_patient_name: {type: string, purpose: Active patient name.}
+    selected_lane: {type: string, purpose: Active patient lane.}
+    selected_acuity: {type: number, purpose: Active patient acuity.}
+    selected_patient_status: {type: string, purpose: Active patient status.}
+    selected_room_need: {type: string, purpose: Active patient room need.}
+    selected_risk: {type: string, purpose: Active patient risk band.}
+    assigned_room_id: {type: string, purpose: Assigned room id.}
+    assigned_room_name: {type: string, purpose: Assigned room name.}
+    insurance_code: {type: string, purpose: Insurance code.}
+    insurance_status: {type: string, purpose: idle, approved, self_pay, or needs_review.}
+    copay_due: {type: number, purpose: Copay from deterministic insurance service.}
+    auth_required: {type: boolean, purpose: Whether prior authorization is required.}
+    auth_key: {type: string, purpose: Prior authorization key.}
+    authorization_status: {type: string, purpose: idle, approved, denied, or not_required.}
+    service_call_count: {type: number, purpose: Total deterministic service calls.}
+    insurance_call_count: {type: number, purpose: Insurance service call count.}
+    auth_call_count: {type: number, purpose: Prior-auth service call count.}
+    risk_score: {type: number, purpose: Patient risk score from deterministic risk service.}
+    risk_band: {type: string, purpose: Risk band from deterministic risk service.}
+    risk_protocol: {type: string, purpose: Protocol from deterministic risk service.}
+    risk_call_count: {type: number, purpose: Risk service call count.}
+    forecast_status: {type: string, purpose: Capacity forecast status.}
+    forecast_level: {type: number, purpose: Capacity forecast surge level.}
+    forecast_minutes: {type: number, purpose: Minutes until capacity breach.}
+    forecast_call_count: {type: number, purpose: Capacity forecast service call count.}
+    transport_status: {type: string, purpose: idle, accepted, or queued.}
+    transport_eta: {type: number, purpose: Transport ETA minutes.}
+    transport_call_count: {type: number, purpose: Transport ETA service call count.}
+    transport_ack_status: {type: string, purpose: idle, blocked, or acknowledged.}
+    transport_ack_count: {type: number, purpose: Charge nurse transport acknowledgement count.}
+    pain_score: {type: string, purpose: Pain score input.}
+    disposition: {type: string, purpose: Clinician disposition input.}
+    assessment_status: {type: string, purpose: idle, incomplete, or recorded.}
+    order_status: {type: string, purpose: idle, blocked, ordered, or released.}
+    diagnostic_orders: {type: array, purpose: Diagnostic order rows.}
+    diagnostic_order_count: {type: number, purpose: Diagnostic order count.}
+    released_order_count: {type: number, purpose: Released diagnostic order count.}
+    release_block_count: {type: number, purpose: Diagnostic release rejection count.}
+    referral_docs: {type: array, purpose: Uploaded referral document rows.}
+    referral_doc_count: {type: number, purpose: Referral document count.}
+    last_referral_file: {type: string, purpose: Last uploaded referral file name.}
+    escalation_tasks: {type: array, purpose: Charge nurse escalation tasks.}
+    escalation_count: {type: number, purpose: Open escalation count created.}
+    closed_escalation_count: {type: number, purpose: Closed escalation count.}
+    handoff_packets: {type: array, purpose: Finalized nurse handoff packet rows.}
+    handoff_packet_count: {type: number, purpose: Finalized handoff packet count.}
+    handoff_status: {type: string, purpose: idle, blocked, or ready.}
+    handoff_block_count: {type: number, purpose: Blocked handoff finalization count.}
+    staffing_rows: {type: array, purpose: Uploaded staffing exception rows.}
+    staffing_count: {type: number, purpose: Staffing exception row count.}
+    short_staff_count: {type: number, purpose: Number of units with short staffing.}
+    last_staffing_file: {type: string, purpose: Last staffing upload file name.}
+    reconciliation_rows: {type: array, purpose: Wristband and transport reconciliation rows.}
+    reconciliation_count: {type: number, purpose: Reconciliation row count.}
+    mismatch_count: {type: number, purpose: Number of reconciliation rows with mismatch status.}
+    last_reconciliation_file: {type: string, purpose: Last reconciliation upload file name.}
+    reconciliation_status: {type: string, purpose: idle, review, blocked, or locked.}
+    reconciliation_lock_count: {type: number, purpose: Locked reconciliation count.}
+    reconciliation_block_count: {type: number, purpose: Blocked reconciliation lock count.}
+    diversion_rows: {type: array, purpose: Diversion and receiving-site rows.}
+    diversion_count: {type: number, purpose: Diversion matrix row count.}
+    open_diversion_count: {type: number, purpose: Open diversion row count.}
+    last_diversion_file: {type: string, purpose: Last diversion upload file name.}
+    diversion_status: {type: string, purpose: idle, review, blocked, or resolved.}
+    diversion_resolve_count: {type: number, purpose: Resolved diversion count.}
+    surge_tasks: {type: array, purpose: Operations director surge tasks.}
+    surge_task_count: {type: number, purpose: Created surge task count.}
+    closed_surge_task_count: {type: number, purpose: Closed surge task count.}
+    surge_status: {type: string, purpose: idle, blocked, active, or closed.}
+    surge_block_count: {type: number, purpose: Blocked surge activation count.}
+    nurse_signoff_status: {type: string, purpose: idle or signed.}
+    director_signoff_status: {type: string, purpose: idle or signed.}
+    signoff_count: {type: number, purpose: Completed command sign-off count.}
+    clearance_readiness_score: {type: number, purpose: Computed 0-100 score from the eight final clearance gates.}
+    open_clearance_blockers: {type: number, purpose: Count of blocker ledger rows whose status is open.}
+    clearance_blocker_rows: {type: array, purpose: Eight computed blocker rows for handoff, transport, acknowledgement, reconciliation, diversion, surge, charge sign-off, and director sign-off.}
+    command_audit: {type: array, purpose: Command audit events.}
+    audit_count: {type: number, purpose: Command audit count.}
+    final_clearance_status: {type: string, purpose: idle, blocked, or complete.}
+    final_clearance_count: {type: number, purpose: Completed final command clearance count.}
+    validation_errors: {type: object, purpose: Field-level validation errors.}
+    denied_count: {type: number, purpose: Role-denied action count.}
+    room_block_count: {type: number, purpose: Rejected room assignment count.}
+    last_action: {type: string, purpose: Last action marker.}
+    __services.calls: {type: array, purpose: Evaluator-provided service call ledger.}
+
+components:
+  reset_button:
+    kind: button
+    selector: '[data-testid="reset"]'
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_page, value: command}
+          - {op: equals, path: active_role, value: coordinator}
+          - {op: equals, path: current_filter, value: all}
+          - {op: equals_filter, path: visible_patients, source_path: patients, where: [], order_by: [{field: acuity, direction: asc}, {field: wait_mins, direction: desc}]}
+          - {op: equals, path: rooms, value: [{id: R-ISO2, name: "Isolation 2", zone: west, status: ready, occupant: "", equipment: negative-pressure}, {id: R-PROC, name: "Procedure A", zone: procedure, status: ready, occupant: "", equipment: casting-cart}, {id: R-LAB2, name: "Lab Draw 2", zone: diagnostics, status: ready, occupant: "", equipment: phlebotomy}, {id: R-IMG, name: "Imaging Hold", zone: diagnostics, status: cleaning, occupant: "", equipment: wheelchair}, {id: R-OBS, name: "Observation 1", zone: east, status: occupied, occupant: "Walk-in infusion", equipment: monitor}]}
+          - {op: equals, path: selected_patient_id, value: ""}
+          - {op: equals, path: selected_patient_name, value: ""}
+          - {op: equals, path: selected_lane, value: ""}
+          - {op: equals, path: selected_acuity, value: 0}
+          - {op: equals, path: selected_patient_status, value: ""}
+          - {op: equals, path: selected_room_need, value: ""}
+          - {op: equals, path: selected_risk, value: ""}
+          - {op: equals, path: assigned_room_id, value: ""}
+          - {op: equals, path: assigned_room_name, value: ""}
+          - {op: equals, path: insurance_code, value: ""}
+          - {op: equals, path: insurance_status, value: idle}
+          - {op: equals, path: copay_due, value: 0}
+          - {op: equals, path: auth_required, value: false}
+          - {op: equals, path: auth_key, value: ""}
+          - {op: equals, path: authorization_status, value: idle}
+          - {op: equals, path: service_call_count, value: 0}
+          - {op: equals, path: insurance_call_count, value: 0}
+          - {op: equals, path: auth_call_count, value: 0}
+          - {op: equals, path: risk_score, value: 0}
+          - {op: equals, path: risk_band, value: idle}
+          - {op: equals, path: risk_protocol, value: ""}
+          - {op: equals, path: risk_call_count, value: 0}
+          - {op: equals, path: forecast_status, value: idle}
+          - {op: equals, path: forecast_level, value: 0}
+          - {op: equals, path: forecast_minutes, value: 0}
+          - {op: equals, path: forecast_call_count, value: 0}
+          - {op: equals, path: transport_status, value: idle}
+          - {op: equals, path: transport_eta, value: 0}
+          - {op: equals, path: transport_call_count, value: 0}
+          - {op: equals, path: transport_ack_status, value: idle}
+          - {op: equals, path: transport_ack_count, value: 0}
+          - {op: equals, path: pain_score, value: ""}
+          - {op: equals, path: disposition, value: ""}
+          - {op: equals, path: assessment_status, value: idle}
+          - {op: equals, path: order_status, value: idle}
+          - {op: equals, path: diagnostic_orders, value: []}
+          - {op: equals, path: diagnostic_order_count, value: 0}
+          - {op: equals, path: released_order_count, value: 0}
+          - {op: equals, path: release_block_count, value: 0}
+          - {op: equals, path: referral_docs, value: []}
+          - {op: equals, path: referral_doc_count, value: 0}
+          - {op: equals, path: last_referral_file, value: ""}
+          - {op: equals, path: escalation_tasks, value: []}
+          - {op: equals, path: escalation_count, value: 0}
+          - {op: equals, path: closed_escalation_count, value: 0}
+          - {op: equals, path: handoff_packets, value: []}
+          - {op: equals, path: handoff_packet_count, value: 0}
+          - {op: equals, path: handoff_status, value: idle}
+          - {op: equals, path: handoff_block_count, value: 0}
+          - {op: equals, path: staffing_rows, value: []}
+          - {op: equals, path: staffing_count, value: 0}
+          - {op: equals, path: short_staff_count, value: 0}
+          - {op: equals, path: last_staffing_file, value: ""}
+          - {op: equals, path: reconciliation_rows, value: []}
+          - {op: equals, path: reconciliation_count, value: 0}
+          - {op: equals, path: mismatch_count, value: 0}
+          - {op: equals, path: last_reconciliation_file, value: ""}
+          - {op: equals, path: reconciliation_status, value: idle}
+          - {op: equals, path: reconciliation_lock_count, value: 0}
+          - {op: equals, path: reconciliation_block_count, value: 0}
+          - {op: equals, path: diversion_rows, value: []}
+          - {op: equals, path: diversion_count, value: 0}
+          - {op: equals, path: open_diversion_count, value: 0}
+          - {op: equals, path: last_diversion_file, value: ""}
+          - {op: equals, path: diversion_status, value: idle}
+          - {op: equals, path: diversion_resolve_count, value: 0}
+          - {op: equals, path: surge_tasks, value: []}
+          - {op: equals, path: surge_task_count, value: 0}
+          - {op: equals, path: closed_surge_task_count, value: 0}
+          - {op: equals, path: surge_status, value: idle}
+          - {op: equals, path: surge_block_count, value: 0}
+          - {op: equals, path: nurse_signoff_status, value: idle}
+          - {op: equals, path: director_signoff_status, value: idle}
+          - {op: equals, path: signoff_count, value: 0}
+          - {op: equals, path: clearance_readiness_score, value: 0}
+          - {op: equals, path: open_clearance_blockers, value: 8}
+          - {op: equals, path: clearance_blocker_rows, value: [
+              {id: B-HANDOFF, label: Handoff packet ready, status: open},
+              {id: B-TRANSPORT, label: Transport accepted, status: open},
+              {id: B-ACK, label: Transport acknowledged, status: open},
+              {id: B-RECON, label: Reconciliation locked, status: open},
+              {id: B-DIVERSION, label: Diversion resolved, status: open},
+              {id: B-SURGE, label: Surge closed, status: open},
+              {id: B-SIGNOFF-NURSE, label: Charge nurse sign-off, status: open},
+              {id: B-SIGNOFF-DIRECTOR, label: Operations director sign-off, status: open}
+            ]}
+          - {op: equals, path: command_audit, value: []}
+          - {op: equals, path: audit_count, value: 0}
+          - {op: equals, path: final_clearance_status, value: idle}
+          - {op: equals, path: final_clearance_count, value: 0}
+          - {op: equals, path: validation_errors, value: {}}
+          - {op: equals, path: denied_count, value: 0}
+          - {op: equals, path: room_block_count, value: 0}
+          - {op: equals, path: last_action, value: reset}
+
+  go_command_button:
+    kind: button
+    selector: '[data-testid="go-command"]'
+    actions:
+      click:
+        navigate_to: command
+        effects:
+          - {op: equals, path: current_page, value: command}
+          - {op: equals, path: last_action, value: nav_command}
+  go_chart_button:
+    kind: button
+    selector: '[data-testid="go-chart"]'
+    actions:
+      click:
+        navigate_to: chart
+        effects:
+          - {op: equals, path: current_page, value: chart}
+          - {op: equals, path: last_action, value: nav_chart}
+  go_capacity_button:
+    kind: button
+    selector: '[data-testid="go-capacity"]'
+    actions:
+      click:
+        navigate_to: capacity
+        effects:
+          - {op: equals, path: current_page, value: capacity}
+          - {op: equals, path: last_action, value: nav_capacity}
+  go_handoff_button:
+    kind: button
+    selector: '[data-testid="go-handoff"]'
+    actions:
+      click:
+        navigate_to: handoff
+        effects:
+          - {op: equals, path: current_page, value: handoff}
+          - {op: equals, path: last_action, value: nav_handoff}
+  go_surge_button:
+    kind: button
+    selector: '[data-testid="go-surge"]'
+    actions:
+      click:
+        navigate_to: surge
+        effects:
+          - {op: equals, path: current_page, value: surge}
+          - {op: equals, path: last_action, value: nav_surge}
+
+  role_coordinator_button:
+    kind: button
+    selector: '[data-testid="role-coordinator"]'
+    actions:
+      click:
+        effects:
+          - {op: equals, path: active_role, value: coordinator}
+          - {op: equals, path: last_action, value: role_coordinator}
+  role_clinician_button:
+    kind: button
+    selector: '[data-testid="role-clinician"]'
+    actions:
+      click:
+        effects:
+          - {op: equals, path: active_role, value: clinician}
+          - {op: equals, path: last_action, value: role_clinician}
+  role_charge_nurse_button:
+    kind: button
+    selector: '[data-testid="role-charge-nurse"]'
+    actions:
+      click:
+        effects:
+          - {op: equals, path: active_role, value: charge_nurse}
+          - {op: equals, path: last_action, value: role_charge_nurse}
+  role_billing_button:
+    kind: button
+    selector: '[data-testid="role-billing"]'
+    actions:
+      click:
+        effects:
+          - {op: equals, path: active_role, value: billing}
+          - {op: equals, path: last_action, value: role_billing}
+  role_operations_director_button:
+    kind: button
+    selector: '[data-testid="role-operations-director"]'
+    actions:
+      click:
+        effects:
+          - {op: equals, path: active_role, value: operations_director}
+          - {op: equals, path: last_action, value: role_operations_director}
+
+  filter_all_button:
+    kind: button
+    selector: '[data-testid="filter-all"]'
+    page: command
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_filter, value: all}
+          - {op: equals_filter, path: visible_patients, source_path: patients, where: [], order_by: [{field: acuity, direction: asc}, {field: wait_mins, direction: desc}]}
+          - {op: equals, path: last_action, value: filter_all}
+  filter_critical_button:
+    kind: button
+    selector: '[data-testid="filter-critical"]'
+    page: command
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_filter, value: critical}
+          - {op: equals_filter, path: visible_patients, source_path: patients, where: [{op: relation, field: acuity, operator: "<=", value: 2}], order_by: [{field: acuity, direction: asc}, {field: wait_mins, direction: desc}]}
+          - {op: equals, path: last_action, value: filter_critical}
+  filter_procedure_button:
+    kind: button
+    selector: '[data-testid="filter-procedure"]'
+    page: command
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_filter, value: procedure}
+          - {op: equals_filter, path: visible_patients, source_path: patients, where: [{op: equals, field: lane, value: procedure}], order_by: [{field: acuity, direction: asc}, {field: wait_mins, direction: desc}]}
+          - {op: equals, path: last_action, value: filter_procedure}
+  filter_authorization_button:
+    kind: button
+    selector: '[data-testid="filter-authorization"]'
+    page: command
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_filter, value: authorization}
+          - {op: equals_filter, path: visible_patients, source_path: patients, where: [{op: equals, field: auth_required, value: true}], order_by: [{field: acuity, direction: asc}, {field: wait_mins, direction: desc}]}
+          - {op: equals, path: last_action, value: filter_authorization}
+
+  select_ava_button:
+    kind: button
+    selector: '[data-testid="select-CVC-206"]'
+    page: command
+    actions:
+      click:
+        navigate_to: chart
+        effects:
+          - {op: equals, path: selected_patient_id, value: CVC-206}
+          - {op: equals, path: selected_patient_name, value: "Ava Chen"}
+          - {op: equals, path: selected_lane, value: urgent}
+          - {op: equals, path: selected_acuity, value: 1}
+          - {op: equals, path: selected_patient_status, value: selected}
+          - {op: equals, path: selected_room_need, value: isolation}
+          - {op: equals, path: selected_risk, value: red}
+          - {op: equals, path: insurance_code, value: PPO-B}
+          - {op: equals, path: auth_required, value: true}
+          - {op: equals, path: auth_key, value: CARD-STAT}
+          - {op: equals, path: current_page, value: chart}
+          - {op: equals, path: last_action, value: select_patient}
+  select_omar_button:
+    kind: button
+    selector: '[data-testid="select-CVC-202"]'
+    page: command
+    actions:
+      click:
+        navigate_to: chart
+        effects:
+          - {op: equals, path: selected_patient_id, value: CVC-202}
+          - {op: equals, path: selected_patient_name, value: "Omar Haddad"}
+          - {op: equals, path: selected_lane, value: procedure}
+          - {op: equals, path: selected_acuity, value: 2}
+          - {op: equals, path: selected_patient_status, value: selected}
+          - {op: equals, path: selected_room_need, value: procedure}
+          - {op: equals, path: selected_risk, value: orange}
+          - {op: equals, path: insurance_code, value: PPO-B}
+          - {op: equals, path: auth_required, value: true}
+          - {op: equals, path: auth_key, value: ORTHO-77}
+          - {op: equals, path: current_page, value: chart}
+          - {op: equals, path: last_action, value: select_patient}
+  select_june_button:
+    kind: button
+    selector: '[data-testid="select-CVC-205"]'
+    page: command
+    actions:
+      click:
+        navigate_to: chart
+        effects:
+          - {op: equals, path: selected_patient_id, value: CVC-205}
+          - {op: equals, path: selected_patient_name, value: "June Park"}
+          - {op: equals, path: selected_lane, value: lab}
+          - {op: equals, path: selected_acuity, value: 2}
+          - {op: equals, path: selected_patient_status, value: selected}
+          - {op: equals, path: selected_room_need, value: lab}
+          - {op: equals, path: selected_risk, value: orange}
+          - {op: equals, path: insurance_code, value: HMO-A}
+          - {op: equals, path: auth_required, value: false}
+          - {op: equals, path: auth_key, value: ""}
+          - {op: equals, path: current_page, value: chart}
+          - {op: equals, path: last_action, value: select_patient}
+  select_paul_button:
+    kind: button
+    selector: '[data-testid="select-CVC-204"]'
+    page: command
+    actions:
+      click:
+        navigate_to: chart
+        effects:
+          - {op: equals, path: selected_patient_id, value: CVC-204}
+          - {op: equals, path: selected_patient_name, value: "Paul Rivers"}
+          - {op: equals, path: selected_lane, value: imaging}
+          - {op: equals, path: selected_acuity, value: 3}
+          - {op: equals, path: selected_patient_status, value: selected}
+          - {op: equals, path: selected_room_need, value: imaging}
+          - {op: equals, path: selected_risk, value: yellow}
+          - {op: equals, path: insurance_code, value: BADPLAN}
+          - {op: equals, path: auth_required, value: true}
+          - {op: equals, path: auth_key, value: BAD-AUTH}
+          - {op: equals, path: current_page, value: chart}
+          - {op: equals, path: last_action, value: select_patient}
+  select_nia_button:
+    kind: button
+    selector: '[data-testid="select-CVC-203"]'
+    page: command
+    actions:
+      click:
+        navigate_to: chart
+        effects:
+          - {op: equals, path: selected_patient_id, value: CVC-203}
+          - {op: equals, path: selected_patient_name, value: "Nia Brooks"}
+          - {op: equals, path: selected_lane, value: followup}
+          - {op: equals, path: selected_acuity, value: 4}
+          - {op: equals, path: selected_patient_status, value: selected}
+          - {op: equals, path: selected_room_need, value: exam}
+          - {op: equals, path: selected_risk, value: green}
+          - {op: equals, path: insurance_code, value: CASH}
+          - {op: equals, path: auth_required, value: false}
+          - {op: equals, path: auth_key, value: ""}
+          - {op: equals, path: current_page, value: chart}
+          - {op: equals, path: last_action, value: select_patient}
+
+  assign_isolation_button:
+    kind: button
+    selector: '[data-testid="assign-isolation"]'
+    page: chart
+    actions:
+      click:
+        allowed_roles: [charge_nurse]
+        preconditions:
+          - {op: not_one_of, path: selected_patient_id, values: [""]}
+        effects:
+          - {op: equals, path: assigned_room_id, value: R-ISO2}
+          - {op: equals, path: assigned_room_name, value: "Isolation 2"}
+          - {op: equals, path: selected_patient_status, value: roomed}
+          - {op: equals, path: rooms, value: [{id: R-ISO2, name: "Isolation 2", zone: west, status: occupied, occupant: "Ava Chen", equipment: negative-pressure}, {id: R-PROC, name: "Procedure A", zone: procedure, status: ready, occupant: "", equipment: casting-cart}, {id: R-LAB2, name: "Lab Draw 2", zone: diagnostics, status: ready, occupant: "", equipment: phlebotomy}, {id: R-IMG, name: "Imaging Hold", zone: diagnostics, status: cleaning, occupant: "", equipment: wheelchair}, {id: R-OBS, name: "Observation 1", zone: east, status: occupied, occupant: "Walk-in infusion", equipment: monitor}]}
+          - {op: equals, path: last_action, value: assign_isolation}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_capacity}
+  assign_procedure_button:
+    kind: button
+    selector: '[data-testid="assign-procedure"]'
+    page: chart
+    actions:
+      click:
+        allowed_roles: [coordinator, charge_nurse]
+        preconditions:
+          - {op: not_one_of, path: selected_patient_id, values: [""]}
+        effects:
+          - {op: equals, path: assigned_room_id, value: R-PROC}
+          - {op: equals, path: assigned_room_name, value: "Procedure A"}
+          - {op: equals, path: selected_patient_status, value: roomed}
+          - {op: equals, path: rooms, value: [{id: R-ISO2, name: "Isolation 2", zone: west, status: ready, occupant: "", equipment: negative-pressure}, {id: R-PROC, name: "Procedure A", zone: procedure, status: occupied, occupant: "Omar Haddad", equipment: casting-cart}, {id: R-LAB2, name: "Lab Draw 2", zone: diagnostics, status: ready, occupant: "", equipment: phlebotomy}, {id: R-IMG, name: "Imaging Hold", zone: diagnostics, status: cleaning, occupant: "", equipment: wheelchair}, {id: R-OBS, name: "Observation 1", zone: east, status: occupied, occupant: "Walk-in infusion", equipment: monitor}]}
+          - {op: equals, path: last_action, value: assign_procedure}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_capacity}
+  assign_imaging_button:
+    kind: button
+    selector: '[data-testid="assign-imaging"]'
+    page: chart
+    actions:
+      click:
+        allowed_roles: [coordinator, charge_nurse]
+        rejected_when:
+          - {op: not_one_of, path: selected_patient_id, values: [""]}
+        rejected_effects:
+          - {op: changed_by, path: room_block_count, by: 1}
+          - {op: equals, path: assigned_room_id, value: ""}
+          - {op: equals, path: assigned_room_name, value: ""}
+          - {op: equals, path: last_action, value: room_cleaning_block}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_capacity}
+
+  insurance_code_input:
+    kind: input
+    selector: '[data-testid="insurance-code"]'
+    page: chart
+    actions:
+      fill:
+        effects:
+          - {op: equals_normalized, path: insurance_code, value_from: input.value, normalizers: [trim, uppercase]}
+          - {op: equals, path: last_action, value: edit_insurance}
+  verify_insurance_button:
+    kind: button
+    selector: '[data-testid="verify-insurance"]'
+    page: chart
+    actions:
+      click:
+        preconditions:
+          - {op: not_one_of, path: selected_patient_id, values: [""]}
+          - {op: not_one_of, path: insurance_code, values: [""]}
+        effects:
+          - {op: changed_by, path: service_call_count, by: 1}
+          - {op: changed_by, path: insurance_call_count, by: 1}
+          - {op: one_of, path: insurance_status, values: [approved, self_pay, needs_review]}
+          - {op: equals, path: last_action, value: verify_insurance}
+
+  auth_key_input:
+    kind: input
+    selector: '[data-testid="auth-key"]'
+    page: chart
+    actions:
+      fill:
+        effects:
+          - {op: equals_normalized, path: auth_key, value_from: input.value, normalizers: [trim, uppercase]}
+          - {op: equals, path: last_action, value: edit_auth_key}
+  request_auth_button:
+    kind: button
+    selector: '[data-testid="request-auth"]'
+    page: chart
+    actions:
+      click:
+        allowed_roles: [billing]
+        preconditions:
+          - {op: not_one_of, path: selected_patient_id, values: [""]}
+        effects:
+          - {op: changed_by, path: service_call_count, by: 1}
+          - {op: changed_by, path: auth_call_count, by: 1}
+          - {op: one_of, path: authorization_status, values: [approved, denied, not_required]}
+          - {op: equals, path: last_action, value: request_auth}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_billing}
+  score_risk_button:
+    kind: button
+    selector: '[data-testid="score-risk"]'
+    page: chart
+    actions:
+      click:
+        allowed_roles: [clinician, charge_nurse]
+        preconditions:
+          - {op: not_one_of, path: selected_patient_id, values: [""]}
+        effects:
+          - {op: changed_by, path: service_call_count, by: 1}
+          - {op: changed_by, path: risk_call_count, by: 1}
+          - {op: one_of, path: risk_band, values: [critical, high, watch]}
+          - {op: relation, path: risk_score, operator: ">", value: 0}
+          - {op: not_one_of, path: risk_protocol, values: [""]}
+          - {op: equals, path: last_action, value: score_risk}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_clinical}
+  forecast_capacity_button:
+    kind: button
+    selector: '[data-testid="forecast-capacity"]'
+    page: surge
+    actions:
+      click:
+        allowed_roles: [charge_nurse, operations_director]
+        effects:
+          - {op: changed_by, path: service_call_count, by: 1}
+          - {op: changed_by, path: forecast_call_count, by: 1}
+          - {op: one_of, path: forecast_status, values: [surge, watch]}
+          - {op: relation, path: forecast_level, operator: ">", value: 0}
+          - {op: relation, path: forecast_minutes, operator: ">", value: 0}
+          - {op: equals, path: last_action, value: forecast_capacity}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_capacity}
+  request_transport_button:
+    kind: button
+    selector: '[data-testid="request-transport"]'
+    page: chart
+    actions:
+      click:
+        allowed_roles: [charge_nurse]
+        preconditions:
+          - {op: one_of, path: order_status, values: [released]}
+          - {op: relation, path: risk_score, operator: ">", value: 0}
+        rejected_when:
+          - {op: not_one_of, path: order_status, values: [released]}
+        rejected_effects:
+          - {op: equals, path: transport_status, value: blocked}
+          - {op: equals, path: last_action, value: transport_blocked}
+        effects:
+          - {op: changed_by, path: service_call_count, by: 1}
+          - {op: changed_by, path: transport_call_count, by: 1}
+          - {op: one_of, path: transport_status, values: [accepted, queued]}
+          - {op: relation, path: transport_eta, operator: ">", value: 0}
+          - {op: equals, path: last_action, value: request_transport}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_capacity}
+
+  pain_score_input:
+    kind: input
+    selector: '[data-testid="pain-score"]'
+    page: chart
+    actions:
+      fill:
+        effects:
+          - {op: equals_normalized, path: pain_score, value_from: input.value, normalizers: [trim]}
+          - {op: removed_object_fields, path: validation_errors, fields: [assessment]}
+  disposition_input:
+    kind: input
+    selector: '[data-testid="disposition"]'
+    page: chart
+    actions:
+      fill:
+        effects:
+          - {op: equals_normalized, path: disposition, value_from: input.value, normalizers: [trim, collapse_whitespace]}
+          - {op: removed_object_fields, path: validation_errors, fields: [assessment]}
+  save_assessment_button:
+    kind: button
+    selector: '[data-testid="save-assessment"]'
+    page: chart
+    actions:
+      click:
+        allowed_roles: [clinician]
+        rejected_when:
+          - {op: one_of, path: pain_score, values: [""]}
+          - {op: one_of, path: disposition, values: [""]}
+        rejected_effects:
+          - {op: equals, path: assessment_status, value: incomplete}
+          - {op: updated_object_fields, path: validation_errors, updates: {assessment: "Pain score and disposition are required"}}
+          - {op: equals, path: last_action, value: reject_assessment}
+        effects:
+          - {op: equals, path: assessment_status, value: recorded}
+          - {op: equals, path: selected_patient_status, value: assessed}
+          - {op: equals, path: last_action, value: save_assessment}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_clinical}
+  place_lab_order_button:
+    kind: button
+    selector: '[data-testid="place-lab-order"]'
+    page: chart
+    actions:
+      click:
+        allowed_roles: [clinician]
+        rejected_when:
+          - {op: not_one_of, path: assessment_status, values: [recorded]}
+        rejected_effects:
+          - {op: equals, path: order_status, value: blocked}
+          - {op: equals, path: last_action, value: order_requires_assessment}
+        effects:
+          - {op: appended_object, path: diagnostic_orders, value: {id: O-1, patient: {from_path: selected_patient_name}, type: CBC, priority: stat, status: ordered}}
+          - {op: changed_by, path: diagnostic_order_count, by: 1}
+          - {op: equals, path: order_status, value: ordered}
+          - {op: equals, path: last_action, value: place_lab_order}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_clinical}
+  release_diagnostics_button:
+    kind: button
+    selector: '[data-testid="release-diagnostics"]'
+    page: chart
+    actions:
+      click:
+        allowed_roles: [clinician]
+        preconditions:
+          - {op: one_of, path: order_status, values: [ordered]}
+          - {op: one_of, path: insurance_status, values: [approved, self_pay]}
+          - {op: one_of, path: authorization_status, values: [approved, not_required]}
+        rejected_when:
+          - {op: not_one_of, path: authorization_status, values: [approved, not_required]}
+        rejected_effects:
+          - {op: changed_by, path: release_block_count, by: 1}
+          - {op: equals, path: last_action, value: release_blocked}
+        effects:
+          - {op: updated_first_where, path: diagnostic_orders, where: [{op: equals, field: id, value: O-1}], updates: {status: released}}
+          - {op: changed_by, path: released_order_count, by: 1}
+          - {op: equals, path: order_status, value: released}
+          - {op: equals, path: selected_patient_status, value: diagnostic_ready}
+          - {op: equals, path: last_action, value: release_diagnostics}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_clinical}
+
+  referral_upload_input:
+    kind: input
+    selector: '[data-testid="referral-upload"]'
+    page: chart
+    actions:
+      upload:
+        file_schema:
+          format: csv
+          columns:
+            - {name: id, type: string}
+            - {name: document, type: string}
+            - {name: priority, type: string}
+            - {name: status, type: string}
+        effects:
+          - {op: equals, path: referral_docs, value_from: input.rows}
+          - {op: equals_length, path: referral_doc_count, source_path: referral_docs}
+          - {op: equals, path: last_referral_file, value_from: input.file.name}
+          - {op: equals, path: last_action, value: upload_referrals}
+  staffing_upload_input:
+    kind: input
+    selector: '[data-testid="staffing-upload"]'
+    page: surge
+    actions:
+      upload:
+        file_schema:
+          format: csv
+          columns:
+            - {name: id, type: string}
+            - {name: unit, type: string}
+            - {name: nurse, type: string}
+            - {name: gap, type: string}
+            - {name: status, type: string}
+        effects:
+          - {op: equals, path: staffing_rows, value_from: input.rows}
+          - {op: equals_length, path: staffing_count, source_path: staffing_rows}
+          - {op: equals_count_where, path: short_staff_count, source_path: staffing_rows, where: [{op: equals, field: gap, value: short}]}
+          - {op: equals, path: last_staffing_file, value_from: input.file.name}
+          - {op: equals, path: last_action, value: upload_staffing}
+  acknowledge_transport_button:
+    kind: button
+    selector: '[data-testid="ack-transport"]'
+    page: surge
+    actions:
+      click:
+        allowed_roles: [charge_nurse]
+        preconditions:
+          - {op: one_of, path: transport_status, values: [accepted]}
+        rejected_when:
+          - {op: not_one_of, path: transport_status, values: [accepted]}
+        rejected_effects:
+          - {op: equals, path: transport_ack_status, value: blocked}
+          - {op: equals, path: last_action, value: transport_ack_blocked}
+        effects:
+          - {op: equals, path: transport_ack_status, value: acknowledged}
+          - {op: changed_by, path: transport_ack_count, by: 1}
+          - {op: equals, path: last_action, value: acknowledge_transport}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_capacity}
+  reconciliation_upload_input:
+    kind: input
+    selector: '[data-testid="reconciliation-upload"]'
+    page: surge
+    actions:
+      upload:
+        file_schema:
+          format: csv
+          columns:
+            - {name: id, type: string}
+            - {name: patient, type: string}
+            - {name: wristband, type: string}
+            - {name: transport, type: string}
+            - {name: status, type: string}
+        effects:
+          - {op: equals, path: reconciliation_rows, value_from: input.rows}
+          - {op: equals_length, path: reconciliation_count, source_path: reconciliation_rows}
+          - {op: equals_count_where, path: mismatch_count, source_path: reconciliation_rows, where: [{op: equals, field: status, value: mismatch}]}
+          - {op: equals, path: last_reconciliation_file, value_from: input.file.name}
+          - {op: equals, path: reconciliation_status, value: review}
+          - {op: equals, path: last_action, value: upload_reconciliation}
+  lock_reconciliation_button:
+    kind: button
+    selector: '[data-testid="lock-reconciliation"]'
+    page: surge
+    actions:
+      click:
+        allowed_roles: [operations_director]
+        preconditions:
+          - {op: relation, path: reconciliation_count, operator: ">", value: 0}
+          - {op: one_of, path: mismatch_count, values: [0]}
+        rejected_when:
+          - {op: relation, path: mismatch_count, operator: ">", value: 0}
+        rejected_effects:
+          - {op: changed_by, path: reconciliation_block_count, by: 1}
+          - {op: equals, path: reconciliation_status, value: blocked}
+          - {op: equals, path: last_action, value: reconciliation_blocked}
+        effects:
+          - {op: equals, path: reconciliation_status, value: locked}
+          - {op: changed_by, path: reconciliation_lock_count, by: 1}
+          - {op: equals, path: last_action, value: lock_reconciliation}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_director}
+  diversion_upload_input:
+    kind: input
+    selector: '[data-testid="diversion-upload"]'
+    page: surge
+    actions:
+      upload:
+        file_schema:
+          format: csv
+          columns:
+            - {name: id, type: string}
+            - {name: site, type: string}
+            - {name: service, type: string}
+            - {name: status, type: string}
+            - {name: eta, type: number}
+        effects:
+          - {op: equals, path: diversion_rows, value_from: input.rows}
+          - {op: equals_length, path: diversion_count, source_path: diversion_rows}
+          - {op: equals_count_where, path: open_diversion_count, source_path: diversion_rows, where: [{op: equals, field: status, value: open}]}
+          - {op: equals, path: last_diversion_file, value_from: input.file.name}
+          - {op: equals, path: diversion_status, value: review}
+          - {op: equals, path: last_action, value: upload_diversion}
+  resolve_diversion_button:
+    kind: button
+    selector: '[data-testid="resolve-diversion"]'
+    page: surge
+    actions:
+      click:
+        allowed_roles: [operations_director]
+        preconditions:
+          - {op: relation, path: diversion_count, operator: ">", value: 0}
+        effects:
+          - {op: updated_first_where, path: diversion_rows, where: [{op: equals, field: id, value: D-1}], updates: {status: resolved}}
+          - {op: equals, path: open_diversion_count, value: 0}
+          - {op: equals, path: diversion_status, value: resolved}
+          - {op: changed_by, path: diversion_resolve_count, by: 1}
+          - {op: equals, path: last_action, value: resolve_diversion}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_director}
+
+  escalate_delay_button:
+    kind: button
+    selector: '[data-testid="escalate-delay"]'
+    page: chart
+    actions:
+      click:
+        allowed_roles: [charge_nurse]
+        preconditions:
+          - {op: not_one_of, path: selected_patient_id, values: [""]}
+        effects:
+          - {op: appended_object, path: escalation_tasks, value: {id: E-1, patient: {from_path: selected_patient_name}, reason: delayed_room, owner: charge_nurse, status: open}}
+          - {op: changed_by, path: escalation_count, by: 1}
+          - {op: equals, path: last_action, value: escalate_delay}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_capacity}
+  close_escalation_button:
+    kind: button
+    selector: '[data-testid="close-escalation"]'
+    page: handoff
+    actions:
+      click:
+        allowed_roles: [charge_nurse]
+        preconditions:
+          - {op: relation, path: escalation_count, operator: ">", value: 0}
+        effects:
+          - {op: updated_first_where, path: escalation_tasks, where: [{op: equals, field: id, value: E-1}], updates: {status: closed}}
+          - {op: changed_by, path: closed_escalation_count, by: 1}
+          - {op: equals, path: last_action, value: close_escalation}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_capacity}
+  finalize_handoff_button:
+    kind: button
+    selector: '[data-testid="finalize-handoff"]'
+    page: handoff
+    actions:
+      click:
+        allowed_roles: [charge_nurse]
+        preconditions:
+          - {op: one_of, path: order_status, values: [released]}
+          - {op: relation, path: referral_doc_count, operator: ">", value: 0}
+          - {op: one_of, path: closed_escalation_count, values: [1]}
+        rejected_when:
+          - {op: not_one_of, path: closed_escalation_count, values: [1]}
+        rejected_effects:
+          - {op: changed_by, path: handoff_block_count, by: 1}
+          - {op: equals, path: handoff_status, value: blocked}
+          - {op: equals, path: last_action, value: handoff_blocked}
+        effects:
+          - {op: appended_object, path: handoff_packets, value: {id: H-1, patient: {from_path: selected_patient_name}, referral_file: {from_path: last_referral_file}, status: ready}}
+          - {op: changed_by, path: handoff_packet_count, by: 1}
+          - {op: equals, path: handoff_status, value: ready}
+          - {op: equals, path: last_action, value: finalize_handoff}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_capacity}
+  activate_surge_button:
+    kind: button
+    selector: '[data-testid="activate-surge"]'
+    page: surge
+    actions:
+      click:
+        allowed_roles: [operations_director]
+        preconditions:
+          - {op: one_of, path: forecast_status, values: [surge]}
+          - {op: relation, path: short_staff_count, operator: ">", value: 0}
+        rejected_when:
+          - {op: not_one_of, path: forecast_status, values: [surge]}
+        rejected_effects:
+          - {op: changed_by, path: surge_block_count, by: 1}
+          - {op: equals, path: surge_status, value: blocked}
+          - {op: equals, path: last_action, value: surge_blocked}
+        effects:
+          - {op: appended_object, path: surge_tasks, value: {id: S-1, zone: west, action: flex_isolation_staff, owner: operations_director, status: active}}
+          - {op: changed_by, path: surge_task_count, by: 1}
+          - {op: equals, path: surge_status, value: active}
+          - {op: equals, path: last_action, value: activate_surge}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_director}
+  close_surge_button:
+    kind: button
+    selector: '[data-testid="close-surge"]'
+    page: surge
+    actions:
+      click:
+        allowed_roles: [charge_nurse, operations_director]
+        preconditions:
+          - {op: relation, path: surge_task_count, operator: ">", value: 0}
+        effects:
+          - {op: updated_first_where, path: surge_tasks, where: [{op: equals, field: id, value: S-1}], updates: {status: closed}}
+          - {op: changed_by, path: closed_surge_task_count, by: 1}
+          - {op: equals, path: surge_status, value: closed}
+          - {op: equals, path: last_action, value: close_surge}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_capacity}
+  charge_signoff_button:
+    kind: button
+    selector: '[data-testid="charge-signoff"]'
+    page: surge
+    actions:
+      click:
+        allowed_roles: [charge_nurse]
+        preconditions:
+          - {op: one_of, path: transport_ack_status, values: [acknowledged]}
+          - {op: one_of, path: reconciliation_status, values: [locked]}
+        rejected_when:
+          - {op: not_one_of, path: transport_ack_status, values: [acknowledged]}
+          - {op: not_one_of, path: reconciliation_status, values: [locked]}
+        rejected_effects:
+          - {op: equals, path: nurse_signoff_status, value: idle}
+          - {op: equals, path: last_action, value: signoff_blocked}
+        effects:
+          - {op: equals, path: nurse_signoff_status, value: signed}
+          - {op: changed_by, path: signoff_count, by: 1}
+          - {op: equals, path: last_action, value: charge_signoff}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_capacity}
+  director_signoff_button:
+    kind: button
+    selector: '[data-testid="director-signoff"]'
+    page: surge
+    actions:
+      click:
+        allowed_roles: [operations_director]
+        preconditions:
+          - {op: one_of, path: diversion_status, values: [resolved]}
+          - {op: one_of, path: surge_status, values: [closed]}
+        rejected_when:
+          - {op: not_one_of, path: diversion_status, values: [resolved]}
+          - {op: not_one_of, path: surge_status, values: [closed]}
+        rejected_effects:
+          - {op: equals, path: director_signoff_status, value: idle}
+          - {op: equals, path: last_action, value: signoff_blocked}
+        effects:
+          - {op: equals, path: director_signoff_status, value: signed}
+          - {op: changed_by, path: signoff_count, by: 1}
+          - {op: equals, path: last_action, value: director_signoff}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_director}
+  finalize_clearance_button:
+    kind: button
+    selector: '[data-testid="finalize-clearance"]'
+    page: surge
+    actions:
+      click:
+        allowed_roles: [operations_director]
+        preconditions:
+          - {op: one_of, path: handoff_status, values: [ready]}
+          - {op: one_of, path: transport_status, values: [accepted]}
+          - {op: one_of, path: transport_ack_status, values: [acknowledged]}
+          - {op: one_of, path: reconciliation_status, values: [locked]}
+          - {op: one_of, path: diversion_status, values: [resolved]}
+          - {op: one_of, path: surge_status, values: [closed]}
+          - {op: one_of, path: nurse_signoff_status, values: [signed]}
+          - {op: one_of, path: director_signoff_status, values: [signed]}
+          - {op: equals, path: clearance_readiness_score, value: 100}
+          - {op: equals, path: open_clearance_blockers, value: 0}
+        rejected_when:
+          - {op: not_one_of, path: nurse_signoff_status, values: [signed]}
+          - {op: not_one_of, path: director_signoff_status, values: [signed]}
+        rejected_effects:
+          - {op: equals, path: final_clearance_status, value: blocked}
+          - {op: equals, path: last_action, value: clearance_blocked}
+        effects:
+          - {op: appended_object, path: command_audit, value: {id: A-1, event: final_clearance, role: {from_path: active_role}, patient: {from_path: selected_patient_name}}}
+          - {op: changed_by, path: audit_count, by: 1}
+          - {op: changed_by, path: final_clearance_count, by: 1}
+          - {op: equals, path: final_clearance_status, value: complete}
+          - {op: equals, path: last_action, value: finalize_clearance}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_director}

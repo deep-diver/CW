@@ -1,0 +1,532 @@
+dsl_version: "3.0.0"
+visibility: private
+tier_weights:
+  smoke: 1
+  core: 2
+  validation: 3
+  service: 4
+  permission: 5
+  persistence: 5
+  support: 5
+  journey: 6
+
+scenarios:
+  - id: private_01_show_all_catalog_order
+    tier: smoke
+    steps:
+      - do: reset_button.click
+      - do: filter_greenfarm_button.click
+      - do: filter_all_button.click
+        expect:
+          - {op: equals, path: current_vendor, value: all}
+      - table: product_grid
+        expect_order: [FCM-LET-01, FCM-BRY-01, FCM-MLK-01, FCM-BRI-01, FCM-SAL-01, FCM-UNI-01, FCM-BKF-01, FCM-WGU-01, FCM-RCE-01, FCM-OIL-01, FCM-KOM-01, FCM-ICE-01]
+        expect_row_count: 12
+
+  - id: private_02_filter_dairypure_two_items
+    tier: smoke
+    steps:
+      - do: reset_button.click
+      - do: filter_dairypure_button.click
+        expect:
+          - {op: equals, path: current_vendor, value: DairyPure}
+      - table: product_grid
+        expect_order: [FCM-MLK-01, FCM-BRI-01]
+        expect_row_count: 2
+        expect_rows:
+          - id: FCM-MLK-01
+            cells:
+              name: A2 Whole Milk
+              price: 5200
+          - id: FCM-BRI-01
+            cells:
+              name: Truffle Brie
+              temp_band: chilled
+
+  - id: private_03_filter_butcherbox_price_order
+    tier: smoke
+    steps:
+      - do: reset_button.click
+      - do: filter_butcherbox_button.click
+      - table: product_grid
+        expect_order: [FCM-BKF-01, FCM-WGU-01]
+        expect_row_count: 2
+
+  - id: private_04_multi_item_derived_counts
+    tier: core
+    steps:
+      - do: reset_button.click
+      - do: add_lettuce_button.click
+      - do: add_oil_button.click
+      - do: add_uni_button.click
+        expect:
+          - {op: equals, path: cart_count, value: 3}
+          - {op: equals, path: cold_chain_count, value: 2}
+          - {op: equals, path: restricted_count, value: 1}
+          - {op: equals, path: cart_subtotal, value: 43000}
+          - {op: equals, path: delivery_fee, value: 1500}
+          - {op: equals, path: packaging_fee, value: 2500}
+          - {op: equals, path: order_total, value: 47900}
+
+  - id: private_05_free_delivery_with_three_cold_items
+    tier: core
+    steps:
+      - do: reset_button.click
+      - do: add_striploin_button.click
+      - do: add_uni_button.click
+      - do: add_salmon_button.click
+        expect:
+          - {op: equals, path: cart_subtotal, value: 76100}
+          - {op: equals, path: cold_chain_count, value: 3}
+          - {op: equals, path: restricted_count, value: 2}
+          - {op: equals, path: delivery_fee, value: 0}
+          - {op: equals, path: packaging_fee, value: 4500}
+          - {op: equals, path: order_total, value: 81500}
+
+  - id: private_06_packaging_fee_tiers
+    tier: core
+    steps:
+      - do: reset_button.click
+      - do: add_milk_button.click
+        expect:
+          - {op: equals, path: cold_chain_count, value: 1}
+          - {op: equals, path: packaging_fee, value: 2500}
+      - do: add_brie_button.click
+        expect:
+          - {op: equals, path: cold_chain_count, value: 2}
+          - {op: equals, path: packaging_fee, value: 2500}
+      - do: add_salmon_button.click
+        expect:
+          - {op: equals, path: cold_chain_count, value: 3}
+          - {op: equals, path: packaging_fee, value: 4500}
+
+  - id: private_07_preparation_updates_striploin
+    tier: core
+    steps:
+      - do: reset_button.click
+      - do: add_striploin_button.click
+      - do: go_basket_button.click
+      - do: prep_slice_striploin_button.click
+        expect:
+          - {op: equals, path: cart_subtotal, value: 34600}
+          - {op: equals, path: order_total, value: 40500}
+          - {op: equals, path: last_action, value: prep_slice}
+
+  - id: private_08_remove_item_updates_counts
+    tier: core
+    steps:
+      - do: reset_button.click
+      - do: add_salmon_button.click
+      - do: add_kombucha_button.click
+      - do: add_rice_button.click
+        expect:
+          - {op: equals, path: cart_count, value: 3}
+          - {op: equals, path: cold_chain_count, value: 2}
+          - {op: equals, path: cart_subtotal, value: 35200}
+      - do: go_basket_button.click
+      - do: remove_rice_button.click
+        expect:
+          - {op: equals, path: cart_count, value: 2}
+          - {op: equals, path: cold_chain_count, value: 2}
+          - {op: equals, path: cart_subtotal, value: 25600}
+          - {op: equals, path: order_total, value: 31500}
+
+  - id: private_09_coupon_cold3000_credit
+    tier: service
+    steps:
+      - do: reset_button.click
+      - do: add_salmon_button.click
+      - do: add_rice_button.click
+      - do: go_checkout_button.click
+      - do: coupon_code_input.fill
+        input: {value: cold3000}
+      - do: apply_coupon_button.click
+        expect:
+          - {op: equals, path: coupon_credit, value: 3000}
+          - {op: equals, path: coupon_status, value: applied}
+          - {op: equals, path: coupon_call_count, value: 1}
+          - {op: equals, path: service_call_count, value: 1}
+
+  - id: private_10_bad_coupon_rejected
+    tier: service
+    steps:
+      - do: reset_button.click
+      - do: add_striploin_button.click
+      - do: go_checkout_button.click
+      - do: coupon_code_input.fill
+        input: {value: badcode}
+      - do: apply_coupon_button.click
+        expect:
+          - {op: equals, path: coupon_credit, value: 0}
+          - {op: equals, path: coupon_status, value: rejected}
+          - {op: equals, path: coupon_call_count, value: 1}
+
+  - id: private_11_double_wallet_redeem
+    tier: service
+    steps:
+      - do: reset_button.click
+      - do: add_striploin_button.click
+      - do: go_checkout_button.click
+      - do: redeem_wallet_button.click
+        expect:
+          - {op: equals, path: wallet_balance, value: 10000}
+          - {op: equals, path: wallet_credit, value: 6000}
+          - {op: equals, path: wallet_call_count, value: 1}
+      - do: redeem_wallet_button.click
+        expect:
+          - {op: equals, path: wallet_balance, value: 4000}
+          - {op: equals, path: wallet_credit, value: 12000}
+          - {op: equals, path: wallet_call_count, value: 2}
+
+  - id: private_12_slot_service_reselection
+    tier: service
+    steps:
+      - do: reset_button.click
+      - do: add_uni_button.click
+      - do: add_milk_button.click
+      - do: go_checkout_button.click
+      - do: slot_early_button.click
+        expect:
+          - {op: equals, path: delivery_slot, value: early}
+          - {op: equals, path: slot_call_count, value: 1}
+      - do: slot_late_button.click
+        expect:
+          - {op: equals, path: delivery_slot, value: late}
+          - {op: equals, path: slot_call_count, value: 2}
+          - {op: equals, path: service_call_count, value: 2}
+
+  - id: private_13_rush_and_substitution_toggles
+    tier: core
+    steps:
+      - do: reset_button.click
+      - do: add_salmon_button.click
+      - do: add_rice_button.click
+      - do: go_checkout_button.click
+      - do: enable_rush_button.click
+        expect:
+          - {op: equals, path: rush_enabled, value: true}
+          - {op: equals, path: rush_surcharge, value: 3000}
+      - do: enable_substitution_button.click
+        expect:
+          - {op: equals, path: substitution_opt_in, value: true}
+          - {op: equals, path: substitution_credit, value: 1000}
+      - do: disable_rush_button.click
+        expect:
+          - {op: equals, path: rush_enabled, value: false}
+          - {op: equals, path: order_total, value: 33300}
+      - do: disable_substitution_button.click
+        expect:
+          - {op: equals, path: substitution_credit, value: 0}
+          - {op: equals, path: order_total, value: 34300}
+
+  - id: private_14_phone_normalizes
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: add_salmon_button.click
+      - do: add_rice_button.click
+      - do: go_checkout_button.click
+      - do: customer_phone_input.fill
+        input: {value: " 010-9090-1111 "}
+        expect:
+          - {op: equals, path: customer_phone, value: "010-9090-1111"}
+
+  - id: private_15_minimum_order_25000_rejected
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: add_salmon_button.click
+      - do: go_checkout_button.click
+      - do: slot_green_button.click
+      - do: customer_name_input.fill
+        input: {value: "Low Basket"}
+      - do: place_order_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: order_placed, value: false}
+          - {op: equals, path: last_action, value: reject_minimum}
+
+  - id: private_16_customer_cannot_pick_order
+    tier: permission
+    steps:
+      - do: reset_button.click
+      - do: add_salmon_button.click
+      - do: add_rice_button.click
+      - do: go_checkout_button.click
+      - do: slot_early_button.click
+      - do: customer_name_input.fill
+        input: {value: "No Staff"}
+      - do: place_order_button.click
+      - do: go_orders_button.click
+      - do: pick_order_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: last_action, value: deny_pick}
+          - {op: equals, path: checklist_count, value: 0}
+
+  - id: private_17_staff_review_manager_approval
+    tier: permission
+    steps:
+      - do: reset_button.click
+      - do: add_striploin_button.click
+      - do: go_checkout_button.click
+      - do: slot_green_button.click
+      - do: customer_name_input.fill
+        input: {value: "Approval User"}
+      - do: place_order_button.click
+      - do: go_orders_button.click
+      - do: role_staff_button.click
+      - do: request_review_button.click
+        expect:
+          - {op: equals, path: review_requested, value: true}
+          - {op: equals, path: review_status, value: pending}
+          - {op: equals, path: compliance_call_count, value: 1}
+      - do: role_manager_button.click
+      - do: approve_review_button.click
+        expect:
+          - {op: equals, path: review_status, value: approved}
+          - {op: equals, path: audit_count, value: 3}
+
+  - id: private_18_customer_cannot_resolve_ticket
+    tier: support
+    steps:
+      - do: reset_button.click
+      - do: add_salmon_button.click
+      - do: add_rice_button.click
+      - do: go_checkout_button.click
+      - do: slot_green_button.click
+      - do: customer_name_input.fill
+        input: {value: "Ticket User"}
+      - do: place_order_button.click
+      - do: go_support_button.click
+      - do: support_issue_input.fill
+        input: {value: " tote seal looked loose "}
+      - do: open_ticket_button.click
+        expect:
+          - {op: equals, path: ticket_count, value: 1}
+          - {op: equals, path: ticket_status, value: open}
+      - do: resolve_ticket_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: last_action, value: deny_resolve_ticket}
+          - {op: equals, path: ticket_status, value: open}
+
+  - id: private_19_staff_resolves_support_ticket
+    tier: support
+    steps:
+      - do: reset_button.click
+      - do: add_salmon_button.click
+      - do: add_rice_button.click
+      - do: go_checkout_button.click
+      - do: slot_late_button.click
+      - do: customer_name_input.fill
+        input: {value: "Resolve User"}
+      - do: place_order_button.click
+      - do: go_support_button.click
+      - do: support_issue_input.fill
+        input: {value: "Missing ice pack"}
+      - do: open_ticket_button.click
+      - do: role_staff_button.click
+      - do: resolve_ticket_button.click
+        expect:
+          - {op: equals, path: ticket_status, value: resolved}
+          - {op: equals, path: audit_count, value: 2}
+          - {op: equals, path: last_action, value: resolve_ticket}
+
+  - id: private_20_reload_preserves_cart_and_slot
+    tier: persistence
+    steps:
+      - do: reset_button.click
+      - do: add_salmon_button.click
+      - do: add_rice_button.click
+      - do: go_checkout_button.click
+      - do: slot_green_button.click
+        expect:
+          - {op: equals, path: slot_status, value: confirmed}
+      - browser: reload
+        expect_page: checkout
+        expect:
+          - {op: unchanged, path: cart_items}
+          - {op: unchanged, path: cart_subtotal}
+          - {op: unchanged, path: delivery_slot}
+          - {op: unchanged, path: slot_status}
+
+  - id: private_21_role_persists_across_reload
+    tier: persistence
+    steps:
+      - do: reset_button.click
+      - do: role_manager_button.click
+        expect:
+          - {op: equals, path: active_role, value: manager}
+      - browser: reload
+        expect:
+          - {op: equals, path: active_role, value: manager}
+
+  - id: private_22_browser_back_restores_market
+    tier: persistence
+    steps:
+      - do: reset_button.click
+      - do: add_oil_button.click
+      - do: go_basket_button.click
+      - browser: back
+        expect_page: market
+        expect:
+          - {op: equals, path: current_page, value: market}
+          - {op: unchanged, path: cart_count}
+
+  - id: private_23_full_cold_chain_fulfillment_journey
+    tier: journey
+    steps:
+      - do: reset_button.click
+      - do: filter_oceancatch_button.click
+      - do: add_uni_button.click
+      - do: add_salmon_button.click
+      - do: filter_butcherbox_button.click
+      - do: add_striploin_button.click
+        expect:
+          - {op: equals, path: cart_count, value: 3}
+          - {op: equals, path: restricted_count, value: 2}
+          - {op: equals, path: cold_chain_count, value: 3}
+      - do: go_basket_button.click
+      - do: prep_sashimi_salmon_button.click
+      - do: prep_slice_striploin_button.click
+        expect:
+          - {op: equals, path: cart_subtotal, value: 80400}
+          - {op: equals, path: delivery_fee, value: 0}
+      - do: go_checkout_button.click
+      - do: coupon_code_input.fill
+        input: {value: vip7000}
+      - do: apply_coupon_button.click
+      - do: redeem_wallet_button.click
+      - do: enable_rush_button.click
+      - do: enable_substitution_button.click
+      - do: slot_early_button.click
+      - do: customer_name_input.fill
+        input: {value: "Cold Chain Prime"}
+      - do: customer_phone_input.fill
+        input: {value: "010-5555-7777"}
+      - do: place_order_button.click
+        expect:
+          - {op: equals, path: order_placed, value: true}
+          - {op: equals, path: audit_count, value: 1}
+      - do: go_orders_button.click
+      - do: role_staff_button.click
+      - do: request_review_button.click
+        expect:
+          - {op: equals, path: review_status, value: pending}
+      - do: role_manager_button.click
+      - do: approve_review_button.click
+        expect:
+          - {op: equals, path: review_status, value: approved}
+      - do: role_staff_button.click
+      - do: pick_order_button.click
+      - do: seal_cold_chain_button.click
+      - do: quality_check_button.click
+      - do: dispatch_order_button.click
+        expect:
+          - {op: equals, path: checklist_count, value: 4}
+          - {op: equals, path: fulfillment_dispatched, value: true}
+          - {op: equals, path: last_action, value: dispatch_order}
+
+  - id: private_24_reset_clears_operational_state
+    tier: journey
+    steps:
+      - do: reset_button.click
+      - do: add_striploin_button.click
+      - do: go_checkout_button.click
+      - do: coupon_code_input.fill
+        input: {value: cold3000}
+      - do: apply_coupon_button.click
+      - do: enable_rush_button.click
+      - do: slot_green_button.click
+      - do: customer_name_input.fill
+        input: {value: "Reset Target"}
+      - do: place_order_button.click
+      - do: go_orders_button.click
+      - do: role_staff_button.click
+      - do: request_review_button.click
+      - do: reset_button.click
+        expect:
+          - {op: equals, path: cart_items, value: []}
+          - {op: equals, path: cart_count, value: 0}
+          - {op: equals, path: cart_subtotal, value: 0}
+          - {op: equals, path: coupon_code, value: ""}
+          - {op: equals, path: coupon_credit, value: 0}
+          - {op: equals, path: rush_enabled, value: false}
+          - {op: equals, path: review_requested, value: false}
+          - {op: equals, path: review_status, value: idle}
+          - {op: equals, path: order_placed, value: false}
+          - {op: equals, path: order_history, value: []}
+          - {op: equals, path: order_audit, value: []}
+          - {op: equals, path: audit_count, value: 0}
+
+  - id: private_25_tier_d_manifest_seal_full_cold_chain_journey
+    tier: journey
+    steps:
+      - do: reset_button.click
+      - do: filter_oceancatch_button.click
+      - do: add_uni_button.click
+      - do: add_salmon_button.click
+      - do: filter_butcherbox_button.click
+      - do: add_striploin_button.click
+      - do: go_basket_button.click
+      - do: prep_sashimi_salmon_button.click
+      - do: prep_slice_striploin_button.click
+      - do: go_checkout_button.click
+      - do: coupon_code_input.fill
+        input: {value: vip7000}
+      - do: apply_coupon_button.click
+      - do: redeem_wallet_button.click
+      - do: enable_rush_button.click
+      - do: enable_substitution_button.click
+      - do: slot_early_button.click
+      - do: customer_name_input.fill
+        input: {value: "Cold Chain Prime"}
+      - do: customer_phone_input.fill
+        input: {value: "010-5555-7777"}
+      - do: place_order_button.click
+      - do: go_orders_button.click
+      - do: role_staff_button.click
+      - do: request_review_button.click
+      - do: role_manager_button.click
+      - do: approve_review_button.click
+      - do: role_staff_button.click
+      - do: pick_order_button.click
+      - do: seal_cold_chain_button.click
+      - do: quality_check_button.click
+      - do: dispatch_order_button.click
+      - do: seal_dispatch_manifest_button.click
+        expect:
+          - {op: equals, path: dispatch_manifest_status, value: sealed}
+          - {op: equals, path: dispatch_manifest_score, value: 100}
+          - {op: equals, path: open_manifest_blockers, value: 0}
+          - {op: equals, path: dispatch_manifest_count, value: 1}
+          - {op: equals, path: audit_count, value: 4}
+      - table: dispatch_manifest_grid
+        expect_order: [M-ORDER, M-REVIEW, M-PICK, M-COLD, M-QUALITY, M-DISPATCH]
+        expect_row_count: 6
+        expect_rows:
+          - id: M-ORDER
+            cells: {status: cleared}
+          - id: M-DISPATCH
+            cells: {status: cleared}
+
+  - id: private_26_manifest_seal_blocks_before_dispatch
+    tier: permission
+    steps:
+      - do: reset_button.click
+      - do: add_striploin_button.click
+      - do: go_checkout_button.click
+      - do: slot_late_button.click
+      - do: customer_name_input.fill
+        input: {value: "Blocked Manifest"}
+      - do: place_order_button.click
+      - do: go_orders_button.click
+      - do: role_staff_button.click
+      - do: seal_dispatch_manifest_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: dispatch_manifest_status, value: blocked}
+          - {op: equals, path: dispatch_manifest_score, value: 0}
+          - {op: equals, path: open_manifest_blockers, value: 6}
+          - {op: equals, path: fulfillment_dispatched, value: false}

@@ -1,0 +1,35 @@
+{
+  "batch_id": "20260512T012559Z",
+  "generated": 20,
+  "generation_total": 30,
+  "evaluated": 20,
+  "evaluation_total": 20,
+  "models": [
+    {
+      "key": "claude_haiku45",
+      "model_tier": "M",
+      "slug": "claude_haiku45",
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "n": 10,
+      "mean_ratio": 0.043243243243243246,
+      "std_ratio": 0.08122554142368374,
+      "mean_stepwise": 0.1977958152958153,
+      "std_stepwise": 0.2425107053683287,
+      "full_pass_count": 0
+    },
+    {
+      "key": "gpt54_nano",
+      "model_tier": "M",
+      "slug": "gpt54_nano",
+      "provider": "openai",
+      "model": "gpt-5.4-nano",
+      "n": 10,
+      "mean_ratio": 0.0,
+      "std_ratio": 0.0,
+      "mean_stepwise": 0.05225897975897976,
+      "std_stepwise": 0.04497736851029313,
+      "full_pass_count": 0
+    }
+  ]
+}

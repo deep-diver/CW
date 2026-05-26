@@ -1,0 +1,129 @@
+{
+  "batch_id": "rerun_missing_nongemini_20260525T171016Z",
+  "created_at": "2026-05-25T23:39:37+00:00",
+  "target": "clinic_shift_command_tier_d",
+  "evaluated": 60,
+  "generated": 70,
+  "generation_total": 70,
+  "model_summaries": [
+    {
+      "n": 10,
+      "formal_mean": 0.0536231884057971,
+      "formal_std": 0.11298451008427075,
+      "stepwise_mean": 0.17780846981574147,
+      "stepwise_std": 0.1720856235627216,
+      "contract_mean": 0.5672727272727273,
+      "contract_std": 0.46943687813464413,
+      "full_pass_count": 0,
+      "model_tier": "M",
+      "slug": "claude_haiku45",
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5"
+    },
+    {
+      "n": 10,
+      "formal_mean": 0.8927536231884058,
+      "formal_std": 0.24243315304443971,
+      "stepwise_mean": 0.9587376642043864,
+      "stepwise_std": 0.11816972411086885,
+      "contract_mean": 0.9236363636363636,
+      "contract_std": 0.23516401091447806,
+      "full_pass_count": 0,
+      "model_tier": "F",
+      "slug": "claude_opus46",
+      "provider": "anthropic",
+      "model": "claude-opus-4-6"
+    },
+    {
+      "n": 10,
+      "formal_mean": 0.4468599033816425,
+      "formal_std": 0.339688688770298,
+      "stepwise_mean": 0.6568908832521669,
+      "stepwise_std": 0.3288752169332437,
+      "contract_mean": 0.9254545454545454,
+      "contract_std": 0.2357334255761883,
+      "full_pass_count": 0,
+      "model_tier": "T",
+      "slug": "claude_sonnet46",
+      "provider": "anthropic",
+      "model": "claude-sonnet-4-6"
+    },
+    {
+      "n": 10,
+      "formal_mean": 0.9676328502415459,
+      "formal_std": 0.03601113644312911,
+      "stepwise_mean": 0.9934398530823315,
+      "stepwise_std": 0.015328561930239102,
+      "contract_mean": 0.9981818181818182,
+      "contract_std": 0.005749595745760692,
+      "full_pass_count": 3,
+      "model_tier": "F",
+      "slug": "gpt54",
+      "provider": "openai",
+      "model": "gpt-5.4"
+    },
+    {
+      "n": 10,
+      "formal_mean": 0.0,
+      "formal_std": 0.0,
+      "stepwise_mean": 0.08107791558708088,
+      "stepwise_std": 0.07887935599855685,
+      "contract_mean": 0.6454545454545455,
+      "contract_std": 0.47615308786712646,
+      "full_pass_count": 0,
+      "model_tier": "T",
+      "slug": "gpt54_mini",
+      "provider": "openai",
+      "model": "gpt-5.4-mini"
+    },
+    {
+      "n": 10,
+      "formal_mean": 0.006763285024154589,
+      "formal_std": 0.01425825676082361,
+      "stepwise_mean": 0.16666891601219735,
+      "stepwise_std": 0.09903037719245154,
+      "contract_mean": 0.7163636363636363,
+      "contract_std": 0.45726057778506,
+      "full_pass_count": 0,
+      "model_tier": "M",
+      "slug": "gpt54_nano",
+      "provider": "openai",
+      "model": "gpt-5.4-nano"
+    }
+  ],
+  "tier_summaries": [
+    {
+      "n": 20,
+      "formal_mean": 0.9301932367149759,
+      "formal_std": 0.17300292270231615,
+      "stepwise_mean": 0.976088758643359,
+      "stepwise_std": 0.08392121810935325,
+      "contract_mean": 0.9609090909090909,
+      "contract_std": 0.1663543543309633,
+      "full_pass_count": 3,
+      "model_tier": "F"
+    },
+    {
+      "n": 20,
+      "formal_mean": 0.030193236714975844,
+      "formal_std": 0.08198152210559292,
+      "stepwise_mean": 0.1722386929139694,
+      "stepwise_std": 0.13676809902154197,
+      "contract_mean": 0.6418181818181818,
+      "contract_std": 0.4574681158179176,
+      "full_pass_count": 0,
+      "model_tier": "M"
+    },
+    {
+      "n": 20,
+      "formal_mean": 0.22342995169082125,
+      "formal_std": 0.32742331474694103,
+      "stepwise_mean": 0.3689843994196239,
+      "stepwise_std": 0.3760760434509771,
+      "contract_mean": 0.7854545454545454,
+      "contract_std": 0.39287255863056136,
+      "full_pass_count": 0,
+      "model_tier": "T"
+    }
+  ]
+}

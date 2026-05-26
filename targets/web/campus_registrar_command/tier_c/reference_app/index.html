@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Campus Registrar Command Tier C</title>
+  <style>
+    :root{--bg:#efe7d5;--paper:#fffaf0;--ink:#18221f;--muted:#67706c;--line:#d2c3a6;--navy:#172b4d;--green:#0f5e4b;--ox:#9a332f;--brass:#b4812b;--blue:#315f7a;--soft:#f4ecd9}
+    *{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#f5eddd,#e6dac2);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:0}button,input{font:inherit}button{border:1px solid var(--line);border-radius:7px;background:var(--paper);color:var(--ink);padding:8px 10px;cursor:pointer}button.primary{background:var(--green);border-color:var(--green);color:#fff;font-weight:900}button.navy{background:var(--navy);border-color:var(--navy);color:#fff}button.ox{background:var(--ox);border-color:var(--ox);color:#fff;font-weight:900}button.gold{background:#fff2cc;border-color:#d2a653;color:#6c4707;font-weight:900}input{width:100%;border:1px solid var(--line);border-radius:7px;padding:9px;background:#fff;color:var(--ink)}h1,h2,h3,p{margin-top:0}h1{font-size:22px;margin-bottom:3px}h2{font-size:21px}h3{font-size:14px}small,label{color:var(--muted)}label{display:grid;gap:6px;font-size:11px;font-weight:900;text-transform:uppercase}
+    .shell{min-height:100vh;display:grid;grid-template-rows:auto 1fr}.top{display:grid;grid-template-columns:390px 1fr auto;gap:14px;align-items:center;padding:14px 22px;border-bottom:1px solid var(--line);background:rgba(255,250,240,.95);backdrop-filter:blur(14px);position:sticky;top:0;z-index:10}.brand{display:flex;gap:12px;align-items:center}.seal{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle,#fff 0 37%,var(--brass) 38% 61%,var(--green) 62%);color:#fff;font-weight:1000}.nav,.roles,.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.roles span{font-size:11px;color:var(--muted);font-weight:900;text-transform:uppercase}
+    main{display:grid;grid-template-columns:minmax(780px,1.45fr) minmax(410px,.7fr);gap:16px;padding:16px 22px}.metrics{grid-column:1/-1;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:9px}.metric,.panel,.side-card{border:1px solid var(--line);border-radius:8px;background:rgba(255,250,240,.96);box-shadow:0 18px 45px rgba(66,51,26,.08);padding:12px}.metric span{display:block;font-size:10px;text-transform:uppercase;font-weight:900;color:var(--muted)}.metric b{font-size:20px}.metric.ox{background:#fff0ea}.metric.green{background:#e5f2ec}.metric.gold{background:#fff3cf}.metric.navy{background:#edf3fa}.page{display:none}.page.active{display:grid;gap:12px}.stack,.side{display:grid;align-content:start;gap:12px}.page-title{display:flex;justify-content:space-between;gap:12px;align-items:start}.grid-two{display:grid;grid-template-columns:1fr 1fr;gap:12px}.grid-three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+    table{width:100%;border-collapse:collapse;font-size:12px}th,td{text-align:left;border-bottom:1px solid var(--line);padding:7px;vertical-align:top}th{font-size:10px;text-transform:uppercase;color:var(--muted);letter-spacing:.02em}.queue tbody tr:nth-child(odd),.soft{background:#fbf5e7}.empty{color:var(--muted)}
+    .risk-map{min-height:290px;border:1px solid var(--line);border-radius:8px;background:linear-gradient(90deg,rgba(23,43,77,.08) 1px,transparent 1px),linear-gradient(rgba(23,43,77,.08) 1px,transparent 1px),#fffaf0;background-size:76px 46px;position:relative;overflow:hidden}.risk-map:before{content:"";position:absolute;inset:32px;border:1px dashed #bea979;border-radius:50%}.risk-map:after{content:"";position:absolute;inset:78px;border:1px dashed #d1bf93;border-radius:50%}.dot{position:absolute;border-radius:999px;padding:8px 10px;color:#fff;font-weight:900;font-size:12px;box-shadow:0 14px 30px rgba(0,0,0,.13)}.dot.red{left:52%;top:26%;background:var(--ox)}.dot.amber{left:22%;top:56%;background:var(--brass)}.dot.green{left:58%;top:70%;background:var(--green)}
+    .audit-graph{min-height:278px;border:1px solid var(--line);border-radius:8px;background:linear-gradient(90deg,#eadcc0 1px,transparent 1px),linear-gradient(#eadcc0 1px,transparent 1px),#fffaf0;background-size:92px 48px;position:relative;overflow:hidden}.node{position:absolute;border-radius:7px;border:1px solid rgba(0,0,0,.12);padding:9px;min-width:150px;color:#fff;font-weight:900;font-size:12px;box-shadow:0 16px 35px rgba(23,34,31,.14)}.node.n1{left:34px;top:44px;background:var(--ox)}.node.n2{left:240px;top:38px;background:var(--brass)}.node.n3{left:128px;top:150px;background:var(--navy)}.node.n4{left:360px;top:168px;background:var(--green)}
+    .pill{display:inline-flex;align-items:center;border-radius:999px;padding:3px 8px;background:#efe7d5;color:var(--navy);font-size:11px;font-weight:900;white-space:nowrap}.pill.red,.pill.missing,.pill.short,.pill.conflict,.pill.blocked,.pill.stale,.pill.mismatch,.pill.open{background:#ffebe5;color:var(--ox)}.pill.amber,.pill.review,.pill.draft,.pill.uploaded,.pill.staged,.pill.idle,.pill.queued{background:#fff2cc;color:#74500a}.pill.green,.pill.clear,.pill.met,.pill.accepted,.pill.planned,.pill.resolved,.pill.locked,.pill.cleared,.pill.approved,.pill.sealed,.pill.published,.pill.match,.pill.zero-balance,.pill.satisfied,.pill.attached{background:#e5f2ec;color:var(--green)}
+    .side-card.dossier{border-left:5px solid var(--green)}.summary-line{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--line)}.gate-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.gate{border:1px solid var(--line);border-radius:7px;background:#fbf5e7;padding:9px;min-height:66px}.gate span{display:block;font-size:10px;text-transform:uppercase;color:var(--muted);font-weight:900}.gate b{display:block;margin-top:4px}.score-ring{height:150px;border-radius:8px;border:1px solid var(--line);display:grid;place-items:center;background:conic-gradient(var(--green) calc(var(--score)*1%),#eee1c7 0)}.score-ring strong{width:94px;height:94px;border-radius:50%;background:var(--paper);display:grid;place-items:center;font-size:24px}
+    @media(max-width:1180px){.top{grid-template-columns:1fr}main{grid-template-columns:1fr}.metrics,.grid-two,.grid-three{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<div class="shell">
+  <header class="top">
+    <div class="brand">
+      <div class="seal">UC</div>
+      <div>
+        <h1>Graduation Clearance War Room</h1>
+        <small>Catalog lock, transfer equivalencies, worksheet reconciliation, and registrar seal</small>
+      </div>
+    </div>
+    <nav class="nav">
+      <button data-testid="go-command">Command</button>
+      <button data-testid="go-audit">Audit</button>
+      <button data-testid="go-articulation">Articulation</button>
+      <button data-testid="go-reconcile">Reconcile</button>
+      <button data-testid="go-clearance">Clearance</button>
+      <button data-testid="reset" class="gold">Reset</button>
+    </nav>
+    <div class="roles">
+      <span id="roleBadge">Role analyst</span>
+      <button data-testid="role-analyst">Analyst</button>
+      <button data-testid="role-advisor">Advisor</button>
+      <button data-testid="role-bursar">Bursar</button>
+      <button data-testid="role-registrar">Registrar</button>
+      <button data-testid="role-dean">Dean</button>
+    </div>
+  </header>
+  <main>
+    <section class="metrics">
+      <div class="metric ox"><span>Candidate</span><b id="metricCandidate">none</b></div>
+      <div class="metric navy"><span>Catalog</span><b id="metricCatalog">draft</b></div>
+      <div class="metric gold"><span>Gaps</span><b id="metricGaps">0</b></div>
+      <div class="metric"><span>Collisions</span><b id="metricCollisions">0</b></div>
+      <div class="metric green"><span>Equiv</span><b id="metricEquiv">idle</b></div>
+      <div class="metric"><span>Mismatch</span><b id="metricMismatch">0</b></div>
+      <div class="metric"><span>Blockers</span><b id="metricBlockers">8</b></div>
+      <div class="metric green"><span>Ready</span><b id="metricReady">0</b></div>
+    </section>
+    <section class="stack">
+      <div id="command" class="page">
+        <div class="page-title">
+          <div><h2>Candidate Clearance Command</h2><small>Risk queue and clearance posture for May/August graduation candidates.</small></div>
+          <button data-testid="filter-clearance-risk" class="ox">Clearance Risk</button>
+        </div>
+        <div class="grid-two">
+          <div class="risk-map">
+            <div class="dot red">Nova Chen<br>Catalog + SAP</div>
+            <div class="dot amber">Orion Patel<br>Studio waiver</div>
+            <div class="dot green">Mira Soto<br>Ready lane</div>
+          </div>
+          <div class="panel">
+            <h3>Candidate Queue</h3>
+            <table class="queue" data-testid="candidate-queue">
+              <thead><tr><th>Name</th><th>Program</th><th>Cohort</th><th>Risk</th><th>GPA</th><th>Aid</th><th></th></tr></thead>
+              <tbody id="candidateRows"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div id="audit" class="page">
+        <div class="page-title">
+          <div><h2>Audit Graph and Catalog Lock</h2><small>Requirement graph, collision matrix, and catalog-version authority.</small></div>
+          <div class="toolbar">
+            <button data-testid="run-degree-audit" class="primary">Run Audit</button>
+            <button data-testid="plan-completion" class="navy">Plan Completion</button>
+            <button data-testid="resolve-schedule" class="gold">Resolve Schedule</button>
+          </div>
+        </div>
+        <div class="grid-two">
+          <div class="audit-graph">
+            <div class="node n1">Capstone<br>missing</div>
+            <div class="node n2">Residency<br>24 / 30</div>
+            <div class="node n3">Ethics<br>transfer needed</div>
+            <div class="node n4">GPA<br>met</div>
+          </div>
+          <div class="panel">
+            <h3>Catalog Control</h3>
+            <label>Catalog version<input data-testid="catalog-version" id="catalogInput" placeholder="CAT-2026A"></label>
+            <div class="toolbar" style="margin-top:10px"><button data-testid="lock-catalog" class="primary">Lock Catalog</button></div>
+            <div id="catalogPanel"></div>
+          </div>
+        </div>
+        <div class="grid-two">
+          <div class="panel">
+            <h3>Requirement Grid</h3>
+            <table data-testid="requirement-grid">
+              <thead><tr><th>Area</th><th>Needed</th><th>Earned</th><th>Source</th><th>Status</th></tr></thead>
+              <tbody id="requirementRows"></tbody>
+            </table>
+          </div>
+          <div class="panel">
+            <h3>Completion Schedule</h3>
+            <table data-testid="schedule-grid">
+              <thead><tr><th>Code</th><th>Title</th><th>Slot</th><th>Credits</th><th>Status</th></tr></thead>
+              <tbody id="scheduleRows"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div id="articulation" class="page">
+        <div class="page-title">
+          <div><h2>Transfer Articulation and Exception Packet</h2><small>Typed transfer CSV, staged equivalencies, residency credits, and advisor packet.</small></div>
+          <div class="toolbar">
+            <button data-testid="stage-equivalencies" class="navy">Stage Equivalencies</button>
+            <button data-testid="finalize-equivalencies" class="primary">Finalize Equivalencies</button>
+            <button data-testid="assemble-exception-packet" class="gold">Assemble Packet</button>
+          </div>
+        </div>
+        <div class="grid-two">
+          <div class="panel">
+            <h3>Transfer Intake</h3>
+            <label>Transfer CSV<input data-testid="transfer-upload" id="transferUpload" type="file" accept=".csv,text/csv"></label>
+            <table data-testid="transfer-grid">
+              <thead><tr><th>Course</th><th>Credits</th><th>Residency</th><th>Status</th></tr></thead>
+              <tbody id="transferRows"></tbody>
+            </table>
+          </div>
+          <div class="panel">
+            <h3>Equivalency Staging</h3>
+            <table data-testid="equivalency-grid">
+              <thead><tr><th>Requirement</th><th>Source</th><th>Credits</th><th>Residency</th><th>Status</th></tr></thead>
+              <tbody id="equivalencyRows"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>Advisor Exception Packet</h3>
+          <table data-testid="exception-grid">
+            <thead><tr><th>Type</th><th>Owner</th><th>Evidence</th><th>Status</th></tr></thead>
+            <tbody id="exceptionRows"></tbody>
+          </table>
+        </div>
+      </div>
+      <div id="reconcile" class="page">
+        <div class="page-title">
+          <div><h2>Worksheet Reconciliation</h2><small>Bursar clearance and graduation worksheet mismatch lock.</small></div>
+          <div class="toolbar">
+            <button data-testid="run-bursar-clearance" class="gold">Run Bursar Clearance</button>
+            <button data-testid="lock-reconciliation" class="primary">Lock Reconciliation</button>
+          </div>
+        </div>
+        <div class="grid-two">
+          <div class="panel">
+            <h3>Finance Rail</h3>
+            <div id="financePanel"></div>
+          </div>
+          <div class="panel">
+            <h3>Worksheet Upload</h3>
+            <label>Reconciliation CSV<input data-testid="reconciliation-upload" id="reconciliationUpload" type="file" accept=".csv,text/csv"></label>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>Mismatch Board</h3>
+          <table data-testid="reconciliation-grid">
+            <thead><tr><th>Requirement</th><th>Manifest</th><th>Registrar</th><th>Status</th></tr></thead>
+            <tbody id="reconciliationRows"></tbody>
+          </table>
+        </div>
+      </div>
+      <div id="clearance" class="page">
+        <div class="page-title">
+          <div><h2>Final Clearance Rail</h2><small>Dean vote, registrar seal, release manifest, blockers, and audit trail.</small></div>
+          <div class="toolbar">
+            <button data-testid="dean-vote" class="navy">Dean Vote</button>
+            <button data-testid="registrar-seal" class="primary">Registrar Seal</button>
+            <button data-testid="publish-release" class="ox">Publish Release</button>
+          </div>
+        </div>
+        <div class="grid-two">
+          <div class="panel">
+            <h3>Blocker Ledger</h3>
+            <table data-testid="blocker-grid">
+              <thead><tr><th>Label</th><th>Status</th></tr></thead>
+              <tbody id="blockerRows"></tbody>
+            </table>
+          </div>
+          <div class="panel">
+            <h3>Release Manifest</h3>
+            <table data-testid="release-grid">
+              <thead><tr><th>Candidate</th><th>Channel</th><th>Batch</th><th>Status</th></tr></thead>
+              <tbody id="releaseRows"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>Audit Trail</h3>
+          <table data-testid="audit-grid">
+            <thead><tr><th>Event</th><th>Role</th><th>Status</th></tr></thead>
+            <tbody id="auditRows"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+    <aside class="side">
+      <div class="side-card dossier"><h2>Selected Dossier</h2><div id="dossier"></div></div>
+      <div class="side-card">
+        <h3>Readiness Gauge</h3>
+        <div class="score-ring" id="scoreRing" style="--score:0"><strong id="scoreText">0</strong></div>
+      </div>
+      <div class="side-card"><h3>Clearance Gates</h3><div class="gate-grid" id="gates"></div></div>
+      <div class="side-card"><h3>State Ledger</h3><div id="ledger"></div></div>
+    </aside>
+  </main>
+</div>
+<script>
+const KEY='campus-tier-c-war-room-v2';
+const candidates=[
+  {id:'CAND-NOVA',name:'Nova Chen',program:'Data Science BS',cohort:'May 2026',risk:'red',gpa:'3.41',aid:'sap_hold'},
+  {id:'CAND-ORION',name:'Orion Patel',program:'Architecture BA',cohort:'May 2026',risk:'amber',gpa:'3.18',aid:'clear'},
+  {id:'CAND-LENA',name:'Lena Brooks',program:'Biology BS',cohort:'Aug 2026',risk:'amber',gpa:'3.66',aid:'review'},
+  {id:'CAND-MIRA',name:'Mira Soto',program:'History BA',cohort:'May 2026',risk:'green',gpa:'3.82',aid:'clear'}
+];
+const baseBlockers=[
+  {id:'BLK-CATALOG',label:'Catalog version locked',status:'open'},
+  {id:'BLK-SCHEDULE',label:'Collision-free completion schedule',status:'open'},
+  {id:'BLK-EQUIV',label:'Transfer equivalencies finalized',status:'open'},
+  {id:'BLK-EXCEPTION',label:'Advisor exception packet assembled',status:'open'},
+  {id:'BLK-FINANCE',label:'Aid and balance cleared',status:'open'},
+  {id:'BLK-RECON',label:'Worksheet reconciliation locked',status:'open'},
+  {id:'BLK-DEAN',label:'Dean vote recorded',status:'open'},
+  {id:'BLK-SEAL',label:'Registrar seal applied',status:'open'}
+];
+const initial={current_page:'command',active_role:'analyst',candidates,visible_candidates:candidates,current_filter:'all',selected_candidate_id:'',selected_candidate_name:'',selected_program:'',selected_cohort:'',selected_risk:'',selected_gpa:'',selected_aid_status:'',selected_catalog_version:'CAT-2026A',catalog_version_input:'',catalog_lock_status:'draft',requirement_rows:[],requirement_count:0,deficiency_count:0,audit_status:'idle',schedule_rows:[],schedule_count:0,schedule_status:'idle',schedule_credit_total:0,collision_count:0,transfer_rows:[],transfer_count:0,transfer_credit_total:0,last_transfer_file:'',equivalency_rows:[],equivalency_count:0,equivalency_status:'idle',transfer_applied_credits:0,residency_credit_total:0,exception_rows:[],exception_count:0,exception_packet_status:'idle',finance_status:'idle',sap_status:'idle',balance_status:'idle',finance_trace_id:'',service_call_count:0,bursar_call_count:0,reconciliation_rows:[],reconciliation_count:0,mismatch_count:0,reconciliation_status:'idle',dean_vote_status:'idle',dean_packet_hash:'',registrar_seal_status:'idle',seal_manifest_hash:'',release_status:'idle',release_hold_reason:'',release_rows:[],release_count:0,blocker_rows:baseBlockers,open_blockers:8,readiness_score:0,audit_log:[],audit_count:0,hold_notice_count:0,denied_count:0,validation_errors:{},last_action:'ready',__services:{calls:[]}};
+let S;
+function clone(value){return JSON.parse(JSON.stringify(value))}
+function loadState(){try{S={...clone(initial),...JSON.parse(localStorage.getItem(KEY)||'{}')}}catch{S=clone(initial)}}
+function saveState(){localStorage.setItem(KEY,JSON.stringify(S))}
+function normalizeToken(value){return String(value||'').trim().toUpperCase()}
+function recalc(){S.requirement_count=S.requirement_rows.length;S.schedule_count=S.schedule_rows.length;S.transfer_count=S.transfer_rows.length;S.transfer_credit_total=S.transfer_rows.reduce((sum,row)=>sum+(Number(row.credits)||0),0);S.equivalency_count=S.equivalency_rows.length;S.exception_count=S.exception_rows.length;S.reconciliation_count=S.reconciliation_rows.length;S.mismatch_count=S.reconciliation_rows.filter(row=>row.status==='mismatch').length;S.release_count=S.release_rows.length;S.audit_count=S.audit_log.length;S.open_blockers=S.blocker_rows.filter(row=>row.status==='open').length}
+function resetState(){localStorage.removeItem(KEY);S=clone(initial);S.last_action='reset';location.hash='#/command';render()}
+function setPage(page){if(!['command','audit','articulation','reconcile','clearance'].includes(page))return;S.current_page=page;S.last_action='nav_'+page;location.hash='#/'+page;render()}
+function syncPage(){const page=location.hash.replace('#/','')||'command';if(['command','audit','articulation','reconcile','clearance'].includes(page)){S.current_page=page;render()}}
+function setRole(role){S.active_role=role;S.last_action='role_'+role;render()}
+function deny(action){S.denied_count+=1;S.last_action=action;render()}
+function clearError(key){if(S.validation_errors&&Object.prototype.hasOwnProperty.call(S.validation_errors,key)){delete S.validation_errors[key]}}
+function filterRisk(){S.current_filter='clearance_risk';S.visible_candidates=[candidates[0],candidates[1],candidates[2]];S.last_action='filter_clearance_risk';render()}
+function selectCandidate(id){const c=candidates.find(row=>row.id===id);if(!c)return;S.selected_candidate_id=c.id;S.selected_candidate_name=c.name;S.selected_program=c.program;S.selected_cohort=c.cohort;S.selected_risk=c.risk;S.selected_gpa=c.gpa;S.selected_aid_status=c.aid;S.selected_catalog_version='CAT-2026A';S.current_page='audit';S.last_action='select_candidate';location.hash='#/audit';render()}
+function runAudit(){if(!S.selected_candidate_id)return;S.audit_status='gaps_found';S.requirement_rows=[{id:'REQ-CAPSTONE',area:'Capstone',needed:4,earned:0,source:'none',status:'missing'},{id:'REQ-RESIDENCY',area:'Residency',needed:30,earned:24,source:'institutional',status:'short'},{id:'REQ-ETHICS',area:'Ethics',needed:3,earned:0,source:'none',status:'missing'},{id:'REQ-GPA',area:'Program GPA',needed:3.0,earned:3.41,source:'transcript',status:'met'}];S.deficiency_count=3;S.readiness_score=18;S.last_action='run_degree_audit';render()}
+function planCompletion(){S.schedule_rows=[{id:'SCH-DS498',code:'DS 498',title:'Applied ML Capstone',slot:'MW 09:00',credits:4,status:'conflict'},{id:'SCH-STAT421',code:'STAT 421',title:'Model Risk Lab',slot:'MW 09:00',credits:3,status:'conflict'},{id:'SCH-ETH310',code:'ETH 310',title:'Data Ethics',slot:'TR 13:00',credits:3,status:'planned'},{id:'SCH-RES299',code:'RES 299',title:'Residency Colloquium',slot:'F 10:00',credits:3,status:'planned'}];S.schedule_credit_total=13;S.schedule_status='conflict';S.collision_count=2;S.last_action='plan_completion';render()}
+function resolveSchedule(){S.schedule_rows=[{id:'SCH-DS498',code:'DS 498',title:'Applied ML Capstone',slot:'MW 09:00',credits:4,status:'planned'},{id:'SCH-STAT421',code:'STAT 421',title:'Model Risk Lab',slot:'TR 15:00',credits:3,status:'planned'},{id:'SCH-ETH310',code:'ETH 310',title:'Data Ethics',slot:'TR 13:00',credits:3,status:'planned'},{id:'SCH-RES299',code:'RES 299',title:'Residency Colloquium',slot:'F 10:00',credits:3,status:'planned'}];S.schedule_credit_total=13;S.schedule_status='resolved';S.collision_count=0;S.last_action='resolve_schedule';render()}
+function editCatalog(value){S.catalog_version_input=normalizeToken(value);S.last_action='edit_catalog_version';render()}
+function lockCatalog(){if(S.active_role!=='registrar'){deny('unauthorized_registrar');return}if(!S.catalog_version_input)return;if(S.catalog_version_input!=='CAT-2026A'){S.catalog_lock_status='stale';S.validation_errors={...S.validation_errors,catalog:'Catalog version mismatch'};S.last_action='catalog_mismatch';render();return}S.catalog_lock_status='locked';S.selected_catalog_version='CAT-2026A';clearError('catalog');S.last_action='lock_catalog';render()}
+function parseCsv(text,schema){const lines=text.trim().split(/\r?\n/).filter(Boolean);if(lines.length<2)return[];const headers=lines[0].split(',').map(h=>h.trim());return lines.slice(1).map(line=>{const values=line.split(',').map(v=>v.trim());const row={};headers.forEach((h,i)=>{let value=values[i]||'';if(schema&&schema[h]==='number')value=Number(value)||0;row[h]=value});return row})}
+async function uploadTransfer(event){const file=event.target.files&&event.target.files[0];if(!file)return;S.transfer_rows=parseCsv(await file.text(),{credits:'number',residency:'number'});S.last_transfer_file=file.name;S.equivalency_status='idle';S.equivalency_rows=[];S.last_action='upload_transfer';render()}
+function stageEquivalencies(){if(S.active_role!=='advisor'){deny('unauthorized_advisor');return}if(S.transfer_count<1)return;S.equivalency_rows=[{id:'EQ-CAPSTONE',requirement:'REQ-CAPSTONE',source_course:'DSX 498',credits:4,residency_credits:4,status:'staged'},{id:'EQ-ETHICS',requirement:'REQ-ETHICS',source_course:'PHIL 340',credits:3,residency_credits:0,status:'staged'},{id:'EQ-RESIDENCY',requirement:'REQ-RESIDENCY',source_course:'RES 200',credits:2,residency_credits:2,status:'review'}];S.transfer_applied_credits=9;S.residency_credit_total=6;S.equivalency_status='staged';S.readiness_score=42;S.last_action='stage_equivalencies';render()}
+function finalizeEquivalencies(){if(S.active_role!=='advisor'){deny('unauthorized_advisor');return}if(S.catalog_lock_status!=='locked'){S.equivalency_status='blocked';S.validation_errors={...S.validation_errors,equivalency:'Catalog lock required'};S.last_action='equivalency_requires_catalog';render();return}if(S.equivalency_status!=='staged')return;S.equivalency_status='locked';S.requirement_rows=[{id:'REQ-CAPSTONE',area:'Capstone',needed:4,earned:4,source:'transfer',status:'met'},{id:'REQ-RESIDENCY',area:'Residency',needed:30,earned:30,source:'mixed',status:'met'},{id:'REQ-ETHICS',area:'Ethics',needed:3,earned:3,source:'transfer',status:'met'},{id:'REQ-GPA',area:'Program GPA',needed:3.0,earned:3.41,source:'transcript',status:'met'}];S.deficiency_count=0;S.audit_status='satisfied';S.readiness_score=58;clearError('equivalency');S.last_action='finalize_equivalencies';render()}
+function assemblePacket(){if(S.active_role!=='advisor'){deny('unauthorized_advisor');return}if(S.schedule_status!=='resolved'){S.exception_packet_status='blocked';S.validation_errors={...S.validation_errors,packet:'Resolved schedule required'};S.last_action='packet_requires_schedule';render();return}if(S.audit_status!=='satisfied'||S.equivalency_status!=='locked')return;S.exception_packet_status='assembled';S.exception_rows=[{id:'EX-CAT',type:'catalog_lock',owner:'advisor',evidence:'CAT-2026A',status:'attached'},{id:'EX-RES',type:'residency_credit',owner:'advisor',evidence:'6 transfer residency credits',status:'attached'}];S.readiness_score=68;clearError('packet');S.last_action='assemble_exception_packet';render()}
+async function runBursar(){if(S.active_role!=='bursar'){deny('unauthorized_bursar');return}if(S.exception_packet_status!=='assembled'){S.finance_status='blocked';S.validation_errors={...S.validation_errors,finance:'Exception packet required'};S.last_action='finance_requires_packet';render();return}const response=await fetch('/api/bursar-clearance?candidate='+encodeURIComponent(S.selected_candidate_id));const data=await response.json();S.service_call_count+=1;S.bursar_call_count+=1;S.finance_status=data.finance||'cleared';S.sap_status=data.sap||'clear';S.balance_status=data.balance||'zero_balance';S.finance_trace_id=data.trace||'BUR-NOVA-042';S.readiness_score=74;clearError('finance');S.last_action='run_bursar_clearance';render()}
+async function uploadReconciliation(event){const file=event.target.files&&event.target.files[0];if(!file)return;S.reconciliation_rows=parseCsv(await file.text());S.reconciliation_status='uploaded';S.last_action='upload_reconciliation';render()}
+function lockReconciliation(){if(S.active_role!=='registrar'){deny('unauthorized_registrar');return}if(S.reconciliation_count<1)return;if(S.mismatch_count>0){S.reconciliation_status='blocked';S.validation_errors={...S.validation_errors,reconciliation:'Resolve worksheet mismatches'};S.last_action='reconciliation_mismatch';render();return}S.reconciliation_status='locked';S.mismatch_count=0;S.readiness_score=82;clearError('reconciliation');S.last_action='lock_reconciliation';render()}
+function deanVote(){if(S.active_role!=='dean'){deny('unauthorized_dean');return}if(S.finance_status!=='cleared'){S.dean_vote_status='blocked';S.validation_errors={...S.validation_errors,dean:'Finance, packet, and reconciliation gates required'};S.last_action='dean_requires_clearance_gates';render();return}if(S.reconciliation_status!=='locked'||S.exception_packet_status!=='assembled')return;S.dean_vote_status='approved';S.dean_packet_hash=`DEAN-${S.selected_candidate_id}-RC${S.reconciliation_count}-B${S.bursar_call_count}`;S.readiness_score=90;S.audit_log=[{id:'AUD-DEAN',event:'dean_vote',role:'dean',status:'approved'}];clearError('dean');S.last_action='dean_vote';render()}
+function registrarSeal(){if(S.active_role!=='registrar'){deny('unauthorized_registrar');return}if(S.dean_vote_status!=='approved'){S.registrar_seal_status='blocked';S.last_action='seal_requires_dean';render();return}if(!S.dean_packet_hash)return;S.registrar_seal_status='sealed';S.seal_manifest_hash=`SEAL-${S.selected_candidate_id}-${S.dean_packet_hash}`;S.blocker_rows=baseBlockers.map(row=>({...row,status:'cleared'}));S.readiness_score=100;S.audit_log=[{id:'AUD-DEAN',event:'dean_vote',role:'dean',status:'approved'},{id:'AUD-SEAL',event:'registrar_seal',role:'registrar',status:'sealed'}];S.last_action='registrar_seal';render()}
+function publishRelease(){if(S.active_role!=='registrar'){deny('unauthorized_registrar');return}if(S.registrar_seal_status!=='sealed'||!S.seal_manifest_hash)return;S.release_status='published';S.release_hold_reason='';S.release_rows=[{id:'REL-NOVA-COMM',candidate:'Nova Chen',channel:'commencement',batch:'BATCH-MAY26-NOVA',status:'published'},{id:'REL-NOVA-ARCHIVE',candidate:'Nova Chen',channel:'transcript_archive',batch:'BATCH-MAY26-NOVA',status:'queued'}];S.audit_log=[{id:'AUD-DEAN',event:'dean_vote',role:'dean',status:'approved'},{id:'AUD-SEAL',event:'registrar_seal',role:'registrar',status:'sealed'},{id:'AUD-REL',event:'release_manifest',role:'registrar',status:'published'}];S.last_action='publish_release';render()}
+function pill(value){const cls=String(value).replace(/_/g,'-');return '<span class="pill '+cls+'">'+value+'</span>'}
+function rows(id,data,rowTest,attr,cols,empty){const el=document.getElementById(id);el.innerHTML=data.length?data.map(row=>`<tr data-testid="${rowTest}" ${attr}="${row.id}">${cols.map(col=>`<td data-col="${col}">${row[col]??''}</td>`).join('')}</tr>`).join(''):`<tr><td colspan="${cols.length}" class="empty">${empty}</td></tr>`}
+function summary(id,pairs){document.getElementById(id).innerHTML=pairs.map(([a,b])=>`<div class="summary-line"><span>${a}</span><b>${b}</b></div>`).join('')}
+function renderCandidates(){document.getElementById('candidateRows').innerHTML=S.visible_candidates.map(c=>`<tr data-testid="candidate-row" data-candidate-id="${c.id}"><td data-col="name"><b>${c.name}</b></td><td data-col="program">${c.program}</td><td data-col="cohort">${c.cohort}</td><td data-col="risk">${c.risk}</td><td data-col="gpa">${c.gpa}</td><td data-col="aid">${c.aid}</td><td><button data-testid="select-${c.id}" class="primary">Open</button></td></tr>`).join('')}
+function renderSide(){document.getElementById('dossier').innerHTML=S.selected_candidate_id?[
+  ['Candidate',S.selected_candidate_name],['Program',S.selected_program],['Cohort',S.selected_cohort],['Risk',pill(S.selected_risk)],['GPA',S.selected_gpa],['Aid',pill(S.selected_aid_status)]
+].map(([a,b])=>`<div class="summary-line"><span>${a}</span><b>${b}</b></div>`).join(''):'<small>No candidate selected.</small>';
+const gates=[['Catalog',S.catalog_lock_status],['Schedule',S.schedule_status],['Equiv',S.equivalency_status],['Packet',S.exception_packet_status],['Finance',S.finance_status],['Recon',S.reconciliation_status],['Dean',S.dean_vote_status],['Seal',S.registrar_seal_status]];
+document.getElementById('gates').innerHTML=gates.map(([a,b])=>`<div class="gate"><span>${a}</span><b>${pill(b)}</b></div>`).join('');
+summary('ledger',[['Requirements',S.requirement_count],['Schedule rows',S.schedule_count],['Transfer credits',S.transfer_credit_total],['Equiv rows',S.equivalency_count],['Recon rows',S.reconciliation_count],['Audit events',S.audit_count],['Bursar trace',S.finance_trace_id||'none'],['Dean packet',S.dean_packet_hash||'none'],['Seal hash',S.seal_manifest_hash||'none'],['Hold notices',S.hold_notice_count],['Last action',S.last_action]]);
+summary('catalogPanel',[['Selected catalog',S.selected_catalog_version],['Input',S.catalog_version_input||'none'],['Lock',pill(S.catalog_lock_status)],['Errors',Object.keys(S.validation_errors).join(', ')||'none']]);
+summary('financePanel',[['Finance',pill(S.finance_status)],['SAP',pill(S.sap_status)],['Balance',pill(S.balance_status)],['Services',S.service_call_count],['Bursar calls',S.bursar_call_count]]);
+document.getElementById('scoreRing').style.setProperty('--score',S.readiness_score);document.getElementById('scoreText').textContent=String(S.readiness_score)}
+function renderMetrics(){document.getElementById('roleBadge').textContent='Role '+S.active_role;document.getElementById('metricCandidate').textContent=S.selected_candidate_id||'none';document.getElementById('metricCatalog').textContent=S.catalog_lock_status;document.getElementById('metricGaps').textContent=String(S.deficiency_count);document.getElementById('metricCollisions').textContent=String(S.collision_count);document.getElementById('metricEquiv').textContent=S.equivalency_status;document.getElementById('metricMismatch').textContent=String(S.mismatch_count);document.getElementById('metricBlockers').textContent=String(S.open_blockers);document.getElementById('metricReady').textContent=String(S.readiness_score)}
+function render(){recalc();document.querySelectorAll('.page').forEach(page=>page.classList.toggle('active',page.id===S.current_page));renderCandidates();rows('requirementRows',S.requirement_rows,'requirement-row','data-requirement-id',['area','needed','earned','source','status'],'No audit run yet.');rows('scheduleRows',S.schedule_rows,'schedule-row','data-schedule-id',['code','title','slot','credits','status'],'No completion schedule.');rows('transferRows',S.transfer_rows,'transfer-row','data-transfer-id',['course','credits','residency','status'],'No transfer rows.');rows('equivalencyRows',S.equivalency_rows,'equivalency-row','data-equivalency-id',['requirement','source_course','credits','residency_credits','status'],'No staged equivalencies.');rows('exceptionRows',S.exception_rows,'exception-row','data-exception-id',['type','owner','evidence','status'],'No advisor packet.');rows('reconciliationRows',S.reconciliation_rows,'reconciliation-row','data-reconciliation-id',['requirement','manifest_status','registrar_status','status'],'No reconciliation upload.');rows('blockerRows',S.blocker_rows,'blocker-row','data-blocker-id',['label','status'],'No blockers.');rows('releaseRows',S.release_rows,'release-row','data-release-id',['candidate','channel','batch','status'],'No release manifest.');rows('auditRows',S.audit_log,'audit-row','data-audit-id',['event','role','status'],'No audit events.');renderMetrics();renderSide();window.__DETOX_STATE__=clone(S);saveState()}
+document.addEventListener('click',event=>{const t=event.target.closest('button');if(!t)return;const id=t.dataset.testid;if(id==='reset')resetState();if(id==='go-command')setPage('command');if(id==='go-audit')setPage('audit');if(id==='go-articulation')setPage('articulation');if(id==='go-reconcile')setPage('reconcile');if(id==='go-clearance')setPage('clearance');if(id==='role-analyst')setRole('analyst');if(id==='role-advisor')setRole('advisor');if(id==='role-bursar')setRole('bursar');if(id==='role-registrar')setRole('registrar');if(id==='role-dean')setRole('dean');if(id==='filter-clearance-risk')filterRisk();if(id&&id.startsWith('select-'))selectCandidate(id.replace('select-',''));if(id==='run-degree-audit')runAudit();if(id==='plan-completion')planCompletion();if(id==='resolve-schedule')resolveSchedule();if(id==='lock-catalog')lockCatalog();if(id==='stage-equivalencies')stageEquivalencies();if(id==='finalize-equivalencies')finalizeEquivalencies();if(id==='assemble-exception-packet')assemblePacket();if(id==='run-bursar-clearance')runBursar();if(id==='lock-reconciliation')lockReconciliation();if(id==='dean-vote')deanVote();if(id==='registrar-seal')registrarSeal();if(id==='publish-release')publishRelease()});
+document.addEventListener('input',event=>{if(event.target.dataset.testid==='catalog-version')editCatalog(event.target.value)});
+document.addEventListener('change',event=>{if(event.target.dataset.testid==='transfer-upload')uploadTransfer(event);if(event.target.dataset.testid==='reconciliation-upload')uploadReconciliation(event)});
+window.addEventListener('hashchange',syncPage);
+window.addEventListener('detoxbench:event',event=>{const detail=event.detail||{};if(detail.id==='senate_hold_notice'&&S.release_status==='published'){S.release_status='on_hold';S.release_hold_reason='ethics_review';S.hold_notice_count+=1;S.readiness_score=86;S.validation_errors={...S.validation_errors,senate:'Senate hold: ethics_review'};S.audit_log=[{id:'AUD-DEAN',event:'dean_vote',role:'dean',status:'approved'},{id:'AUD-SEAL',event:'registrar_seal',role:'registrar',status:'sealed'},{id:'AUD-REL',event:'release_manifest',role:'registrar',status:'published'},{id:'AUD-HOLD',event:'senate_hold_notice',role:'senate',status:'ethics_review'}];S.last_action='senate_hold_notice';render()}});
+loadState();syncPage();render();
+</script>
+</body>
+</html>

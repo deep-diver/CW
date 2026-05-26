@@ -1,0 +1,1463 @@
+dsl_version: "3.0.0"
+
+app:
+  id: freshcart_market_tier_d
+  name: FreshCart Market Tier D
+  capability: cold_chain_fulfillment_war_room
+  ui_ux_brief: |
+    FreshCart Market Tier D should look like a polished commercial cold-chain
+    grocery service plus a micro-fulfillment command surface. A desktop
+    screenshot should feel much harder than Tier C: premium product cards,
+    basket preparation economics, checkout orchestration, restricted-item review,
+    fulfillment checklist, support flow, and a post-dispatch manifest-seal
+    ledger should be visible as one cohesive end-user and operations product.
+    Use a refined retail visual system with credible food imagery or image-like
+    media, crisp order panels, route/cold-chain signals, score widgets, and
+    table cells that read like a real service. Avoid a generic dashboard, state
+    debugger, landing page, or plain table dump.
+
+x-derived:
+  derive_cart_count: &derive_cart_count
+    op: equals_length
+    path: cart_count
+    source_path: cart_items
+  derive_cart_subtotal: &derive_cart_subtotal
+    op: equals_sum
+    path: cart_subtotal
+    source_path: cart_items
+    field: line_total
+  derive_cold_chain_count: &derive_cold_chain_count
+    op: equals_count_where
+    path: cold_chain_count
+    source_path: cart_items
+    where:
+      - {op: equals, field: cold_chain, value: true}
+  derive_restricted_count: &derive_restricted_count
+    op: equals_count_where
+    path: restricted_count
+    source_path: cart_items
+    where:
+      - {op: equals, field: restricted, value: true}
+  derive_service_fee: &derive_service_fee
+    op: equals_piecewise_linear
+    path: service_fee
+    cases:
+      - when: [{op: relation, path: cart_count, operator: ">=", value: 1}]
+        formula: {constant: 900}
+    default: {constant: 0}
+  derive_delivery_fee: &derive_delivery_fee
+    op: equals_piecewise_linear
+    path: delivery_fee
+    cases:
+      - when: [{op: relation, path: cart_count, operator: "==", value: 0}]
+        formula: {constant: 0}
+      - when: [{op: relation, path: cart_subtotal, operator: ">=", value: 70000}]
+        formula: {constant: 0}
+      - when: [{op: relation, path: cart_subtotal, operator: ">=", value: 40000}]
+        formula: {constant: 1500}
+      - when: [{op: relation, path: cart_subtotal, operator: ">=", value: 25000}]
+        formula: {constant: 2500}
+    default: {constant: 3500}
+  derive_packaging_fee: &derive_packaging_fee
+    op: equals_piecewise_linear
+    path: packaging_fee
+    cases:
+      - when: [{op: relation, path: cold_chain_count, operator: ">=", value: 3}]
+        formula: {constant: 4500}
+      - when: [{op: relation, path: cold_chain_count, operator: ">=", value: 1}]
+        formula: {constant: 2500}
+    default: {constant: 0}
+  derive_order_total: &derive_order_total
+    op: equals_linear
+    path: order_total
+    terms:
+      - {path: cart_subtotal}
+      - {path: delivery_fee}
+      - {path: packaging_fee}
+      - {path: service_fee}
+      - {path: rush_surcharge}
+      - {path: coupon_credit, multiplier: -1}
+      - {path: wallet_credit, multiplier: -1}
+      - {path: substitution_credit, multiplier: -1}
+  derive_service_call_count: &derive_service_call_count
+    op: equals_length
+    path: service_call_count
+    source_path: __services.calls
+  derive_coupon_call_count: &derive_coupon_call_count
+    op: equals_count_where
+    path: coupon_call_count
+    source_path: __services.calls
+    where:
+      - {op: equals, field: service, value: coupon_validate}
+  derive_wallet_call_count: &derive_wallet_call_count
+    op: equals_count_where
+    path: wallet_call_count
+    source_path: __services.calls
+    where:
+      - {op: equals, field: service, value: wallet_redeem}
+  derive_slot_call_count: &derive_slot_call_count
+    op: equals_count_where
+    path: slot_call_count
+    source_path: __services.calls
+    where:
+      - {op: equals, field: service, value: slot_quote}
+  derive_compliance_call_count: &derive_compliance_call_count
+    op: equals_count_where
+    path: compliance_call_count
+    source_path: __services.calls
+    where:
+      - {op: equals, field: service, value: compliance_check}
+  derive_audit_count: &derive_audit_count
+    op: equals_length
+    path: audit_count
+    source_path: order_audit
+  derive_ticket_count: &derive_ticket_count
+    op: equals_length
+    path: ticket_count
+    source_path: support_tickets
+
+runtime:
+  target: web
+  start_url: /#/market
+
+  state_probe:
+    kind: javascript
+    expression: window.__DETOX_STATE__
+
+  pages:
+    market:
+      path: /#/market
+      purpose: Cold-chain grocery catalog with vendor filters and item-level risk metadata.
+    basket:
+      path: /#/basket
+      purpose: Basket review, preparation services, substitutions, and removals.
+    checkout:
+      path: /#/checkout
+      purpose: Coupon, wallet, slot quote, rush fulfillment, and checkout validation.
+    orders:
+      path: /#/orders
+      purpose: Staff fulfillment, compliance review, manager approval, and dispatch.
+    support:
+      path: /#/support
+      purpose: Post-order support tickets and staff resolution workflow.
+
+  session:
+    role_path: active_role
+    roles: [customer, staff, manager]
+
+  persistence:
+    reload:
+      scope: local_storage
+      paths:
+        - current_page
+        - active_role
+        - products
+        - current_vendor
+        - visible_products
+        - cart_items
+        - cart_count
+        - cart_subtotal
+        - cold_chain_count
+        - restricted_count
+        - delivery_fee
+        - packaging_fee
+        - service_fee
+        - order_total
+        - rush_enabled
+        - rush_surcharge
+        - substitution_opt_in
+        - substitution_credit
+        - coupon_code
+        - coupon_credit
+        - coupon_status
+        - wallet_balance
+        - wallet_credit
+        - service_call_count
+        - coupon_call_count
+        - wallet_call_count
+        - slot_call_count
+        - compliance_call_count
+        - delivery_slot
+        - slot_status
+        - customer_name
+        - customer_phone
+        - validation_errors
+        - order_placed
+        - order_id
+        - order_history
+        - review_requested
+        - review_status
+        - fulfillment_picked
+        - cold_chain_sealed
+        - quality_checked
+        - fulfillment_dispatched
+        - checklist_count
+        - support_issue
+        - support_tickets
+        - ticket_count
+        - ticket_status
+        - order_audit
+        - audit_count
+        - dispatch_manifest_status
+        - dispatch_manifest_score
+        - open_manifest_blockers
+        - dispatch_manifest_rows
+        - dispatch_manifest_count
+        - last_action
+
+  services:
+    coupon_validate:
+      endpoint: /api/coupon
+      method: GET
+      responses:
+        - id: cold3000
+          match:
+            query:
+              code: COLD3000
+          status: 200
+          json:
+            valid: true
+            credit: 3000
+            status: applied
+        - id: vip7000
+          match:
+            query:
+              code: VIP7000
+          status: 200
+          json:
+            valid: true
+            credit: 7000
+            status: applied
+        - id: invalid
+          match:
+            query:
+              code: BADCODE
+          status: 200
+          json:
+            valid: false
+            credit: 0
+            status: rejected
+    wallet_redeem:
+      endpoint: /api/wallet
+      method: GET
+      responses:
+        - id: redeem
+          match:
+            query:
+              action: REDEEM
+          status: 200
+          json:
+            credit: 6000
+            balance_delta: -6000
+            status: redeemed
+    slot_quote:
+      endpoint: /api/slot
+      method: GET
+      responses:
+        - id: early
+          match:
+            query:
+              slot: early
+          status: 200
+          json:
+            slot: early
+            status: confirmed
+            cold_chain_capacity: true
+        - id: green
+          match:
+            query:
+              slot: green
+          status: 200
+          json:
+            slot: green
+            status: confirmed
+            cold_chain_capacity: true
+        - id: late
+          match:
+            query:
+              slot: late
+          status: 200
+          json:
+            slot: late
+            status: confirmed
+            cold_chain_capacity: true
+    compliance_check:
+      endpoint: /api/compliance
+      method: GET
+      responses:
+        - id: restricted_review
+          match:
+            query:
+              risk: restricted
+          status: 200
+          json:
+            status: pending
+            requires_manager: true
+
+  tables:
+    product_grid:
+      selector: '[data-testid="product-grid"]'
+      row_selector: '[data-testid="product-row"]'
+      row_id_attribute: data-product-id
+      source_path: visible_products
+      row_id_field: id
+      columns:
+        name:
+          selector: '[data-col="name"]'
+          state_field: name
+        vendor:
+          selector: '[data-col="vendor"]'
+          state_field: vendor
+        price:
+          selector: '[data-col="price"]'
+          state_field: price
+        temp_band:
+          selector: '[data-col="temp-band"]'
+          state_field: temp_band
+    basket_grid:
+      selector: '[data-testid="basket-grid"]'
+      row_selector: '[data-testid="basket-row"]'
+      row_id_attribute: data-item-id
+      source_path: cart_items
+      row_id_field: product_id
+      columns:
+        name:
+          selector: '[data-col="name"]'
+          state_field: name
+        quantity:
+          selector: '[data-col="quantity"]'
+          state_field: quantity
+        line_total:
+          selector: '[data-col="line-total"]'
+          state_field: line_total
+        temp_band:
+          selector: '[data-col="temp-band"]'
+          state_field: temp_band
+        preparation:
+          selector: '[data-col="preparation"]'
+          state_field: preparation
+    dispatch_manifest_grid:
+      selector: '[data-testid="dispatch-manifest-grid"]'
+      row_selector: '[data-testid="dispatch-manifest-row"]'
+      row_id_attribute: data-manifest-id
+      source_path: dispatch_manifest_rows
+      row_id_field: id
+      columns:
+        label:
+          selector: '[data-col="label"]'
+          state_field: label
+        status:
+          selector: '[data-col="status"]'
+          state_field: status
+
+state:
+  initial:
+    current_page: market
+    active_role: customer
+    products:
+      - {id: "FCM-LET-01", name: "Baby Gem Lettuce", vendor: "GreenFarm", category: "Produce", price: 4200, unit: "2 heads", temp_band: "chilled", cold_chain: true, restricted: false}
+      - {id: "FCM-BRY-01", name: "Seongsu Strawberries", vendor: "GreenFarm", category: "Produce", price: 7800, unit: "500g", temp_band: "chilled", cold_chain: true, restricted: false}
+      - {id: "FCM-MLK-01", name: "A2 Whole Milk", vendor: "DairyPure", category: "Dairy", price: 5200, unit: "1L", temp_band: "chilled", cold_chain: true, restricted: false}
+      - {id: "FCM-BRI-01", name: "Truffle Brie", vendor: "DairyPure", category: "Dairy", price: 11800, unit: "180g", temp_band: "chilled", cold_chain: true, restricted: false}
+      - {id: "FCM-SAL-01", name: "Sashimi Salmon", vendor: "OceanCatch", category: "Seafood", price: 18800, unit: "220g", temp_band: "frozen", cold_chain: true, restricted: false}
+      - {id: "FCM-UNI-01", name: "Sea Urchin Tray", vendor: "OceanCatch", category: "Seafood", price: 24500, unit: "120g", temp_band: "chilled", cold_chain: true, restricted: true}
+      - {id: "FCM-BKF-01", name: "Bulgogi Dinner Kit", vendor: "ButcherBox", category: "Meat", price: 12900, unit: "600g", temp_band: "chilled", cold_chain: true, restricted: false}
+      - {id: "FCM-WGU-01", name: "Hanwoo Striploin", vendor: "ButcherBox", category: "Meat", price: 32800, unit: "300g", temp_band: "chilled", cold_chain: true, restricted: true}
+      - {id: "FCM-RCE-01", name: "Organic Short Grain Rice", vendor: "PantryPlus", category: "Pantry", price: 9600, unit: "4kg", temp_band: "ambient", cold_chain: false, restricted: false}
+      - {id: "FCM-OIL-01", name: "Arbequina Olive Oil", vendor: "PantryPlus", category: "Pantry", price: 14300, unit: "500ml", temp_band: "ambient", cold_chain: false, restricted: false}
+      - {id: "FCM-KOM-01", name: "Yuja Kombucha Pack", vendor: "BeverageLab", category: "Beverage", price: 6800, unit: "4 cans", temp_band: "chilled", cold_chain: true, restricted: false}
+      - {id: "FCM-ICE-01", name: "Reusable Cooler Pack", vendor: "OpsSupply", category: "Supplies", price: 3500, unit: "1 pack", temp_band: "ambient", cold_chain: false, restricted: false}
+    current_vendor: all
+    visible_products:
+      - {id: "FCM-LET-01", name: "Baby Gem Lettuce", vendor: "GreenFarm", category: "Produce", price: 4200, unit: "2 heads", temp_band: "chilled", cold_chain: true, restricted: false}
+      - {id: "FCM-BRY-01", name: "Seongsu Strawberries", vendor: "GreenFarm", category: "Produce", price: 7800, unit: "500g", temp_band: "chilled", cold_chain: true, restricted: false}
+      - {id: "FCM-MLK-01", name: "A2 Whole Milk", vendor: "DairyPure", category: "Dairy", price: 5200, unit: "1L", temp_band: "chilled", cold_chain: true, restricted: false}
+      - {id: "FCM-BRI-01", name: "Truffle Brie", vendor: "DairyPure", category: "Dairy", price: 11800, unit: "180g", temp_band: "chilled", cold_chain: true, restricted: false}
+      - {id: "FCM-SAL-01", name: "Sashimi Salmon", vendor: "OceanCatch", category: "Seafood", price: 18800, unit: "220g", temp_band: "frozen", cold_chain: true, restricted: false}
+      - {id: "FCM-UNI-01", name: "Sea Urchin Tray", vendor: "OceanCatch", category: "Seafood", price: 24500, unit: "120g", temp_band: "chilled", cold_chain: true, restricted: true}
+      - {id: "FCM-BKF-01", name: "Bulgogi Dinner Kit", vendor: "ButcherBox", category: "Meat", price: 12900, unit: "600g", temp_band: "chilled", cold_chain: true, restricted: false}
+      - {id: "FCM-WGU-01", name: "Hanwoo Striploin", vendor: "ButcherBox", category: "Meat", price: 32800, unit: "300g", temp_band: "chilled", cold_chain: true, restricted: true}
+      - {id: "FCM-RCE-01", name: "Organic Short Grain Rice", vendor: "PantryPlus", category: "Pantry", price: 9600, unit: "4kg", temp_band: "ambient", cold_chain: false, restricted: false}
+      - {id: "FCM-OIL-01", name: "Arbequina Olive Oil", vendor: "PantryPlus", category: "Pantry", price: 14300, unit: "500ml", temp_band: "ambient", cold_chain: false, restricted: false}
+      - {id: "FCM-KOM-01", name: "Yuja Kombucha Pack", vendor: "BeverageLab", category: "Beverage", price: 6800, unit: "4 cans", temp_band: "chilled", cold_chain: true, restricted: false}
+      - {id: "FCM-ICE-01", name: "Reusable Cooler Pack", vendor: "OpsSupply", category: "Supplies", price: 3500, unit: "1 pack", temp_band: "ambient", cold_chain: false, restricted: false}
+    cart_items: []
+    cart_count: 0
+    cart_subtotal: 0
+    cold_chain_count: 0
+    restricted_count: 0
+    delivery_fee: 0
+    packaging_fee: 0
+    service_fee: 0
+    order_total: 0
+    rush_enabled: false
+    rush_surcharge: 0
+    substitution_opt_in: false
+    substitution_credit: 0
+    coupon_code: ""
+    coupon_credit: 0
+    coupon_status: idle
+    wallet_balance: 16000
+    wallet_credit: 0
+    service_call_count: 0
+    coupon_call_count: 0
+    wallet_call_count: 0
+    slot_call_count: 0
+    compliance_call_count: 0
+    delivery_slot: ""
+    slot_status: idle
+    customer_name: ""
+    customer_phone: ""
+    validation_errors: {}
+    order_placed: false
+    order_id: ""
+    order_history: []
+    review_requested: false
+    review_status: idle
+    fulfillment_picked: false
+    cold_chain_sealed: false
+    quality_checked: false
+    fulfillment_dispatched: false
+    checklist_count: 0
+    support_issue: ""
+    support_tickets: []
+    ticket_count: 0
+    ticket_status: idle
+    order_audit: []
+    audit_count: 0
+    dispatch_manifest_status: open
+    dispatch_manifest_score: 0
+    open_manifest_blockers: 6
+    dispatch_manifest_rows:
+      - {id: M-ORDER, label: Order placed, status: open}
+      - {id: M-REVIEW, label: Restricted review approved, status: open}
+      - {id: M-PICK, label: Pick complete, status: open}
+      - {id: M-COLD, label: Cold-chain tote sealed, status: open}
+      - {id: M-QUALITY, label: Quality check complete, status: open}
+      - {id: M-DISPATCH, label: Dispatch completed, status: open}
+    dispatch_manifest_count: 0
+    last_action: ""
+    __services.calls: []
+
+  schema:
+    current_page: {type: string, purpose: "Active route page."}
+    active_role: {type: string, purpose: "Current user role: customer, staff, or manager."}
+    products: {type: array, purpose: "Full cold-chain grocery catalog."}
+    current_vendor: {type: string, purpose: "Active vendor filter."}
+    visible_products: {type: array, purpose: "Filtered catalog rows."}
+    cart_items: {type: array, purpose: "Basket line items with cold-chain and risk metadata."}
+    cart_count: {type: number, purpose: "Derived count of distinct cart rows."}
+    cart_subtotal: {type: number, purpose: "Derived sum of cart_items.line_total."}
+    cold_chain_count: {type: number, purpose: "Derived count of cold-chain cart rows."}
+    restricted_count: {type: number, purpose: "Derived count of restricted cart rows."}
+    delivery_fee: {type: number, purpose: "Derived tiered delivery fee."}
+    packaging_fee: {type: number, purpose: "Derived cold-chain packaging fee."}
+    service_fee: {type: number, purpose: "Derived service fee when cart is non-empty."}
+    order_total: {type: number, purpose: "Derived checkout total."}
+    rush_enabled: {type: boolean, purpose: "Rush fulfillment option."}
+    rush_surcharge: {type: number, purpose: "Rush surcharge."}
+    substitution_opt_in: {type: boolean, purpose: "Customer accepts curated substitutions."}
+    substitution_credit: {type: number, purpose: "Credit for accepting substitutions."}
+    coupon_code: {type: string, purpose: "Entered coupon code."}
+    coupon_credit: {type: number, purpose: "Coupon credit."}
+    coupon_status: {type: string, purpose: "idle, applied, or rejected."}
+    wallet_balance: {type: number, purpose: "Available wallet balance."}
+    wallet_credit: {type: number, purpose: "Applied wallet credit."}
+    service_call_count: {type: number, purpose: "Derived service call count."}
+    coupon_call_count: {type: number, purpose: "Derived coupon service call count."}
+    wallet_call_count: {type: number, purpose: "Derived wallet service call count."}
+    slot_call_count: {type: number, purpose: "Derived slot service call count."}
+    compliance_call_count: {type: number, purpose: "Derived compliance service call count."}
+    delivery_slot: {type: string, purpose: "Selected quoted delivery slot."}
+    slot_status: {type: string, purpose: "idle or confirmed."}
+    customer_name: {type: string, purpose: "Checkout customer name."}
+    customer_phone: {type: string, purpose: "Checkout customer phone."}
+    validation_errors: {type: object, purpose: "Checkout validation errors."}
+    order_placed: {type: boolean, purpose: "Whether an order was placed."}
+    order_id: {type: string, purpose: "Current order ID."}
+    order_history: {type: array, purpose: "Placed order history."}
+    review_requested: {type: boolean, purpose: "Restricted order review requested."}
+    review_status: {type: string, purpose: "idle, pending, approved, or denied."}
+    fulfillment_picked: {type: boolean, purpose: "Staff picked the order."}
+    cold_chain_sealed: {type: boolean, purpose: "Cold-chain tote sealed."}
+    quality_checked: {type: boolean, purpose: "Quality check completed."}
+    fulfillment_dispatched: {type: boolean, purpose: "Order dispatched."}
+    checklist_count: {type: number, purpose: "Completed fulfillment checklist steps."}
+    support_issue: {type: string, purpose: "Draft support ticket issue."}
+    support_tickets: {type: array, purpose: "Post-order support tickets."}
+    ticket_count: {type: number, purpose: "Derived support ticket count."}
+    ticket_status: {type: string, purpose: "idle, open, or resolved."}
+    order_audit: {type: array, purpose: "Audit trail for order operations."}
+    audit_count: {type: number, purpose: "Derived audit count."}
+    dispatch_manifest_status: {type: string, purpose: "open, blocked, or sealed Tier D dispatch manifest state."}
+    dispatch_manifest_score: {type: number, purpose: "Tier D dispatch-manifest readiness score from six fulfillment gates."}
+    open_manifest_blockers: {type: number, purpose: "Count of manifest gate rows still open."}
+    dispatch_manifest_rows: {type: array, purpose: "Six Tier D dispatch-manifest gate rows rendered in the orders page."}
+    dispatch_manifest_count: {type: number, purpose: "Successful dispatch-manifest seal count."}
+    last_action: {type: string, purpose: "Last user action label."}
+    __services.calls: {type: array, purpose: "Evaluator service call ledger."}
+
+components:
+  reset_button:
+    kind: button
+    selector: '[data-testid="reset"]'
+    actions:
+      click:
+        effects:
+          - {op: "equals", path: "current_page", value: "market"}
+          - {op: "equals", path: "active_role", value: "customer"}
+          - {op: "equals", path: "current_vendor", value: "all"}
+          - {op: "equals", path: "visible_products", value: [{id: "FCM-LET-01", name: "Baby Gem Lettuce", vendor: "GreenFarm", category: "Produce", price: 4200, unit: "2 heads", temp_band: "chilled", cold_chain: true, restricted: false}, {id: "FCM-BRY-01", name: "Seongsu Strawberries", vendor: "GreenFarm", category: "Produce", price: 7800, unit: "500g", temp_band: "chilled", cold_chain: true, restricted: false}, {id: "FCM-MLK-01", name: "A2 Whole Milk", vendor: "DairyPure", category: "Dairy", price: 5200, unit: "1L", temp_band: "chilled", cold_chain: true, restricted: false}, {id: "FCM-BRI-01", name: "Truffle Brie", vendor: "DairyPure", category: "Dairy", price: 11800, unit: "180g", temp_band: "chilled", cold_chain: true, restricted: false}, {id: "FCM-SAL-01", name: "Sashimi Salmon", vendor: "OceanCatch", category: "Seafood", price: 18800, unit: "220g", temp_band: "frozen", cold_chain: true, restricted: false}, {id: "FCM-UNI-01", name: "Sea Urchin Tray", vendor: "OceanCatch", category: "Seafood", price: 24500, unit: "120g", temp_band: "chilled", cold_chain: true, restricted: true}, {id: "FCM-BKF-01", name: "Bulgogi Dinner Kit", vendor: "ButcherBox", category: "Meat", price: 12900, unit: "600g", temp_band: "chilled", cold_chain: true, restricted: false}, {id: "FCM-WGU-01", name: "Hanwoo Striploin", vendor: "ButcherBox", category: "Meat", price: 32800, unit: "300g", temp_band: "chilled", cold_chain: true, restricted: true}, {id: "FCM-RCE-01", name: "Organic Short Grain Rice", vendor: "PantryPlus", category: "Pantry", price: 9600, unit: "4kg", temp_band: "ambient", cold_chain: false, restricted: false}, {id: "FCM-OIL-01", name: "Arbequina Olive Oil", vendor: "PantryPlus", category: "Pantry", price: 14300, unit: "500ml", temp_band: "ambient", cold_chain: false, restricted: false}, {id: "FCM-KOM-01", name: "Yuja Kombucha Pack", vendor: "BeverageLab", category: "Beverage", price: 6800, unit: "4 cans", temp_band: "chilled", cold_chain: true, restricted: false}, {id: "FCM-ICE-01", name: "Reusable Cooler Pack", vendor: "OpsSupply", category: "Supplies", price: 3500, unit: "1 pack", temp_band: "ambient", cold_chain: false, restricted: false}]}
+          - {op: "equals", path: "cart_items", value: []}
+          - {op: "equals", path: "cart_count", value: 0}
+          - {op: "equals", path: "cart_subtotal", value: 0}
+          - {op: "equals", path: "cold_chain_count", value: 0}
+          - {op: "equals", path: "restricted_count", value: 0}
+          - {op: "equals", path: "delivery_fee", value: 0}
+          - {op: "equals", path: "packaging_fee", value: 0}
+          - {op: "equals", path: "service_fee", value: 0}
+          - {op: "equals", path: "order_total", value: 0}
+          - {op: "equals", path: "rush_enabled", value: false}
+          - {op: "equals", path: "rush_surcharge", value: 0}
+          - {op: "equals", path: "substitution_opt_in", value: false}
+          - {op: "equals", path: "substitution_credit", value: 0}
+          - {op: "equals", path: "coupon_code", value: ""}
+          - {op: "equals", path: "coupon_credit", value: 0}
+          - {op: "equals", path: "coupon_status", value: "idle"}
+          - {op: "equals", path: "wallet_balance", value: 16000}
+          - {op: "equals", path: "wallet_credit", value: 0}
+          - {op: "equals", path: "service_call_count", value: 0}
+          - {op: "equals", path: "coupon_call_count", value: 0}
+          - {op: "equals", path: "wallet_call_count", value: 0}
+          - {op: "equals", path: "slot_call_count", value: 0}
+          - {op: "equals", path: "compliance_call_count", value: 0}
+          - {op: "equals", path: "delivery_slot", value: ""}
+          - {op: "equals", path: "slot_status", value: "idle"}
+          - {op: "equals", path: "customer_name", value: ""}
+          - {op: "equals", path: "customer_phone", value: ""}
+          - {op: "equals", path: "validation_errors", value: {}}
+          - {op: "equals", path: "order_placed", value: false}
+          - {op: "equals", path: "order_id", value: ""}
+          - {op: "equals", path: "order_history", value: []}
+          - {op: "equals", path: "review_requested", value: false}
+          - {op: "equals", path: "review_status", value: "idle"}
+          - {op: "equals", path: "fulfillment_picked", value: false}
+          - {op: "equals", path: "cold_chain_sealed", value: false}
+          - {op: "equals", path: "quality_checked", value: false}
+          - {op: "equals", path: "fulfillment_dispatched", value: false}
+          - {op: "equals", path: "checklist_count", value: 0}
+          - {op: "equals", path: "support_issue", value: ""}
+          - {op: "equals", path: "support_tickets", value: []}
+          - {op: "equals", path: "ticket_count", value: 0}
+          - {op: "equals", path: "ticket_status", value: "idle"}
+          - {op: "equals", path: "order_audit", value: []}
+          - {op: "equals", path: "audit_count", value: 0}
+          - {op: "equals", path: "dispatch_manifest_status", value: "open"}
+          - {op: "equals", path: "dispatch_manifest_score", value: 0}
+          - {op: "equals", path: "open_manifest_blockers", value: 6}
+          - {op: "equals", path: "dispatch_manifest_rows", value: [{id: "M-ORDER", label: "Order placed", status: "open"}, {id: "M-REVIEW", label: "Restricted review approved", status: "open"}, {id: "M-PICK", label: "Pick complete", status: "open"}, {id: "M-COLD", label: "Cold-chain tote sealed", status: "open"}, {id: "M-QUALITY", label: "Quality check complete", status: "open"}, {id: "M-DISPATCH", label: "Dispatch completed", status: "open"}]}
+          - {op: "equals", path: "dispatch_manifest_count", value: 0}
+          - {op: "equals", path: "last_action", value: "reset"}
+
+  go_market_button:
+    kind: button
+    selector: '[data-testid="go-market"]'
+    actions:
+      click:
+        navigate_to: market
+        effects:
+          - {op: equals, path: current_page, value: market}
+          - {op: equals, path: last_action, value: nav_market}
+
+  go_basket_button:
+    kind: button
+    selector: '[data-testid="go-basket"]'
+    actions:
+      click:
+        navigate_to: basket
+        effects:
+          - {op: equals, path: current_page, value: basket}
+          - {op: equals, path: last_action, value: nav_basket}
+
+  go_checkout_button:
+    kind: button
+    selector: '[data-testid="go-checkout"]'
+    actions:
+      click:
+        navigate_to: checkout
+        effects:
+          - {op: equals, path: current_page, value: checkout}
+          - {op: equals, path: last_action, value: nav_checkout}
+
+  go_orders_button:
+    kind: button
+    selector: '[data-testid="go-orders"]'
+    actions:
+      click:
+        navigate_to: orders
+        effects:
+          - {op: equals, path: current_page, value: orders}
+          - {op: equals, path: last_action, value: nav_orders}
+
+  go_support_button:
+    kind: button
+    selector: '[data-testid="go-support"]'
+    actions:
+      click:
+        navigate_to: support
+        effects:
+          - {op: equals, path: current_page, value: support}
+          - {op: equals, path: last_action, value: nav_support}
+
+  filter_all_button:
+    kind: button
+    selector: '[data-testid="filter-all"]'
+    page: market
+    actions:
+      click:
+        effects:
+          - {op: equals, path: visible_products, value: [{id: "FCM-LET-01", name: "Baby Gem Lettuce", vendor: "GreenFarm", category: "Produce", price: 4200, unit: "2 heads", temp_band: "chilled", cold_chain: true, restricted: false}, {id: "FCM-BRY-01", name: "Seongsu Strawberries", vendor: "GreenFarm", category: "Produce", price: 7800, unit: "500g", temp_band: "chilled", cold_chain: true, restricted: false}, {id: "FCM-MLK-01", name: "A2 Whole Milk", vendor: "DairyPure", category: "Dairy", price: 5200, unit: "1L", temp_band: "chilled", cold_chain: true, restricted: false}, {id: "FCM-BRI-01", name: "Truffle Brie", vendor: "DairyPure", category: "Dairy", price: 11800, unit: "180g", temp_band: "chilled", cold_chain: true, restricted: false}, {id: "FCM-SAL-01", name: "Sashimi Salmon", vendor: "OceanCatch", category: "Seafood", price: 18800, unit: "220g", temp_band: "frozen", cold_chain: true, restricted: false}, {id: "FCM-UNI-01", name: "Sea Urchin Tray", vendor: "OceanCatch", category: "Seafood", price: 24500, unit: "120g", temp_band: "chilled", cold_chain: true, restricted: true}, {id: "FCM-BKF-01", name: "Bulgogi Dinner Kit", vendor: "ButcherBox", category: "Meat", price: 12900, unit: "600g", temp_band: "chilled", cold_chain: true, restricted: false}, {id: "FCM-WGU-01", name: "Hanwoo Striploin", vendor: "ButcherBox", category: "Meat", price: 32800, unit: "300g", temp_band: "chilled", cold_chain: true, restricted: true}, {id: "FCM-RCE-01", name: "Organic Short Grain Rice", vendor: "PantryPlus", category: "Pantry", price: 9600, unit: "4kg", temp_band: "ambient", cold_chain: false, restricted: false}, {id: "FCM-OIL-01", name: "Arbequina Olive Oil", vendor: "PantryPlus", category: "Pantry", price: 14300, unit: "500ml", temp_band: "ambient", cold_chain: false, restricted: false}, {id: "FCM-KOM-01", name: "Yuja Kombucha Pack", vendor: "BeverageLab", category: "Beverage", price: 6800, unit: "4 cans", temp_band: "chilled", cold_chain: true, restricted: false}, {id: "FCM-ICE-01", name: "Reusable Cooler Pack", vendor: "OpsSupply", category: "Supplies", price: 3500, unit: "1 pack", temp_band: "ambient", cold_chain: false, restricted: false}]}
+          - {op: equals, path: current_vendor, value: all}
+          - {op: equals, path: last_action, value: filter_all}
+
+  filter_greenfarm_button:
+    kind: button
+    selector: '[data-testid="filter-greenfarm"]'
+    page: market
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_vendor, value: GreenFarm}
+          - {op: equals_filter, path: visible_products, source_path: products, where: [{op: equals, field: vendor, value: GreenFarm}], order_by: [{field: price, direction: asc}]}
+          - {op: equals, path: last_action, value: filter_greenfarm}
+
+  filter_dairypure_button:
+    kind: button
+    selector: '[data-testid="filter-dairypure"]'
+    page: market
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_vendor, value: DairyPure}
+          - {op: equals_filter, path: visible_products, source_path: products, where: [{op: equals, field: vendor, value: DairyPure}], order_by: [{field: price, direction: asc}]}
+          - {op: equals, path: last_action, value: filter_dairypure}
+
+  filter_oceancatch_button:
+    kind: button
+    selector: '[data-testid="filter-oceancatch"]'
+    page: market
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_vendor, value: OceanCatch}
+          - {op: equals_filter, path: visible_products, source_path: products, where: [{op: equals, field: vendor, value: OceanCatch}], order_by: [{field: price, direction: asc}]}
+          - {op: equals, path: last_action, value: filter_oceancatch}
+
+  filter_butcherbox_button:
+    kind: button
+    selector: '[data-testid="filter-butcherbox"]'
+    page: market
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_vendor, value: ButcherBox}
+          - {op: equals_filter, path: visible_products, source_path: products, where: [{op: equals, field: vendor, value: ButcherBox}], order_by: [{field: price, direction: asc}]}
+          - {op: equals, path: last_action, value: filter_butcherbox}
+
+  filter_pantryplus_button:
+    kind: button
+    selector: '[data-testid="filter-pantryplus"]'
+    page: market
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_vendor, value: PantryPlus}
+          - {op: equals_filter, path: visible_products, source_path: products, where: [{op: equals, field: vendor, value: PantryPlus}], order_by: [{field: price, direction: asc}]}
+          - {op: equals, path: last_action, value: filter_pantryplus}
+
+  filter_beveragelab_button:
+    kind: button
+    selector: '[data-testid="filter-beveragelab"]'
+    page: market
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_vendor, value: BeverageLab}
+          - {op: equals_filter, path: visible_products, source_path: products, where: [{op: equals, field: vendor, value: BeverageLab}], order_by: [{field: price, direction: asc}]}
+          - {op: equals, path: last_action, value: filter_beveragelab}
+
+  add_lettuce_button:
+    kind: button
+    selector: '[data-testid="add-FCM-LET-01"]'
+    page: market
+    actions:
+      click:
+        effects:
+          - op: appended_object
+            path: cart_items
+            value: {product_id: "FCM-LET-01", name: "Baby Gem Lettuce", vendor: "GreenFarm", category: "Produce", quantity: 1, unit_price: 4200, line_total: 4200, temp_band: "chilled", cold_chain: true, restricted: false, preparation: "standard", surcharge: 0, substitution: "none"}
+          - *derive_cart_count
+          - *derive_cart_subtotal
+          - *derive_cold_chain_count
+          - *derive_restricted_count
+          - *derive_service_fee
+          - *derive_delivery_fee
+          - *derive_packaging_fee
+          - *derive_order_total
+          - {op: equals, path: last_action, value: add_item}
+
+  add_strawberry_button:
+    kind: button
+    selector: '[data-testid="add-FCM-BRY-01"]'
+    page: market
+    actions:
+      click:
+        effects:
+          - op: appended_object
+            path: cart_items
+            value: {product_id: "FCM-BRY-01", name: "Seongsu Strawberries", vendor: "GreenFarm", category: "Produce", quantity: 1, unit_price: 7800, line_total: 7800, temp_band: "chilled", cold_chain: true, restricted: false, preparation: "standard", surcharge: 0, substitution: "none"}
+          - *derive_cart_count
+          - *derive_cart_subtotal
+          - *derive_cold_chain_count
+          - *derive_restricted_count
+          - *derive_service_fee
+          - *derive_delivery_fee
+          - *derive_packaging_fee
+          - *derive_order_total
+          - {op: equals, path: last_action, value: add_item}
+
+  add_milk_button:
+    kind: button
+    selector: '[data-testid="add-FCM-MLK-01"]'
+    page: market
+    actions:
+      click:
+        effects:
+          - op: appended_object
+            path: cart_items
+            value: {product_id: "FCM-MLK-01", name: "A2 Whole Milk", vendor: "DairyPure", category: "Dairy", quantity: 1, unit_price: 5200, line_total: 5200, temp_band: "chilled", cold_chain: true, restricted: false, preparation: "standard", surcharge: 0, substitution: "none"}
+          - *derive_cart_count
+          - *derive_cart_subtotal
+          - *derive_cold_chain_count
+          - *derive_restricted_count
+          - *derive_service_fee
+          - *derive_delivery_fee
+          - *derive_packaging_fee
+          - *derive_order_total
+          - {op: equals, path: last_action, value: add_item}
+
+  add_brie_button:
+    kind: button
+    selector: '[data-testid="add-FCM-BRI-01"]'
+    page: market
+    actions:
+      click:
+        effects:
+          - op: appended_object
+            path: cart_items
+            value: {product_id: "FCM-BRI-01", name: "Truffle Brie", vendor: "DairyPure", category: "Dairy", quantity: 1, unit_price: 11800, line_total: 11800, temp_band: "chilled", cold_chain: true, restricted: false, preparation: "standard", surcharge: 0, substitution: "none"}
+          - *derive_cart_count
+          - *derive_cart_subtotal
+          - *derive_cold_chain_count
+          - *derive_restricted_count
+          - *derive_service_fee
+          - *derive_delivery_fee
+          - *derive_packaging_fee
+          - *derive_order_total
+          - {op: equals, path: last_action, value: add_item}
+
+  add_salmon_button:
+    kind: button
+    selector: '[data-testid="add-FCM-SAL-01"]'
+    page: market
+    actions:
+      click:
+        effects:
+          - op: appended_object
+            path: cart_items
+            value: {product_id: "FCM-SAL-01", name: "Sashimi Salmon", vendor: "OceanCatch", category: "Seafood", quantity: 1, unit_price: 18800, line_total: 18800, temp_band: "frozen", cold_chain: true, restricted: false, preparation: "standard", surcharge: 0, substitution: "none"}
+          - *derive_cart_count
+          - *derive_cart_subtotal
+          - *derive_cold_chain_count
+          - *derive_restricted_count
+          - *derive_service_fee
+          - *derive_delivery_fee
+          - *derive_packaging_fee
+          - *derive_order_total
+          - {op: equals, path: last_action, value: add_item}
+
+  add_uni_button:
+    kind: button
+    selector: '[data-testid="add-FCM-UNI-01"]'
+    page: market
+    actions:
+      click:
+        effects:
+          - op: appended_object
+            path: cart_items
+            value: {product_id: "FCM-UNI-01", name: "Sea Urchin Tray", vendor: "OceanCatch", category: "Seafood", quantity: 1, unit_price: 24500, line_total: 24500, temp_band: "chilled", cold_chain: true, restricted: true, preparation: "standard", surcharge: 0, substitution: "none"}
+          - *derive_cart_count
+          - *derive_cart_subtotal
+          - *derive_cold_chain_count
+          - *derive_restricted_count
+          - *derive_service_fee
+          - *derive_delivery_fee
+          - *derive_packaging_fee
+          - *derive_order_total
+          - {op: equals, path: last_action, value: add_item}
+
+  add_bulgogi_button:
+    kind: button
+    selector: '[data-testid="add-FCM-BKF-01"]'
+    page: market
+    actions:
+      click:
+        effects:
+          - op: appended_object
+            path: cart_items
+            value: {product_id: "FCM-BKF-01", name: "Bulgogi Dinner Kit", vendor: "ButcherBox", category: "Meat", quantity: 1, unit_price: 12900, line_total: 12900, temp_band: "chilled", cold_chain: true, restricted: false, preparation: "standard", surcharge: 0, substitution: "none"}
+          - *derive_cart_count
+          - *derive_cart_subtotal
+          - *derive_cold_chain_count
+          - *derive_restricted_count
+          - *derive_service_fee
+          - *derive_delivery_fee
+          - *derive_packaging_fee
+          - *derive_order_total
+          - {op: equals, path: last_action, value: add_item}
+
+  add_striploin_button:
+    kind: button
+    selector: '[data-testid="add-FCM-WGU-01"]'
+    page: market
+    actions:
+      click:
+        effects:
+          - op: appended_object
+            path: cart_items
+            value: {product_id: "FCM-WGU-01", name: "Hanwoo Striploin", vendor: "ButcherBox", category: "Meat", quantity: 1, unit_price: 32800, line_total: 32800, temp_band: "chilled", cold_chain: true, restricted: true, preparation: "standard", surcharge: 0, substitution: "none"}
+          - *derive_cart_count
+          - *derive_cart_subtotal
+          - *derive_cold_chain_count
+          - *derive_restricted_count
+          - *derive_service_fee
+          - *derive_delivery_fee
+          - *derive_packaging_fee
+          - *derive_order_total
+          - {op: equals, path: last_action, value: add_item}
+
+  add_rice_button:
+    kind: button
+    selector: '[data-testid="add-FCM-RCE-01"]'
+    page: market
+    actions:
+      click:
+        effects:
+          - op: appended_object
+            path: cart_items
+            value: {product_id: "FCM-RCE-01", name: "Organic Short Grain Rice", vendor: "PantryPlus", category: "Pantry", quantity: 1, unit_price: 9600, line_total: 9600, temp_band: "ambient", cold_chain: false, restricted: false, preparation: "standard", surcharge: 0, substitution: "none"}
+          - *derive_cart_count
+          - *derive_cart_subtotal
+          - *derive_cold_chain_count
+          - *derive_restricted_count
+          - *derive_service_fee
+          - *derive_delivery_fee
+          - *derive_packaging_fee
+          - *derive_order_total
+          - {op: equals, path: last_action, value: add_item}
+
+  add_oil_button:
+    kind: button
+    selector: '[data-testid="add-FCM-OIL-01"]'
+    page: market
+    actions:
+      click:
+        effects:
+          - op: appended_object
+            path: cart_items
+            value: {product_id: "FCM-OIL-01", name: "Arbequina Olive Oil", vendor: "PantryPlus", category: "Pantry", quantity: 1, unit_price: 14300, line_total: 14300, temp_band: "ambient", cold_chain: false, restricted: false, preparation: "standard", surcharge: 0, substitution: "none"}
+          - *derive_cart_count
+          - *derive_cart_subtotal
+          - *derive_cold_chain_count
+          - *derive_restricted_count
+          - *derive_service_fee
+          - *derive_delivery_fee
+          - *derive_packaging_fee
+          - *derive_order_total
+          - {op: equals, path: last_action, value: add_item}
+
+  add_kombucha_button:
+    kind: button
+    selector: '[data-testid="add-FCM-KOM-01"]'
+    page: market
+    actions:
+      click:
+        effects:
+          - op: appended_object
+            path: cart_items
+            value: {product_id: "FCM-KOM-01", name: "Yuja Kombucha Pack", vendor: "BeverageLab", category: "Beverage", quantity: 1, unit_price: 6800, line_total: 6800, temp_band: "chilled", cold_chain: true, restricted: false, preparation: "standard", surcharge: 0, substitution: "none"}
+          - *derive_cart_count
+          - *derive_cart_subtotal
+          - *derive_cold_chain_count
+          - *derive_restricted_count
+          - *derive_service_fee
+          - *derive_delivery_fee
+          - *derive_packaging_fee
+          - *derive_order_total
+          - {op: equals, path: last_action, value: add_item}
+
+  add_cooler_pack_button:
+    kind: button
+    selector: '[data-testid="add-FCM-ICE-01"]'
+    page: market
+    actions:
+      click:
+        effects:
+          - op: appended_object
+            path: cart_items
+            value: {product_id: "FCM-ICE-01", name: "Reusable Cooler Pack", vendor: "OpsSupply", category: "Supplies", quantity: 1, unit_price: 3500, line_total: 3500, temp_band: "ambient", cold_chain: false, restricted: false, preparation: "standard", surcharge: 0, substitution: "none"}
+          - *derive_cart_count
+          - *derive_cart_subtotal
+          - *derive_cold_chain_count
+          - *derive_restricted_count
+          - *derive_service_fee
+          - *derive_delivery_fee
+          - *derive_packaging_fee
+          - *derive_order_total
+          - {op: equals, path: last_action, value: add_item}
+
+  prep_sashimi_salmon_button:
+    kind: button
+    selector: '[data-testid="prep-sashimi-FCM-SAL-01"]'
+    page: basket
+    actions:
+      click:
+        preconditions:
+          - {op: relation, path: cart_count, operator: ">=", value: 1}
+        effects:
+          - {op: updated_first_where, path: cart_items, where: [{op: equals, field: product_id, value: "FCM-SAL-01"}], updates: {preparation: sashimi_ready, surcharge: 2500, line_total: 21300}}
+          - *derive_cart_subtotal
+          - *derive_delivery_fee
+          - *derive_packaging_fee
+          - *derive_order_total
+          - {op: equals, path: last_action, value: prep_sashimi}
+
+  prep_gift_brie_button:
+    kind: button
+    selector: '[data-testid="prep-gift-FCM-BRI-01"]'
+    page: basket
+    actions:
+      click:
+        preconditions:
+          - {op: relation, path: cart_count, operator: ">=", value: 1}
+        effects:
+          - {op: updated_first_where, path: cart_items, where: [{op: equals, field: product_id, value: "FCM-BRI-01"}], updates: {preparation: gift_box, surcharge: 1200, line_total: 13000}}
+          - *derive_cart_subtotal
+          - *derive_delivery_fee
+          - *derive_packaging_fee
+          - *derive_order_total
+          - {op: equals, path: last_action, value: prep_gift}
+
+  prep_slice_striploin_button:
+    kind: button
+    selector: '[data-testid="prep-slice-FCM-WGU-01"]'
+    page: basket
+    actions:
+      click:
+        preconditions:
+          - {op: relation, path: cart_count, operator: ">=", value: 1}
+        effects:
+          - {op: updated_first_where, path: cart_items, where: [{op: equals, field: product_id, value: "FCM-WGU-01"}], updates: {preparation: thin_slice, surcharge: 1800, line_total: 34600}}
+          - *derive_cart_subtotal
+          - *derive_delivery_fee
+          - *derive_packaging_fee
+          - *derive_order_total
+          - {op: equals, path: last_action, value: prep_slice}
+
+  substitute_strawberry_button:
+    kind: button
+    selector: '[data-testid="substitute-FCM-BRY-01"]'
+    page: basket
+    actions:
+      click:
+        preconditions:
+          - {op: relation, path: cart_count, operator: ">=", value: 1}
+        effects:
+          - {op: updated_first_where, path: cart_items, where: [{op: equals, field: product_id, value: "FCM-BRY-01"}], updates: {substitution: blueberry_backup, line_total: 7200}}
+          - *derive_cart_subtotal
+          - *derive_delivery_fee
+          - *derive_packaging_fee
+          - *derive_order_total
+          - {op: equals, path: last_action, value: substitute_strawberry}
+
+  remove_rice_button:
+    kind: button
+    selector: '[data-testid="remove-FCM-RCE-01"]'
+    page: basket
+    actions:
+      click:
+        preconditions:
+          - {op: relation, path: cart_count, operator: ">=", value: 1}
+        effects:
+          - {op: removed_first_where, path: cart_items, where: [{op: equals, field: product_id, value: "FCM-RCE-01"}]}
+          - *derive_cart_count
+          - *derive_cart_subtotal
+          - *derive_cold_chain_count
+          - *derive_restricted_count
+          - *derive_service_fee
+          - *derive_delivery_fee
+          - *derive_packaging_fee
+          - *derive_order_total
+          - {op: equals, path: last_action, value: remove_item}
+
+  remove_kombucha_button:
+    kind: button
+    selector: '[data-testid="remove-FCM-KOM-01"]'
+    page: basket
+    actions:
+      click:
+        preconditions:
+          - {op: relation, path: cart_count, operator: ">=", value: 1}
+        effects:
+          - {op: removed_first_where, path: cart_items, where: [{op: equals, field: product_id, value: "FCM-KOM-01"}]}
+          - *derive_cart_count
+          - *derive_cart_subtotal
+          - *derive_cold_chain_count
+          - *derive_restricted_count
+          - *derive_service_fee
+          - *derive_delivery_fee
+          - *derive_packaging_fee
+          - *derive_order_total
+          - {op: equals, path: last_action, value: remove_item}
+
+  remove_cooler_pack_button:
+    kind: button
+    selector: '[data-testid="remove-FCM-ICE-01"]'
+    page: basket
+    actions:
+      click:
+        preconditions:
+          - {op: relation, path: cart_count, operator: ">=", value: 1}
+        effects:
+          - {op: removed_first_where, path: cart_items, where: [{op: equals, field: product_id, value: "FCM-ICE-01"}]}
+          - *derive_cart_count
+          - *derive_cart_subtotal
+          - *derive_cold_chain_count
+          - *derive_restricted_count
+          - *derive_service_fee
+          - *derive_delivery_fee
+          - *derive_packaging_fee
+          - *derive_order_total
+          - {op: equals, path: last_action, value: remove_item}
+
+  coupon_code_input:
+    kind: input
+    selector: '[data-testid="coupon-code"]'
+    page: checkout
+    actions:
+      fill:
+        effects:
+          - {op: equals_normalized, path: coupon_code, value_from: input.value, normalizers: [trim, uppercase]}
+          - {op: equals, path: last_action, value: edit_coupon}
+
+  apply_coupon_button:
+    kind: button
+    selector: '[data-testid="apply-coupon"]'
+    page: checkout
+    actions:
+      click:
+        preconditions:
+          - {op: relation, path: cart_count, operator: ">=", value: 1}
+          - {op: relation, path: coupon_code, operator: "!=", value: ""}
+        effects:
+          - *derive_service_call_count
+          - *derive_coupon_call_count
+          - {op: one_of, path: coupon_status, values: [applied, rejected]}
+          - *derive_order_total
+          - {op: equals, path: last_action, value: apply_coupon}
+
+  redeem_wallet_button:
+    kind: button
+    selector: '[data-testid="redeem-wallet"]'
+    page: checkout
+    actions:
+      click:
+        preconditions:
+          - {op: relation, path: wallet_balance, operator: ">=", value: 6000}
+          - {op: relation, path: cart_count, operator: ">=", value: 1}
+        effects:
+          - *derive_service_call_count
+          - *derive_wallet_call_count
+          - {op: changed_by, path: wallet_balance, by: -6000}
+          - {op: changed_by, path: wallet_credit, by: 6000}
+          - *derive_order_total
+          - {op: equals, path: last_action, value: redeem_wallet}
+
+  enable_rush_button:
+    kind: button
+    selector: '[data-testid="enable-rush"]'
+    page: checkout
+    actions:
+      click:
+        preconditions:
+          - {op: relation, path: cart_count, operator: ">=", value: 1}
+          - {op: equals, path: rush_enabled, value: false}
+        effects:
+          - {op: equals, path: rush_enabled, value: true}
+          - {op: equals, path: rush_surcharge, value: 3000}
+          - *derive_order_total
+          - {op: equals, path: last_action, value: enable_rush}
+
+  disable_rush_button:
+    kind: button
+    selector: '[data-testid="disable-rush"]'
+    page: checkout
+    actions:
+      click:
+        preconditions:
+          - {op: equals, path: rush_enabled, value: true}
+        effects:
+          - {op: equals, path: rush_enabled, value: false}
+          - {op: equals, path: rush_surcharge, value: 0}
+          - *derive_order_total
+          - {op: equals, path: last_action, value: disable_rush}
+
+  enable_substitution_button:
+    kind: button
+    selector: '[data-testid="enable-substitution"]'
+    page: checkout
+    actions:
+      click:
+        preconditions:
+          - {op: relation, path: cart_count, operator: ">=", value: 1}
+          - {op: equals, path: substitution_opt_in, value: false}
+        effects:
+          - {op: equals, path: substitution_opt_in, value: true}
+          - {op: equals, path: substitution_credit, value: 1000}
+          - *derive_order_total
+          - {op: equals, path: last_action, value: enable_substitution}
+
+  disable_substitution_button:
+    kind: button
+    selector: '[data-testid="disable-substitution"]'
+    page: checkout
+    actions:
+      click:
+        preconditions:
+          - {op: equals, path: substitution_opt_in, value: true}
+        effects:
+          - {op: equals, path: substitution_opt_in, value: false}
+          - {op: equals, path: substitution_credit, value: 0}
+          - *derive_order_total
+          - {op: equals, path: last_action, value: disable_substitution}
+
+  slot_early_button:
+    kind: button
+    selector: '[data-testid="slot-early"]'
+    page: checkout
+    actions:
+      click:
+        effects:
+          - {op: equals, path: delivery_slot, value: early}
+          - {op: equals, path: slot_status, value: confirmed}
+          - *derive_service_call_count
+          - *derive_slot_call_count
+          - {op: equals, path: last_action, value: select_slot}
+
+  slot_green_button:
+    kind: button
+    selector: '[data-testid="slot-green"]'
+    page: checkout
+    actions:
+      click:
+        effects:
+          - {op: equals, path: delivery_slot, value: green}
+          - {op: equals, path: slot_status, value: confirmed}
+          - *derive_service_call_count
+          - *derive_slot_call_count
+          - {op: equals, path: last_action, value: select_slot}
+
+  slot_late_button:
+    kind: button
+    selector: '[data-testid="slot-late"]'
+    page: checkout
+    actions:
+      click:
+        effects:
+          - {op: equals, path: delivery_slot, value: late}
+          - {op: equals, path: slot_status, value: confirmed}
+          - *derive_service_call_count
+          - *derive_slot_call_count
+          - {op: equals, path: last_action, value: select_slot}
+
+  customer_name_input:
+    kind: input
+    selector: '[data-testid="customer-name"]'
+    page: checkout
+    actions:
+      fill:
+        effects:
+          - {op: equals_normalized, path: customer_name, value_from: input.value, normalizers: [trim]}
+          - {op: removed_object_fields, path: validation_errors, fields: [name]}
+          - {op: equals, path: last_action, value: edit_name}
+
+  customer_phone_input:
+    kind: input
+    selector: '[data-testid="customer-phone"]'
+    page: checkout
+    actions:
+      fill:
+        effects:
+          - {op: equals_normalized, path: customer_phone, value_from: input.value, normalizers: [trim]}
+          - {op: removed_object_fields, path: validation_errors, fields: [phone]}
+          - {op: equals, path: last_action, value: edit_phone}
+
+  place_order_button:
+    kind: button
+    selector: '[data-testid="place-order"]'
+    page: checkout
+    actions:
+      click:
+        preconditions:
+          - {op: relation, path: cart_subtotal, operator: ">=", value: 25000}
+          - {op: relation, path: cart_count, operator: ">=", value: 1}
+          - {op: relation, path: customer_name, operator: "!=", value: ""}
+          - {op: one_of, path: delivery_slot, values: [early, green, late]}
+          - {op: equals, path: slot_status, value: confirmed}
+        rejected_when:
+          - {op: relation, path: cart_subtotal, operator: "<", value: 25000}
+        rejected_effects:
+          - {op: equals, path: order_placed, value: false}
+          - {op: updated_object_fields, path: validation_errors, updates: {minimum_order: "Minimum cold-chain order 25000"}}
+          - {op: equals, path: last_action, value: reject_minimum}
+        effects:
+          - {op: equals, path: order_placed, value: true}
+          - {op: one_of, path: order_id, values: ["ORD-C001", "ORD-C002", "ORD-C003", "ORD-C004", "ORD-C005"]}
+          - {op: appended_object, path: order_audit, value: {id: {after_path: audit_count}, event: placed, role: {from_path: active_role}, subtotal: {from_path: cart_subtotal}, cold_chain: {from_path: cold_chain_count}}}
+          - *derive_audit_count
+          - {op: equals, path: last_action, value: place_order}
+
+  role_customer_button:
+    kind: button
+    selector: '[data-testid="role-customer"]'
+    actions:
+      click:
+        effects:
+          - {op: equals, path: active_role, value: customer}
+          - {op: equals, path: last_action, value: role_customer}
+
+  role_staff_button:
+    kind: button
+    selector: '[data-testid="role-staff"]'
+    actions:
+      click:
+        effects:
+          - {op: equals, path: active_role, value: staff}
+          - {op: equals, path: last_action, value: role_staff}
+
+  role_manager_button:
+    kind: button
+    selector: '[data-testid="role-manager"]'
+    actions:
+      click:
+        effects:
+          - {op: equals, path: active_role, value: manager}
+          - {op: equals, path: last_action, value: role_manager}
+
+  pick_order_button:
+    kind: button
+    selector: '[data-testid="pick-order"]'
+    page: orders
+    actions:
+      click:
+        allowed_roles: [staff, manager]
+        preconditions:
+          - {op: equals, path: order_placed, value: true}
+          - {op: equals, path: fulfillment_picked, value: false}
+        effects:
+          - {op: equals, path: fulfillment_picked, value: true}
+          - {op: changed_by, path: checklist_count, by: 1}
+          - {op: equals, path: last_action, value: pick_order}
+        unauthorized_effects:
+          - {op: equals, path: last_action, value: deny_pick}
+
+  seal_cold_chain_button:
+    kind: button
+    selector: '[data-testid="seal-cold-chain"]'
+    page: orders
+    actions:
+      click:
+        allowed_roles: [staff, manager]
+        preconditions:
+          - {op: equals, path: fulfillment_picked, value: true}
+          - {op: relation, path: cold_chain_count, operator: ">=", value: 1}
+          - {op: equals, path: cold_chain_sealed, value: false}
+        effects:
+          - {op: equals, path: cold_chain_sealed, value: true}
+          - {op: changed_by, path: checklist_count, by: 1}
+          - {op: equals, path: last_action, value: seal_cold_chain}
+        unauthorized_effects:
+          - {op: equals, path: last_action, value: deny_seal}
+
+  quality_check_button:
+    kind: button
+    selector: '[data-testid="quality-check"]'
+    page: orders
+    actions:
+      click:
+        allowed_roles: [staff, manager]
+        preconditions:
+          - {op: equals, path: cold_chain_sealed, value: true}
+          - {op: equals, path: quality_checked, value: false}
+        effects:
+          - {op: equals, path: quality_checked, value: true}
+          - {op: changed_by, path: checklist_count, by: 1}
+          - {op: equals, path: last_action, value: quality_check}
+        unauthorized_effects:
+          - {op: equals, path: last_action, value: deny_quality}
+
+  dispatch_order_button:
+    kind: button
+    selector: '[data-testid="dispatch-order"]'
+    page: orders
+    actions:
+      click:
+        allowed_roles: [staff, manager]
+        preconditions:
+          - {op: equals, path: quality_checked, value: true}
+          - {op: equals, path: fulfillment_dispatched, value: false}
+        effects:
+          - {op: equals, path: fulfillment_dispatched, value: true}
+          - {op: changed_by, path: checklist_count, by: 1}
+          - {op: equals, path: last_action, value: dispatch_order}
+        unauthorized_effects:
+          - {op: equals, path: last_action, value: deny_dispatch}
+
+  seal_dispatch_manifest_button:
+    kind: button
+    selector: '[data-testid="seal-dispatch-manifest"]'
+    page: orders
+    actions:
+      click:
+        allowed_roles: [staff, manager]
+        preconditions:
+          - {op: equals, path: order_placed, value: true}
+          - {op: equals, path: review_status, value: approved}
+          - {op: equals, path: fulfillment_picked, value: true}
+          - {op: equals, path: cold_chain_sealed, value: true}
+          - {op: equals, path: quality_checked, value: true}
+          - {op: equals, path: fulfillment_dispatched, value: true}
+        rejected_when:
+          - {op: not_one_of, path: fulfillment_dispatched, values: [true]}
+        rejected_effects:
+          - {op: equals, path: dispatch_manifest_status, value: blocked}
+          - {op: equals, path: last_action, value: seal_manifest_blocked}
+        effects:
+          - {op: equals, path: dispatch_manifest_status, value: sealed}
+          - {op: equals, path: dispatch_manifest_score, value: 100}
+          - {op: equals, path: open_manifest_blockers, value: 0}
+          - {op: equals, path: dispatch_manifest_rows, value: [{id: "M-ORDER", label: "Order placed", status: "cleared"}, {id: "M-REVIEW", label: "Restricted review approved", status: "cleared"}, {id: "M-PICK", label: "Pick complete", status: "cleared"}, {id: "M-COLD", label: "Cold-chain tote sealed", status: "cleared"}, {id: "M-QUALITY", label: "Quality check complete", status: "cleared"}, {id: "M-DISPATCH", label: "Dispatch completed", status: "cleared"}]}
+          - {op: changed_by, path: dispatch_manifest_count, by: 1}
+          - {op: appended_object, path: order_audit, value: {id: {after_path: audit_count}, event: dispatch_manifest_sealed, role: {from_path: active_role}, order: {from_path: order_id}}}
+          - *derive_audit_count
+          - {op: equals, path: last_action, value: seal_dispatch_manifest}
+        unauthorized_effects:
+          - {op: equals, path: last_action, value: deny_manifest_seal}
+
+  request_review_button:
+    kind: button
+    selector: '[data-testid="request-review"]'
+    page: orders
+    actions:
+      click:
+        allowed_roles: [staff]
+        preconditions:
+          - {op: equals, path: order_placed, value: true}
+          - {op: relation, path: restricted_count, operator: ">=", value: 1}
+          - {op: equals, path: review_requested, value: false}
+        effects:
+          - {op: equals, path: review_requested, value: true}
+          - {op: equals, path: review_status, value: pending}
+          - *derive_service_call_count
+          - *derive_compliance_call_count
+          - {op: appended_object, path: order_audit, value: {id: {after_path: audit_count}, event: review_requested, role: {from_path: active_role}, restricted: {from_path: restricted_count}}}
+          - *derive_audit_count
+          - {op: equals, path: last_action, value: request_review}
+        unauthorized_effects:
+          - {op: equals, path: last_action, value: deny_review_request}
+
+  approve_review_button:
+    kind: button
+    selector: '[data-testid="approve-review"]'
+    page: orders
+    actions:
+      click:
+        allowed_roles: [manager]
+        preconditions:
+          - {op: equals, path: review_status, value: pending}
+        effects:
+          - {op: equals, path: review_status, value: approved}
+          - {op: appended_object, path: order_audit, value: {id: {after_path: audit_count}, event: manager_approved, role: {from_path: active_role}, order: {from_path: order_id}}}
+          - *derive_audit_count
+          - {op: equals, path: last_action, value: approve_review}
+        unauthorized_effects:
+          - {op: equals, path: last_action, value: deny_manager_approval}
+
+  cancel_order_button:
+    kind: button
+    selector: '[data-testid="cancel-order"]'
+    page: orders
+    actions:
+      click:
+        allowed_roles: [manager]
+        preconditions:
+          - {op: equals, path: order_placed, value: true}
+        effects:
+          - {op: appended_object, path: order_audit, value: {id: {after_path: audit_count}, event: cancelled, role: {from_path: active_role}, order: {from_path: order_id}}}
+          - *derive_audit_count
+          - {op: equals, path: last_action, value: cancel_order}
+        unauthorized_effects:
+          - {op: equals, path: last_action, value: unauthorized}
+
+  support_issue_input:
+    kind: input
+    selector: '[data-testid="support-issue"]'
+    page: support
+    actions:
+      fill:
+        effects:
+          - {op: equals_normalized, path: support_issue, value_from: input.value, normalizers: [trim]}
+          - {op: equals, path: last_action, value: edit_support_issue}
+
+  open_ticket_button:
+    kind: button
+    selector: '[data-testid="open-ticket"]'
+    page: support
+    actions:
+      click:
+        preconditions:
+          - {op: equals, path: order_placed, value: true}
+          - {op: relation, path: support_issue, operator: "!=", value: ""}
+        effects:
+          - {op: appended_object, path: support_tickets, value: {id: {after_path: ticket_count}, issue: {from_path: support_issue}, status: open, order: {from_path: order_id}}}
+          - *derive_ticket_count
+          - {op: equals, path: ticket_status, value: open}
+          - {op: equals, path: last_action, value: open_ticket}
+
+  resolve_ticket_button:
+    kind: button
+    selector: '[data-testid="resolve-ticket"]'
+    page: support
+    actions:
+      click:
+        allowed_roles: [staff, manager]
+        preconditions:
+          - {op: relation, path: ticket_count, operator: ">=", value: 1}
+        effects:
+          - {op: updated_first_where, path: support_tickets, where: [{op: equals, field: status, value: open}], updates: {status: resolved}}
+          - {op: equals, path: ticket_status, value: resolved}
+          - {op: appended_object, path: order_audit, value: {id: {after_path: audit_count}, event: support_resolved, role: {from_path: active_role}, order: {from_path: order_id}}}
+          - *derive_audit_count
+          - {op: equals, path: last_action, value: resolve_ticket}
+        unauthorized_effects:
+          - {op: equals, path: last_action, value: deny_resolve_ticket}

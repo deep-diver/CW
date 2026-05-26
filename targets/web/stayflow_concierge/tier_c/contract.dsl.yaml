@@ -1,0 +1,828 @@
+dsl_version: "3.0.0"
+app:
+  id: stayflow_concierge_tier_c
+  name: StayFlow Concierge Tier C
+  capability: trip_operations_command_center
+runtime:
+  target: web
+  start_url: /#/command
+  state_probe:
+    kind: javascript
+    expression: window.__DETOX_STATE__
+  pages:
+    command:
+      path: /#/command
+      purpose: Executive trip command center with readiness, exception, and risk summaries.
+    itinerary:
+      path: /#/itinerary
+      purpose: Multi-city itinerary construction and route add-on operations.
+    guests:
+      path: /#/guests
+      purpose: Traveler manifest and document readiness intake.
+    suppliers:
+      path: /#/suppliers
+      purpose: Supplier hold service, stale version repair, and hold release.
+    finance:
+      path: /#/finance
+      purpose: Quote, promo, payment authorization, and payment ledger workflow.
+    review:
+      path: /#/review
+      purpose: Agent and manager review, approval, and final confirmation workflow.
+  session:
+    role_path: active_role
+    roles: [guest, agent, manager]
+  persistence:
+    reload:
+      scope: local_storage
+      paths:
+        - current_page
+        - active_role
+        - stay_catalog
+        - visible_stays
+        - current_city_filter
+        - itinerary_legs
+        - leg_count
+        - route_key
+        - trip_subtotal
+        - addon_total
+        - service_fee
+        - promo_code
+        - promo_credit
+        - total_due
+        - quote_status
+        - quote_id
+        - quote_risk
+        - promo_status
+        - travelers
+        - traveler_count
+        - child_count
+        - mobility_count
+        - documents
+        - document_count
+        - missing_document_count
+        - readiness_rows
+        - ready_count
+        - last_traveler_file
+        - last_document_file
+        - supplier_holds
+        - hold_count
+        - confirmed_hold_count
+        - supplier_version
+        - supplier_draft_version
+        - supplier_status
+        - payment_amount_key
+        - payment_status
+        - payment_authorized
+        - payment_ledger
+        - payment_count
+        - approval_status
+        - booking_status
+        - review_checklist
+        - checklist_completed_count
+        - exception_queue
+        - open_exception_count
+        - audit_events
+        - audit_count
+        - denied_count
+        - conflict_count
+        - service_call_count
+        - quote_call_count
+        - promo_call_count
+        - hold_call_count
+        - payment_call_count
+        - last_action
+  services:
+    quote_check:
+      endpoint: /api/tier-c-quote
+      method: GET
+      responses:
+        - id: busan_seoul
+          match: {query: {route: BUSAN_SEOUL}}
+          status: 200
+          json: {quote_id: QC-BS-744, status: ready, risk: balanced}
+        - id: busan_seoul_kyoto
+          match: {query: {route: BUSAN_SEOUL_KYOTO}}
+          status: 200
+          json: {quote_id: QC-BSK-912, status: ready, risk: complex}
+        - id: busan_seoul_kyoto_jeju
+          match: {query: {route: BUSAN_SEOUL_KYOTO_JEJU}}
+          status: 200
+          json: {quote_id: QC-BSKJ-518, status: ready, risk: elevated}
+    promo_validate:
+      endpoint: /api/tier-c-promo
+      method: GET
+      responses:
+        - id: ops180
+          match: {query: {code: OPS180, route: BUSAN_SEOUL_KYOTO}}
+          status: 200
+          json: {valid: true, credit: 180, status: applied}
+        - id: command260
+          match: {query: {code: COMMAND260, route: BUSAN_SEOUL_KYOTO_JEJU}}
+          status: 200
+          json: {valid: true, credit: 260, status: applied}
+        - id: invalid
+          match: {query: {code: BADCODE}}
+          status: 200
+          json: {valid: false, credit: 0, status: rejected}
+    supplier_hold:
+      endpoint: /api/tier-c-holds
+      method: POST
+      responses:
+        - id: bsk
+          match: {body_json: {route: BUSAN_SEOUL_KYOTO}}
+          status: 200
+          json: {status: confirmed, version: 2}
+        - id: bskj
+          match: {body_json: {route: BUSAN_SEOUL_KYOTO_JEJU}}
+          status: 200
+          json: {status: confirmed, version: 2}
+    payment_auth:
+      endpoint: /api/tier-c-payment
+      method: POST
+      responses:
+        - id: approved
+          match: {body_json: {amount_key: "2500"}}
+          status: 200
+          json: {status: authorized, authorized: true}
+        - id: low
+          match: {body_json: {amount_key: "1000"}}
+          status: 200
+          json: {status: shortfall, authorized: false}
+  tables:
+    stay_grid:
+      selector: '[data-testid="stay-grid"]'
+      row_selector: '[data-testid="stay-row"]'
+      row_id_attribute: data-stay-id
+      source_path: visible_stays
+      row_id_field: id
+      columns:
+        name: {selector: '[data-col="name"]', state_field: name}
+        city: {selector: '[data-col="city"]', state_field: city}
+        base: {selector: '[data-col="base"]', state_field: base}
+    itinerary_grid:
+      selector: '[data-testid="itinerary-grid"]'
+      row_selector: '[data-testid="itinerary-row"]'
+      row_id_attribute: data-leg-id
+      source_path: itinerary_legs
+      row_id_field: id
+      columns:
+        city: {selector: '[data-col="city"]', state_field: city}
+        stay: {selector: '[data-col="stay"]', state_field: stay}
+        addon: {selector: '[data-col="addon"]', state_field: addon}
+        leg_total: {selector: '[data-col="leg_total"]', state_field: leg_total}
+    traveler_grid:
+      selector: '[data-testid="traveler-grid"]'
+      row_selector: '[data-testid="traveler-row"]'
+      row_id_attribute: data-traveler-id
+      source_path: travelers
+      row_id_field: id
+      columns:
+        name: {selector: '[data-col="name"]', state_field: name}
+        type: {selector: '[data-col="type"]', state_field: type}
+        mobility: {selector: '[data-col="mobility"]', state_field: mobility}
+    readiness_grid:
+      selector: '[data-testid="readiness-grid"]'
+      row_selector: '[data-testid="readiness-row"]'
+      row_id_attribute: data-traveler-id
+      source_path: readiness_rows
+      row_id_field: traveler_id
+      columns:
+        traveler: {selector: '[data-col="traveler"]', state_field: traveler}
+        document_status: {selector: '[data-col="document_status"]', state_field: document_status}
+        ready: {selector: '[data-col="ready"]', state_field: ready}
+    supplier_grid:
+      selector: '[data-testid="supplier-grid"]'
+      row_selector: '[data-testid="supplier-row"]'
+      row_id_attribute: data-hold-id
+      source_path: supplier_holds
+      row_id_field: id
+      columns:
+        city: {selector: '[data-col="city"]', state_field: city}
+        status: {selector: '[data-col="status"]', state_field: status}
+        version: {selector: '[data-col="version"]', state_field: version}
+    exception_grid:
+      selector: '[data-testid="exception-grid"]'
+      row_selector: '[data-testid="exception-row"]'
+      row_id_attribute: data-exception-id
+      source_path: exception_queue
+      row_id_field: id
+      columns:
+        type: {selector: '[data-col="type"]', state_field: type}
+        status: {selector: '[data-col="status"]', state_field: status}
+        owner: {selector: '[data-col="owner"]', state_field: owner}
+state:
+  initial:
+    current_page: command
+    active_role: guest
+    stay_catalog:
+      - {id: ST-BUSAN-HARBOR, city: Busan, name: Harbor Capsule Hotel, base: 320, available: true}
+      - {id: ST-SEOUL-LOFT, city: Seoul, name: Han River Loft, base: 480, available: true}
+      - {id: ST-KYOTO-MACHIYA, city: Kyoto, name: Machiya Garden House, base: 620, available: true}
+      - {id: ST-JEJU-VILLA, city: Jeju, name: Windstone Pool Villa, base: 760, available: true}
+    visible_stays:
+      - {id: ST-BUSAN-HARBOR, city: Busan, name: Harbor Capsule Hotel, base: 320, available: true}
+      - {id: ST-SEOUL-LOFT, city: Seoul, name: Han River Loft, base: 480, available: true}
+      - {id: ST-KYOTO-MACHIYA, city: Kyoto, name: Machiya Garden House, base: 620, available: true}
+      - {id: ST-JEJU-VILLA, city: Jeju, name: Windstone Pool Villa, base: 760, available: true}
+    current_city_filter: all
+    itinerary_legs: []
+    leg_count: 0
+    route_key: ""
+    trip_subtotal: 0
+    addon_total: 0
+    service_fee: 0
+    promo_code: ""
+    promo_credit: 0
+    total_due: 0
+    quote_status: idle
+    quote_id: ""
+    quote_risk: none
+    promo_status: idle
+    travelers: []
+    traveler_count: 0
+    child_count: 0
+    mobility_count: 0
+    documents: []
+    document_count: 0
+    missing_document_count: 0
+    readiness_rows: []
+    ready_count: 0
+    last_traveler_file: ""
+    last_document_file: ""
+    supplier_holds: []
+    hold_count: 0
+    confirmed_hold_count: 0
+    supplier_version: 1
+    supplier_draft_version: 1
+    supplier_status: idle
+    payment_amount_key: ""
+    payment_status: idle
+    payment_authorized: false
+    payment_ledger: []
+    payment_count: 0
+    approval_status: not_required
+    booking_status: idle
+    review_checklist: {}
+    checklist_completed_count: 0
+    exception_queue: []
+    open_exception_count: 0
+    audit_events: []
+    audit_count: 0
+    denied_count: 0
+    conflict_count: 0
+    service_call_count: 0
+    quote_call_count: 0
+    promo_call_count: 0
+    hold_call_count: 0
+    payment_call_count: 0
+    last_action: ready
+    __services.calls: []
+  schema:
+    current_page: {type: string, purpose: Public active route.}
+    active_role: {type: string, purpose: Current public role.}
+    stay_catalog: {type: array, purpose: All stay inventory packages.}
+    visible_stays: {type: array, purpose: Filtered stay projection.}
+    current_city_filter: {type: string, purpose: Current catalog filter.}
+    itinerary_legs: {type: array, purpose: Ordered trip leg ledger.}
+    leg_count: {type: number, purpose: Count of itinerary legs.}
+    route_key: {type: string, purpose: Service route key for quote, hold, and promo services.}
+    trip_subtotal: {type: number, purpose: Sum of itinerary base rates.}
+    addon_total: {type: number, purpose: Sum of route add-ons.}
+    service_fee: {type: number, purpose: Tiered service fee.}
+    promo_code: {type: string, purpose: Normalized promo code.}
+    promo_credit: {type: number, purpose: Promo credit from service.}
+    total_due: {type: number, purpose: Public total due.}
+    quote_status: {type: string, purpose: Quote lifecycle status.}
+    quote_id: {type: string, purpose: Quote id from service.}
+    quote_risk: {type: string, purpose: Quote risk from service.}
+    promo_status: {type: string, purpose: Promo lifecycle status.}
+    travelers: {type: array, purpose: Uploaded traveler manifest rows.}
+    traveler_count: {type: number, purpose: Traveler row count.}
+    child_count: {type: number, purpose: Child traveler count.}
+    mobility_count: {type: number, purpose: Mobility assistance count.}
+    documents: {type: array, purpose: Uploaded document readiness rows.}
+    document_count: {type: number, purpose: Document row count.}
+    missing_document_count: {type: number, purpose: Missing document count.}
+    readiness_rows: {type: array, purpose: Joined traveler/document readiness table.}
+    ready_count: {type: number, purpose: Count of ready travelers.}
+    last_traveler_file: {type: string, purpose: Last uploaded traveler manifest filename.}
+    last_document_file: {type: string, purpose: Last uploaded document readiness filename.}
+    supplier_holds: {type: array, purpose: Supplier hold ledger.}
+    hold_count: {type: number, purpose: Supplier hold count.}
+    confirmed_hold_count: {type: number, purpose: Confirmed supplier hold count.}
+    supplier_version: {type: number, purpose: Public supplier ledger version.}
+    supplier_draft_version: {type: number, purpose: Draft supplier version for conflict checks.}
+    supplier_status: {type: string, purpose: Supplier workflow status.}
+    payment_amount_key: {type: string, purpose: Currency-normalized payment amount key.}
+    payment_status: {type: string, purpose: Payment authorization status.}
+    payment_authorized: {type: boolean, purpose: Payment authorized flag.}
+    payment_ledger: {type: array, purpose: Payment authorization events.}
+    payment_count: {type: number, purpose: Payment ledger count.}
+    approval_status: {type: string, purpose: Manager approval status.}
+    booking_status: {type: string, purpose: End-to-end booking lifecycle.}
+    review_checklist: {type: object, purpose: Agent review checklist flags.}
+    checklist_completed_count: {type: number, purpose: Completed checklist count.}
+    exception_queue: {type: array, purpose: Public blocker/exception ledger.}
+    open_exception_count: {type: number, purpose: Number of open exceptions.}
+    audit_events: {type: array, purpose: Ordered public audit events.}
+    audit_count: {type: number, purpose: Audit event count.}
+    denied_count: {type: number, purpose: Unauthorized action counter.}
+    conflict_count: {type: number, purpose: Conflict action counter.}
+    service_call_count: {type: number, purpose: Deterministic service call count.}
+    quote_call_count: {type: number, purpose: Quote service call count.}
+    promo_call_count: {type: number, purpose: Promo service call count.}
+    hold_call_count: {type: number, purpose: Supplier hold service call count.}
+    payment_call_count: {type: number, purpose: Payment service call count.}
+    last_action: {type: string, purpose: Last public action id.}
+    __services.calls: {type: array, purpose: Evaluator-provided service call ledger.}
+
+x-derived:
+  leg_count: &derive_leg_count {op: equals_length, path: leg_count, source_path: itinerary_legs}
+  trip_subtotal: &derive_trip_subtotal {op: equals_sum, path: trip_subtotal, source_path: itinerary_legs, field: base}
+  addon_total: &derive_addon_total {op: equals_sum, path: addon_total, source_path: itinerary_legs, field: addon}
+  service_fee: &derive_service_fee
+    op: equals_piecewise_linear
+    path: service_fee
+    cases:
+      - when: [{op: relation, path: trip_subtotal, operator: ">=", value: 2100}]
+        formula: {constant: 188}
+      - when: [{op: relation, path: trip_subtotal, operator: ">=", value: 1400}]
+        formula: {constant: 132}
+      - when: [{op: relation, path: trip_subtotal, operator: ">=", value: 800}]
+        formula: {constant: 86}
+      - when: [{op: relation, path: trip_subtotal, operator: ">", value: 0}]
+        formula: {constant: 48}
+    default: {constant: 0}
+  total_due: &derive_total_due
+    op: equals_linear
+    path: total_due
+    terms:
+      - {path: trip_subtotal}
+      - {path: addon_total}
+      - {path: service_fee}
+      - {path: promo_credit, multiplier: -1}
+  traveler_count: &derive_traveler_count {op: equals_length, path: traveler_count, source_path: travelers}
+  child_count: &derive_child_count {op: equals_count_where, path: child_count, source_path: travelers, where: [{op: equals, field: type, value: child}]}
+  mobility_count: &derive_mobility_count {op: equals_count_where, path: mobility_count, source_path: travelers, where: [{op: equals, field: mobility, value: "yes"}]}
+  document_count: &derive_document_count {op: equals_length, path: document_count, source_path: documents}
+  missing_document_count: &derive_missing_document_count {op: equals_count_where, path: missing_document_count, source_path: documents, where: [{op: equals, field: document_status, value: missing}]}
+  ready_count: &derive_ready_count {op: equals_count_where, path: ready_count, source_path: readiness_rows, where: [{op: equals, field: ready, value: "yes"}]}
+  hold_count: &derive_hold_count {op: equals_length, path: hold_count, source_path: supplier_holds}
+  confirmed_hold_count: &derive_confirmed_hold_count {op: equals_count_where, path: confirmed_hold_count, source_path: supplier_holds, where: [{op: equals, field: status, value: confirmed}]}
+  payment_count: &derive_payment_count {op: equals_length, path: payment_count, source_path: payment_ledger}
+  checklist_completed_count: &derive_checklist_count {op: equals_object_key_count, path: checklist_completed_count, source_path: review_checklist}
+  open_exception_count: &derive_open_exceptions {op: equals_count_where, path: open_exception_count, source_path: exception_queue, where: [{op: equals, field: status, value: open}]}
+  audit_count: &derive_audit_count {op: equals_length, path: audit_count, source_path: audit_events}
+  service_call_count: &derive_service_call_count {op: equals_length, path: service_call_count, source_path: __services.calls}
+  quote_call_count: &derive_quote_call_count {op: equals_count_where, path: quote_call_count, source_path: __services.calls, where: [{op: equals, field: service, value: quote_check}]}
+  promo_call_count: &derive_promo_call_count {op: equals_count_where, path: promo_call_count, source_path: __services.calls, where: [{op: equals, field: service, value: promo_validate}]}
+  hold_call_count: &derive_hold_call_count {op: equals_count_where, path: hold_call_count, source_path: __services.calls, where: [{op: equals, field: service, value: supplier_hold}]}
+  payment_call_count: &derive_payment_call_count {op: equals_count_where, path: payment_call_count, source_path: __services.calls, where: [{op: equals, field: service, value: payment_auth}]}
+  readiness_projection: &derive_readiness_projection
+    op: equals_join_projection
+    path: readiness_rows
+    source_path: travelers
+    lookup_path: documents
+    source_key: id
+    lookup_key: traveler_id
+    fields:
+      - {name: traveler_id, source_field: id}
+      - {name: traveler, source_field: name}
+      - {name: type, source_field: type}
+      - {name: mobility, source_field: mobility}
+      - {name: document_status, lookup_field: document_status}
+      - {name: ready, lookup_field: ready}
+
+components:
+  reset_button:
+    kind: button
+    selector: '[data-testid="reset"]'
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_page, value: command}
+          - {op: equals, path: active_role, value: guest}
+          - {op: equals, path: visible_stays, value: [{id: ST-BUSAN-HARBOR, city: Busan, name: Harbor Capsule Hotel, base: 320, available: true}, {id: ST-SEOUL-LOFT, city: Seoul, name: Han River Loft, base: 480, available: true}, {id: ST-KYOTO-MACHIYA, city: Kyoto, name: Machiya Garden House, base: 620, available: true}, {id: ST-JEJU-VILLA, city: Jeju, name: Windstone Pool Villa, base: 760, available: true}]}
+          - {op: equals, path: current_city_filter, value: all}
+          - {op: equals, path: itinerary_legs, value: []}
+          - {op: equals, path: leg_count, value: 0}
+          - {op: equals, path: route_key, value: ""}
+          - {op: equals, path: trip_subtotal, value: 0}
+          - {op: equals, path: addon_total, value: 0}
+          - {op: equals, path: service_fee, value: 0}
+          - {op: equals, path: promo_code, value: ""}
+          - {op: equals, path: promo_credit, value: 0}
+          - {op: equals, path: total_due, value: 0}
+          - {op: equals, path: quote_status, value: idle}
+          - {op: equals, path: quote_id, value: ""}
+          - {op: equals, path: quote_risk, value: none}
+          - {op: equals, path: promo_status, value: idle}
+          - {op: equals, path: travelers, value: []}
+          - {op: equals, path: traveler_count, value: 0}
+          - {op: equals, path: child_count, value: 0}
+          - {op: equals, path: mobility_count, value: 0}
+          - {op: equals, path: documents, value: []}
+          - {op: equals, path: document_count, value: 0}
+          - {op: equals, path: missing_document_count, value: 0}
+          - {op: equals, path: readiness_rows, value: []}
+          - {op: equals, path: ready_count, value: 0}
+          - {op: equals, path: supplier_holds, value: []}
+          - {op: equals, path: hold_count, value: 0}
+          - {op: equals, path: confirmed_hold_count, value: 0}
+          - {op: equals, path: supplier_version, value: 1}
+          - {op: equals, path: supplier_draft_version, value: 1}
+          - {op: equals, path: supplier_status, value: idle}
+          - {op: equals, path: payment_amount_key, value: ""}
+          - {op: equals, path: payment_status, value: idle}
+          - {op: equals, path: payment_authorized, value: false}
+          - {op: equals, path: payment_ledger, value: []}
+          - {op: equals, path: payment_count, value: 0}
+          - {op: equals, path: approval_status, value: not_required}
+          - {op: equals, path: booking_status, value: idle}
+          - {op: equals, path: review_checklist, value: {}}
+          - {op: equals, path: checklist_completed_count, value: 0}
+          - {op: equals, path: exception_queue, value: []}
+          - {op: equals, path: open_exception_count, value: 0}
+          - {op: equals, path: audit_events, value: []}
+          - {op: equals, path: audit_count, value: 0}
+          - {op: equals, path: denied_count, value: 0}
+          - {op: equals, path: conflict_count, value: 0}
+          - {op: equals, path: service_call_count, value: 0}
+          - {op: equals, path: quote_call_count, value: 0}
+          - {op: equals, path: promo_call_count, value: 0}
+          - {op: equals, path: hold_call_count, value: 0}
+          - {op: equals, path: payment_call_count, value: 0}
+          - {op: equals, path: last_action, value: reset}
+  go_command_button: {kind: button, selector: '[data-testid="go-command"]', actions: {click: {navigate_to: command, effects: [{op: equals, path: current_page, value: command}, {op: equals, path: last_action, value: nav_command}]}}}
+  go_itinerary_button: {kind: button, selector: '[data-testid="go-itinerary"]', actions: {click: {navigate_to: itinerary, effects: [{op: equals, path: current_page, value: itinerary}, {op: equals, path: last_action, value: nav_itinerary}]}}}
+  go_guests_button: {kind: button, selector: '[data-testid="go-guests"]', actions: {click: {navigate_to: guests, effects: [{op: equals, path: current_page, value: guests}, {op: equals, path: last_action, value: nav_guests}]}}}
+  go_suppliers_button: {kind: button, selector: '[data-testid="go-suppliers"]', actions: {click: {navigate_to: suppliers, effects: [{op: equals, path: current_page, value: suppliers}, {op: equals, path: last_action, value: nav_suppliers}]}}}
+  go_finance_button: {kind: button, selector: '[data-testid="go-finance"]', actions: {click: {navigate_to: finance, effects: [{op: equals, path: current_page, value: finance}, {op: equals, path: last_action, value: nav_finance}]}}}
+  go_review_button: {kind: button, selector: '[data-testid="go-review"]', actions: {click: {navigate_to: review, effects: [{op: equals, path: current_page, value: review}, {op: equals, path: last_action, value: nav_review}]}}}
+  role_guest_button: {kind: button, selector: '[data-testid="role-guest"]', actions: {click: {effects: [{op: equals, path: active_role, value: guest}, {op: equals, path: last_action, value: role_guest}]}}}
+  role_agent_button: {kind: button, selector: '[data-testid="role-agent"]', actions: {click: {effects: [{op: equals, path: active_role, value: agent}, {op: equals, path: last_action, value: role_agent}]}}}
+  role_manager_button: {kind: button, selector: '[data-testid="role-manager"]', actions: {click: {effects: [{op: equals, path: active_role, value: manager}, {op: equals, path: last_action, value: role_manager}]}}}
+  filter_all_button:
+    kind: button
+    selector: '[data-testid="filter-all"]'
+    actions:
+      click:
+        effects:
+          - {op: equals_filter, path: visible_stays, source_path: stay_catalog, where: [{op: equals, field: available, value: true}], order_by: [{field: base, direction: asc}]}
+          - {op: equals, path: current_city_filter, value: all}
+          - {op: equals, path: last_action, value: filter_all}
+  filter_jeju_button:
+    kind: button
+    selector: '[data-testid="filter-jeju"]'
+    actions:
+      click:
+        effects:
+          - {op: equals_filter, path: visible_stays, source_path: stay_catalog, where: [{op: equals, field: city, value: Jeju}], order_by: [{field: base, direction: asc}]}
+          - {op: equals, path: current_city_filter, value: Jeju}
+          - {op: equals, path: last_action, value: filter_jeju}
+  add_busan_leg_button:
+    kind: button
+    selector: '[data-testid="add-busan-leg"]'
+    actions:
+      click:
+        preconditions: [{op: equals, path: leg_count, value: 0}]
+        effects:
+          - {op: appended_object, path: itinerary_legs, value: {id: LEG-BUSAN, city: Busan, stay: Harbor Capsule Hotel, base: 320, addon: 0, leg_total: 320}}
+          - *derive_leg_count
+          - {op: equals, path: route_key, value: BUSAN}
+          - *derive_trip_subtotal
+          - *derive_addon_total
+          - *derive_service_fee
+          - *derive_total_due
+          - {op: equals, path: booking_status, value: drafting}
+          - {op: equals, path: last_action, value: add_busan_leg}
+  add_seoul_leg_button:
+    kind: button
+    selector: '[data-testid="add-seoul-leg"]'
+    actions:
+      click:
+        preconditions: [{op: equals, path: route_key, value: BUSAN}]
+        effects:
+          - {op: appended_object, path: itinerary_legs, value: {id: LEG-SEOUL, city: Seoul, stay: Han River Loft, base: 480, addon: 0, leg_total: 480}}
+          - *derive_leg_count
+          - {op: equals, path: route_key, value: BUSAN_SEOUL}
+          - *derive_trip_subtotal
+          - *derive_addon_total
+          - *derive_service_fee
+          - *derive_total_due
+          - {op: equals, path: booking_status, value: drafting}
+          - {op: equals, path: last_action, value: add_seoul_leg}
+  add_kyoto_leg_button:
+    kind: button
+    selector: '[data-testid="add-kyoto-leg"]'
+    actions:
+      click:
+        preconditions: [{op: equals, path: route_key, value: BUSAN_SEOUL}]
+        effects:
+          - {op: appended_object, path: itinerary_legs, value: {id: LEG-KYOTO, city: Kyoto, stay: Machiya Garden House, base: 620, addon: 0, leg_total: 620}}
+          - *derive_leg_count
+          - {op: equals, path: route_key, value: BUSAN_SEOUL_KYOTO}
+          - *derive_trip_subtotal
+          - *derive_addon_total
+          - *derive_service_fee
+          - *derive_total_due
+          - {op: equals, path: approval_status, value: required}
+          - {op: equals, path: quote_status, value: draft_changed}
+          - {op: equals, path: last_action, value: add_kyoto_leg}
+  add_jeju_leg_button:
+    kind: button
+    selector: '[data-testid="add-jeju-leg"]'
+    actions:
+      click:
+        preconditions: [{op: equals, path: route_key, value: BUSAN_SEOUL_KYOTO}]
+        effects:
+          - {op: appended_object, path: itinerary_legs, value: {id: LEG-JEJU, city: Jeju, stay: Windstone Pool Villa, base: 760, addon: 0, leg_total: 760}}
+          - *derive_leg_count
+          - {op: equals, path: route_key, value: BUSAN_SEOUL_KYOTO_JEJU}
+          - *derive_trip_subtotal
+          - *derive_addon_total
+          - *derive_service_fee
+          - *derive_total_due
+          - {op: equals, path: approval_status, value: required}
+          - {op: equals, path: quote_status, value: draft_changed}
+          - {op: equals, path: last_action, value: add_jeju_leg}
+  add_ops_addons_button:
+    kind: button
+    selector: '[data-testid="add-ops-addons"]'
+    actions:
+      click:
+        preconditions: [{op: equals, path: route_key, value: BUSAN_SEOUL_KYOTO}]
+        effects:
+          - {op: equals, path: itinerary_legs, value: [{id: LEG-BUSAN, city: Busan, stay: Harbor Capsule Hotel, base: 320, addon: 42, leg_total: 362}, {id: LEG-SEOUL, city: Seoul, stay: Han River Loft, base: 480, addon: 55, leg_total: 535}, {id: LEG-KYOTO, city: Kyoto, stay: Machiya Garden House, base: 620, addon: 70, leg_total: 690}]}
+          - *derive_addon_total
+          - *derive_trip_subtotal
+          - *derive_service_fee
+          - *derive_total_due
+          - {op: equals, path: last_action, value: add_ops_addons}
+  request_quote_button:
+    kind: button
+    selector: '[data-testid="request-quote"]'
+    actions:
+      click:
+        preconditions: [{op: relation, path: leg_count, operator: ">=", value: 2}]
+        effects:
+          - *derive_service_call_count
+          - *derive_quote_call_count
+          - {op: one_of, path: quote_status, values: [ready, rejected]}
+          - {op: one_of, path: quote_id, values: [QC-BS-744, QC-BSK-912, QC-BSKJ-518, ""]}
+          - {op: one_of, path: quote_risk, values: [balanced, complex, elevated, rejected]}
+          - {op: equals, path: booking_status, value: quoted}
+          - {op: equals, path: last_action, value: request_quote}
+  promo_code_input:
+    kind: input
+    selector: '[data-testid="promo-code"]'
+    actions:
+      fill:
+        effects:
+          - {op: equals_normalized, path: promo_code, value_from: input.value, normalizers: [trim, uppercase]}
+          - {op: equals, path: last_action, value: edit_promo}
+  apply_promo_button:
+    kind: button
+    selector: '[data-testid="apply-promo"]'
+    actions:
+      click:
+        preconditions:
+          - {op: equals, path: quote_status, value: ready}
+          - {op: relation, path: promo_code, operator: "!=", value: ""}
+        effects:
+          - *derive_service_call_count
+          - *derive_promo_call_count
+          - {op: one_of, path: promo_status, values: [applied, rejected]}
+          - *derive_total_due
+          - {op: equals, path: last_action, value: apply_promo}
+  traveler_upload_input:
+    kind: input
+    selector: '[data-testid="traveler-upload"]'
+    actions:
+      upload:
+        file_schema:
+          format: csv
+          columns:
+            - {name: id, type: string}
+            - {name: name, type: string}
+            - {name: type, type: string}
+            - {name: mobility, type: string}
+        effects:
+          - {op: equals, path: travelers, value_from: input.rows}
+          - *derive_traveler_count
+          - *derive_child_count
+          - *derive_mobility_count
+          - {op: equals, path: last_traveler_file, value_from: input.file.name}
+          - {op: equals, path: last_action, value: upload_travelers}
+  document_upload_input:
+    kind: input
+    selector: '[data-testid="document-upload"]'
+    actions:
+      upload:
+        file_schema:
+          format: csv
+          columns:
+            - {name: traveler_id, type: string}
+            - {name: document_status, type: string}
+            - {name: ready, type: string}
+        effects:
+          - {op: equals, path: documents, value_from: input.rows}
+          - *derive_document_count
+          - *derive_missing_document_count
+          - {op: equals, path: last_document_file, value_from: input.file.name}
+          - {op: equals, path: last_action, value: upload_documents}
+  build_readiness_button:
+    kind: button
+    selector: '[data-testid="build-readiness"]'
+    actions:
+      click:
+        preconditions:
+          - {op: relation, path: traveler_count, operator: ">", value: 0}
+          - {op: relation, path: document_count, operator: ">", value: 0}
+        effects:
+          - *derive_readiness_projection
+          - *derive_ready_count
+          - *derive_missing_document_count
+          - {op: equals, path: last_action, value: build_readiness}
+  open_document_exception_button:
+    kind: button
+    selector: '[data-testid="open-document-exception"]'
+    actions:
+      click:
+        preconditions: [{op: relation, path: missing_document_count, operator: ">", value: 0}]
+        effects:
+          - {op: appended_object, path: exception_queue, value: {id: EX-DOCS, type: documents, status: open, owner: agent}}
+          - *derive_open_exceptions
+          - {op: equals, path: booking_status, value: blocked}
+          - {op: equals, path: last_action, value: open_document_exception}
+  resolve_document_exception_button:
+    kind: button
+    selector: '[data-testid="resolve-document-exception"]'
+    actions:
+      click:
+        allowed_roles: [agent, manager]
+        effects:
+          - {op: updated_first_where, path: exception_queue, where: [{op: equals, field: id, value: EX-DOCS}], updates: {status: resolved}}
+          - *derive_open_exceptions
+          - {op: equals, path: last_action, value: resolve_document_exception}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: deny_resolve_document_exception}
+  request_supplier_holds_button:
+    kind: button
+    selector: '[data-testid="request-supplier-holds"]'
+    actions:
+      click:
+        preconditions: [{op: equals, path: route_key, value: BUSAN_SEOUL_KYOTO_JEJU}]
+        effects:
+          - {op: equals, path: supplier_holds, value: [{id: HOLD-BUSAN, city: Busan, status: confirmed, version: 2}, {id: HOLD-SEOUL, city: Seoul, status: confirmed, version: 2}, {id: HOLD-KYOTO, city: Kyoto, status: confirmed, version: 2}, {id: HOLD-JEJU, city: Jeju, status: confirmed, version: 2}]}
+          - *derive_service_call_count
+          - *derive_hold_call_count
+          - {op: equals, path: supplier_status, value: confirmed}
+          - {op: equals, path: supplier_version, value: 2}
+          - {op: relation, path: supplier_draft_version, operator: "==", other_path: supplier_version}
+          - *derive_hold_count
+          - *derive_confirmed_hold_count
+          - {op: equals, path: last_action, value: request_supplier_holds}
+  external_supplier_change_button:
+    kind: button
+    selector: '[data-testid="external-supplier-change"]'
+    actions:
+      click:
+        preconditions: [{op: relation, path: hold_count, operator: ">", value: 0}]
+        effects:
+          - {op: changed_by, path: supplier_version, by: 1}
+          - {op: unchanged, path: supplier_draft_version}
+          - {op: updated_first_where, path: supplier_holds, where: [{op: equals, field: id, value: HOLD-KYOTO}], updates: {status: stale}}
+          - {op: equals, path: supplier_status, value: external_change}
+          - {op: equals, path: last_action, value: external_supplier_change}
+  refresh_supplier_draft_button:
+    kind: button
+    selector: '[data-testid="refresh-supplier-draft"]'
+    actions:
+      click:
+        effects:
+          - {op: relation, path: supplier_draft_version, operator: "==", other_path: supplier_version}
+          - {op: updated_all_where, path: supplier_holds, where: [{op: equals, field: status, value: stale}], updates: {status: confirmed}}
+          - *derive_confirmed_hold_count
+          - {op: equals, path: supplier_status, value: refreshed}
+          - {op: equals, path: last_action, value: refresh_supplier_draft}
+  release_supplier_holds_button:
+    kind: button
+    selector: '[data-testid="release-supplier-holds"]'
+    actions:
+      click:
+        preconditions:
+          - {op: relation, path: hold_count, operator: ">", value: 0}
+          - {op: relation, path: supplier_draft_version, operator: "==", other_path: supplier_version}
+        effects:
+          - {op: updated_all_where, path: supplier_holds, where: [{op: equals, field: status, value: confirmed}], updates: {status: released}}
+          - *derive_confirmed_hold_count
+          - {op: equals, path: supplier_status, value: released}
+          - {op: equals, path: last_action, value: release_supplier_holds}
+        conflict_when:
+          - {op: relation, path: hold_count, operator: ">", value: 0}
+          - {op: relation, path: supplier_draft_version, operator: "!=", other_path: supplier_version}
+        conflict_effects:
+          - {op: changed_by, path: conflict_count, by: 1}
+          - {op: equals, path: supplier_status, value: conflict_stale_supplier}
+          - {op: equals, path: last_action, value: conflict_release_supplier_holds}
+  payment_amount_input:
+    kind: input
+    selector: '[data-testid="payment-amount"]'
+    actions:
+      fill:
+        effects:
+          - {op: equals_normalized, path: payment_amount_key, value_from: input.value, normalizers: [currency_number]}
+          - {op: equals, path: last_action, value: edit_payment_amount}
+  authorize_payment_button:
+    kind: button
+    selector: '[data-testid="authorize-payment"]'
+    actions:
+      click:
+        preconditions: [{op: relation, path: payment_amount_key, operator: "!=", value: ""}]
+        effects:
+          - *derive_service_call_count
+          - *derive_payment_call_count
+          - {op: one_of, path: payment_status, values: [authorized, shortfall]}
+          - {op: one_of, path: payment_authorized, values: [true, false]}
+          - {op: appended_object, path: payment_ledger, value: {id: {after_path: payment_count}, amount_key: {from_path: payment_amount_key}}}
+          - *derive_payment_count
+          - {op: equals, path: last_action, value: authorize_payment}
+  check_supplier_button:
+    kind: button
+    selector: '[data-testid="check-supplier"]'
+    actions:
+      click:
+        allowed_roles: [agent]
+        effects:
+          - {op: updated_object_fields, path: review_checklist, updates: {supplier: true}}
+          - *derive_checklist_count
+          - {op: equals, path: last_action, value: check_supplier}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: deny_check_supplier}
+  check_documents_button:
+    kind: button
+    selector: '[data-testid="check-documents"]'
+    actions:
+      click:
+        allowed_roles: [agent]
+        effects:
+          - {op: updated_object_fields, path: review_checklist, updates: {documents: true}}
+          - *derive_checklist_count
+          - {op: equals, path: last_action, value: check_documents}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: deny_check_documents}
+  check_payment_button:
+    kind: button
+    selector: '[data-testid="check-payment"]'
+    actions:
+      click:
+        allowed_roles: [agent]
+        effects:
+          - {op: updated_object_fields, path: review_checklist, updates: {payment: true}}
+          - *derive_checklist_count
+          - {op: equals, path: last_action, value: check_payment}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: deny_check_payment}
+  manager_approve_button:
+    kind: button
+    selector: '[data-testid="manager-approve"]'
+    actions:
+      click:
+        allowed_roles: [manager]
+        preconditions:
+          - {op: equals, path: approval_status, value: required}
+          - {op: relation, path: open_exception_count, operator: "==", value: 0}
+        effects:
+          - {op: equals, path: approval_status, value: approved}
+          - {op: appended_object, path: audit_events, value: {id: {after_path: audit_count}, event: manager_approve, role: {from_path: active_role}}}
+          - *derive_audit_count
+          - {op: equals, path: last_action, value: manager_approve}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: deny_manager_approve}
+  final_confirm_button:
+    kind: button
+    selector: '[data-testid="final-confirm"]'
+    actions:
+      click:
+        allowed_roles: [agent]
+        preconditions:
+          - {op: equals, path: quote_status, value: ready}
+          - {op: equals, path: supplier_status, value: released}
+          - {op: equals, path: payment_authorized, value: true}
+          - {op: equals, path: approval_status, value: approved}
+          - {op: equals, path: open_exception_count, value: 0}
+          - {op: equals, path: checklist_completed_count, value: 3}
+        effects:
+          - {op: equals, path: booking_status, value: confirmed}
+          - {op: appended_object, path: audit_events, value: {id: {after_path: audit_count}, event: final_confirm, role: {from_path: active_role}}}
+          - *derive_audit_count
+          - {op: equals, path: last_action, value: final_confirm}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: deny_final_confirm}

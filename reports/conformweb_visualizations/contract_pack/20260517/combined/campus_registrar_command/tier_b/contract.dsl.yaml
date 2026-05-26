@@ -1,0 +1,640 @@
+dsl_version: "3.0.0"
+
+app:
+  id: campus_registrar_command_tier_b
+  name: Campus Registrar Command Tier B
+  capability: degree_clearance_operations
+  ui_ux_brief: |
+    Campus Registrar Command Tier B should look unmistakably harder than Tier A
+    in a desktop screenshot. The product should read as a registrar clearance
+    operations center, not a student self-service cart: dense at-risk student
+    queue, section/time-conflict matrix, credit load ledger, transfer-credit
+    intake, petition stack, bursar/advisor/registrar role gates, waitlist
+    lane, release ledger, and audit trail should all be visible. Use an
+    academic operations language with parchment-white work surfaces, deep
+    registrar green, navy command rails, red/amber risk chips, transcript-like
+    tables, compact schedule cells, and authoritative institutional controls.
+    Avoid travel cards, media calendars, grocery checkout, clinical command
+    colors, or a bare state debugger.
+
+runtime:
+  target: web
+  start_url: /#/command
+  state_probe:
+    kind: javascript
+    expression: window.__DETOX_STATE__
+  pages:
+    command:
+      path: /#/command
+      purpose: At-risk student queue, role controls, and current clearance snapshot.
+    matrix:
+      path: /#/matrix
+      purpose: Course section matrix, plan rows, credits, and time-conflict tools.
+    petitions:
+      path: /#/petitions
+      purpose: Financial hold, advisor petition, transfer upload, and waitlist workflow.
+    clearance:
+      path: /#/clearance
+      purpose: Registrar release ledger and audit trail.
+  session:
+    role_path: active_role
+    roles: [student, advisor, bursar, registrar]
+  persistence:
+    reload:
+      scope: local_storage
+      paths:
+        - current_page
+        - active_role
+        - students
+        - visible_students
+        - current_filter
+        - sections
+        - visible_sections
+        - selected_section_group
+        - selected_student_id
+        - selected_student_name
+        - selected_student_status
+        - selected_student_risk
+        - selected_student_hold
+        - selected_student_credits_completed
+        - selected_section_id
+        - selected_section_code
+        - selected_section_title
+        - selected_section_slot
+        - selected_section_credits
+        - plan_rows
+        - plan_count
+        - planned_credit_total
+        - conflict_status
+        - conflict_count
+        - prereq_status
+        - financial_hold_status
+        - billing_status
+        - transfer_rows
+        - transfer_count
+        - last_transfer_file
+        - waitlist_rows
+        - waitlist_count
+        - petition_status
+        - petition_note
+        - advisor_status
+        - registrar_status
+        - clearance_status
+        - release_rows
+        - release_count
+        - audit_log
+        - audit_count
+        - denied_count
+        - validation_errors
+        - last_action
+
+  tables:
+    student_queue:
+      selector: '[data-testid="student-queue"]'
+      row_selector: '[data-testid="student-row"]'
+      row_id_attribute: data-student-id
+      source_path: visible_students
+      row_id_field: id
+      columns:
+        name: {selector: '[data-col="name"]', state_field: name}
+        year: {selector: '[data-col="year"]', state_field: year}
+        status: {selector: '[data-col="status"]', state_field: status}
+        risk: {selector: '[data-col="risk"]', state_field: risk}
+        hold: {selector: '[data-col="hold"]', state_field: hold}
+        credits_completed: {selector: '[data-col="credits_completed"]', state_field: credits_completed}
+    section_matrix:
+      selector: '[data-testid="section-matrix"]'
+      row_selector: '[data-testid="section-row"]'
+      row_id_attribute: data-section-id
+      source_path: visible_sections
+      row_id_field: id
+      columns:
+        code: {selector: '[data-col="code"]', state_field: code}
+        title: {selector: '[data-col="title"]', state_field: title}
+        group: {selector: '[data-col="group"]', state_field: group}
+        credits: {selector: '[data-col="credits"]', state_field: credits}
+        slot: {selector: '[data-col="slot"]', state_field: slot}
+        seat_state: {selector: '[data-col="seat_state"]', state_field: seat_state}
+    plan_grid:
+      selector: '[data-testid="plan-grid"]'
+      row_selector: '[data-testid="plan-row"]'
+      row_id_attribute: data-plan-id
+      source_path: plan_rows
+      row_id_field: id
+      columns:
+        code: {selector: '[data-col="code"]', state_field: code}
+        title: {selector: '[data-col="title"]', state_field: title}
+        slot: {selector: '[data-col="slot"]', state_field: slot}
+        credits: {selector: '[data-col="credits"]', state_field: credits}
+        status: {selector: '[data-col="status"]', state_field: status}
+    transfer_grid:
+      selector: '[data-testid="transfer-grid"]'
+      row_selector: '[data-testid="transfer-row"]'
+      row_id_attribute: data-transfer-id
+      source_path: transfer_rows
+      row_id_field: id
+      columns:
+        source: {selector: '[data-col="source"]', state_field: source}
+        course: {selector: '[data-col="course"]', state_field: course}
+        credits: {selector: '[data-col="credits"]', state_field: credits}
+        status: {selector: '[data-col="status"]', state_field: status}
+    waitlist_grid:
+      selector: '[data-testid="waitlist-grid"]'
+      row_selector: '[data-testid="waitlist-row"]'
+      row_id_attribute: data-waitlist-id
+      source_path: waitlist_rows
+      row_id_field: id
+      columns:
+        student: {selector: '[data-col="student"]', state_field: student}
+        section: {selector: '[data-col="section"]', state_field: section}
+        position: {selector: '[data-col="position"]', state_field: position}
+        status: {selector: '[data-col="status"]', state_field: status}
+    clearance_grid:
+      selector: '[data-testid="clearance-grid"]'
+      row_selector: '[data-testid="clearance-row"]'
+      row_id_attribute: data-release-id
+      source_path: release_rows
+      row_id_field: id
+      columns:
+        student: {selector: '[data-col="student"]', state_field: student}
+        section: {selector: '[data-col="section"]', state_field: section}
+        role: {selector: '[data-col="role"]', state_field: role}
+        status: {selector: '[data-col="status"]', state_field: status}
+    audit_grid:
+      selector: '[data-testid="audit-grid"]'
+      row_selector: '[data-testid="audit-row"]'
+      row_id_attribute: data-audit-id
+      source_path: audit_log
+      row_id_field: id
+      columns:
+        event: {selector: '[data-col="event"]', state_field: event}
+        actor: {selector: '[data-col="actor"]', state_field: actor}
+        status: {selector: '[data-col="status"]', state_field: status}
+
+state:
+  initial:
+    current_page: command
+    active_role: student
+    students:
+      - {id: REG-410, name: "Nora Singh", year: senior, status: clearance, risk: red, hold: financial, credits_completed: 104}
+      - {id: REG-318, name: "Mateo Lee", year: junior, status: studio_waitlist, risk: amber, hold: none, credits_completed: 76}
+      - {id: REG-225, name: "Imani Brooks", year: sophomore, status: prerequisite_review, risk: amber, hold: prerequisite, credits_completed: 52}
+      - {id: REG-119, name: "Theo Park", year: first_year, status: ready, risk: green, hold: none, credits_completed: 18}
+    visible_students:
+      - {id: REG-410, name: "Nora Singh", year: senior, status: clearance, risk: red, hold: financial, credits_completed: 104}
+      - {id: REG-318, name: "Mateo Lee", year: junior, status: studio_waitlist, risk: amber, hold: none, credits_completed: 76}
+      - {id: REG-225, name: "Imani Brooks", year: sophomore, status: prerequisite_review, risk: amber, hold: prerequisite, credits_completed: 52}
+      - {id: REG-119, name: "Theo Park", year: first_year, status: ready, risk: green, hold: none, credits_completed: 18}
+    current_filter: all
+    sections:
+      - {id: SEC-CS-401, code: CS 401, title: Advanced Systems, group: capstone, credits: 4, slot: MW 09:00, seat_state: open}
+      - {id: SEC-MATH-342, code: MATH 342, title: Probability Lab, group: quantitative, credits: 4, slot: MW 09:00, seat_state: open}
+      - {id: SEC-DES-310, code: DES 310, title: Studio Intensive, group: studio, credits: 3, slot: TR 14:00, seat_state: waitlist}
+      - {id: SEC-HIST-220, code: HIST 220, title: Archive Practicum, group: humanities, credits: 3, slot: F 10:00, seat_state: open}
+      - {id: SEC-INT-450, code: INT 450, title: Senior Seminar, group: capstone, credits: 2, slot: W 16:00, seat_state: open}
+    visible_sections:
+      - {id: SEC-CS-401, code: CS 401, title: Advanced Systems, group: capstone, credits: 4, slot: MW 09:00, seat_state: open}
+      - {id: SEC-MATH-342, code: MATH 342, title: Probability Lab, group: quantitative, credits: 4, slot: MW 09:00, seat_state: open}
+      - {id: SEC-DES-310, code: DES 310, title: Studio Intensive, group: studio, credits: 3, slot: TR 14:00, seat_state: waitlist}
+      - {id: SEC-HIST-220, code: HIST 220, title: Archive Practicum, group: humanities, credits: 3, slot: F 10:00, seat_state: open}
+      - {id: SEC-INT-450, code: INT 450, title: Senior Seminar, group: capstone, credits: 2, slot: W 16:00, seat_state: open}
+    selected_section_group: all
+    selected_student_id: ""
+    selected_student_name: ""
+    selected_student_status: ""
+    selected_student_risk: ""
+    selected_student_hold: ""
+    selected_student_credits_completed: 0
+    selected_section_id: ""
+    selected_section_code: ""
+    selected_section_title: ""
+    selected_section_slot: ""
+    selected_section_credits: 0
+    plan_rows: []
+    plan_count: 0
+    planned_credit_total: 0
+    conflict_status: none
+    conflict_count: 0
+    prereq_status: unchecked
+    financial_hold_status: uncleared
+    billing_status: idle
+    transfer_rows: []
+    transfer_count: 0
+    last_transfer_file: ""
+    waitlist_rows: []
+    waitlist_count: 0
+    petition_status: idle
+    petition_note: ""
+    advisor_status: idle
+    registrar_status: idle
+    clearance_status: idle
+    release_rows: []
+    release_count: 0
+    audit_log: []
+    audit_count: 0
+    denied_count: 0
+    validation_errors: {}
+    last_action: ready
+  schema:
+    current_page: {type: string, purpose: Active route page.}
+    active_role: {type: string, purpose: Current public role.}
+    students: {type: array, purpose: Master registrar student queue.}
+    visible_students: {type: array, purpose: Current student queue projection.}
+    current_filter: {type: string, purpose: Active queue filter.}
+    sections: {type: array, purpose: Master course section matrix.}
+    visible_sections: {type: array, purpose: Current section projection.}
+    selected_section_group: {type: string, purpose: Active section group filter.}
+    selected_student_id: {type: string, purpose: Selected student id.}
+    selected_student_name: {type: string, purpose: Selected student name.}
+    selected_student_status: {type: string, purpose: Selected student status.}
+    selected_student_risk: {type: string, purpose: Selected student risk.}
+    selected_student_hold: {type: string, purpose: Selected student hold.}
+    selected_student_credits_completed: {type: number, purpose: Completed credits for selected student.}
+    selected_section_id: {type: string, purpose: Selected section id.}
+    selected_section_code: {type: string, purpose: Selected section code.}
+    selected_section_title: {type: string, purpose: Selected section title.}
+    selected_section_slot: {type: string, purpose: Selected section meeting slot.}
+    selected_section_credits: {type: number, purpose: Selected section credits.}
+    plan_rows: {type: array, purpose: Planned section rows.}
+    plan_count: {type: number, purpose: Number of planned sections.}
+    planned_credit_total: {type: number, purpose: Planned credit total.}
+    conflict_status: {type: string, purpose: none, conflict, or resolved.}
+    conflict_count: {type: number, purpose: Number of detected plan conflicts.}
+    prereq_status: {type: string, purpose: unchecked, eligible, or review_required.}
+    financial_hold_status: {type: string, purpose: uncleared or cleared.}
+    billing_status: {type: string, purpose: idle or cleared.}
+    transfer_rows: {type: array, purpose: Uploaded transfer credit rows.}
+    transfer_count: {type: number, purpose: Number of transfer rows.}
+    last_transfer_file: {type: string, purpose: Last transfer upload filename.}
+    waitlist_rows: {type: array, purpose: Studio waitlist rows.}
+    waitlist_count: {type: number, purpose: Number of waitlist rows.}
+    petition_status: {type: string, purpose: idle, open, advisor_approved, waitlisted, or released.}
+    petition_note: {type: string, purpose: Normalized advisor petition note.}
+    advisor_status: {type: string, purpose: idle or approved.}
+    registrar_status: {type: string, purpose: idle or released.}
+    clearance_status: {type: string, purpose: idle, blocked, or released.}
+    release_rows: {type: array, purpose: Registrar release ledger rows.}
+    release_count: {type: number, purpose: Number of release rows.}
+    audit_log: {type: array, purpose: Ordered clearance audit events.}
+    audit_count: {type: number, purpose: Number of audit events.}
+    denied_count: {type: number, purpose: Unauthorized action count.}
+    validation_errors: {type: object, purpose: Public validation error map.}
+    last_action: {type: string, purpose: Last public action marker.}
+
+x-derived:
+  plan_count: &derive_plan_count {op: equals_length, path: plan_count, source_path: plan_rows}
+  transfer_count: &derive_transfer_count {op: equals_length, path: transfer_count, source_path: transfer_rows}
+  waitlist_count: &derive_waitlist_count {op: equals_length, path: waitlist_count, source_path: waitlist_rows}
+  release_count: &derive_release_count {op: equals_length, path: release_count, source_path: release_rows}
+  audit_count: &derive_audit_count {op: equals_length, path: audit_count, source_path: audit_log}
+
+components:
+  reset_button:
+    kind: button
+    selector: '[data-testid="reset"]'
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_page, value: command}
+          - {op: equals, path: active_role, value: student}
+          - {op: equals, path: current_filter, value: all}
+          - {op: equals, path: visible_students, value: [{id: REG-410, name: "Nora Singh", year: senior, status: clearance, risk: red, hold: financial, credits_completed: 104}, {id: REG-318, name: "Mateo Lee", year: junior, status: studio_waitlist, risk: amber, hold: none, credits_completed: 76}, {id: REG-225, name: "Imani Brooks", year: sophomore, status: prerequisite_review, risk: amber, hold: prerequisite, credits_completed: 52}, {id: REG-119, name: "Theo Park", year: first_year, status: ready, risk: green, hold: none, credits_completed: 18}]}
+          - {op: equals, path: selected_section_group, value: all}
+          - {op: equals, path: visible_sections, value: [{id: SEC-CS-401, code: CS 401, title: Advanced Systems, group: capstone, credits: 4, slot: MW 09:00, seat_state: open}, {id: SEC-MATH-342, code: MATH 342, title: Probability Lab, group: quantitative, credits: 4, slot: MW 09:00, seat_state: open}, {id: SEC-DES-310, code: DES 310, title: Studio Intensive, group: studio, credits: 3, slot: TR 14:00, seat_state: waitlist}, {id: SEC-HIST-220, code: HIST 220, title: Archive Practicum, group: humanities, credits: 3, slot: F 10:00, seat_state: open}, {id: SEC-INT-450, code: INT 450, title: Senior Seminar, group: capstone, credits: 2, slot: W 16:00, seat_state: open}]}
+          - {op: equals, path: selected_student_id, value: ""}
+          - {op: equals, path: selected_student_name, value: ""}
+          - {op: equals, path: selected_student_status, value: ""}
+          - {op: equals, path: selected_student_risk, value: ""}
+          - {op: equals, path: selected_student_hold, value: ""}
+          - {op: equals, path: selected_student_credits_completed, value: 0}
+          - {op: equals, path: selected_section_id, value: ""}
+          - {op: equals, path: selected_section_code, value: ""}
+          - {op: equals, path: selected_section_title, value: ""}
+          - {op: equals, path: selected_section_slot, value: ""}
+          - {op: equals, path: selected_section_credits, value: 0}
+          - {op: equals, path: plan_rows, value: []}
+          - {op: equals, path: plan_count, value: 0}
+          - {op: equals, path: planned_credit_total, value: 0}
+          - {op: equals, path: conflict_status, value: none}
+          - {op: equals, path: conflict_count, value: 0}
+          - {op: equals, path: prereq_status, value: unchecked}
+          - {op: equals, path: financial_hold_status, value: uncleared}
+          - {op: equals, path: billing_status, value: idle}
+          - {op: equals, path: transfer_rows, value: []}
+          - {op: equals, path: transfer_count, value: 0}
+          - {op: equals, path: last_transfer_file, value: ""}
+          - {op: equals, path: waitlist_rows, value: []}
+          - {op: equals, path: waitlist_count, value: 0}
+          - {op: equals, path: petition_status, value: idle}
+          - {op: equals, path: petition_note, value: ""}
+          - {op: equals, path: advisor_status, value: idle}
+          - {op: equals, path: registrar_status, value: idle}
+          - {op: equals, path: clearance_status, value: idle}
+          - {op: equals, path: release_rows, value: []}
+          - {op: equals, path: release_count, value: 0}
+          - {op: equals, path: audit_log, value: []}
+          - {op: equals, path: audit_count, value: 0}
+          - {op: equals, path: denied_count, value: 0}
+          - {op: equals, path: validation_errors, value: {}}
+          - {op: equals, path: last_action, value: reset}
+
+  go_command_button:
+    kind: button
+    selector: '[data-testid="go-command"]'
+    actions: {click: {navigate_to: command, effects: [{op: equals, path: current_page, value: command}, {op: equals, path: last_action, value: nav_command}]}}
+  go_matrix_button:
+    kind: button
+    selector: '[data-testid="go-matrix"]'
+    actions: {click: {navigate_to: matrix, effects: [{op: equals, path: current_page, value: matrix}, {op: equals, path: last_action, value: nav_matrix}]}}
+  go_petitions_button:
+    kind: button
+    selector: '[data-testid="go-petitions"]'
+    actions: {click: {navigate_to: petitions, effects: [{op: equals, path: current_page, value: petitions}, {op: equals, path: last_action, value: nav_petitions}]}}
+  go_clearance_button:
+    kind: button
+    selector: '[data-testid="go-clearance"]'
+    actions: {click: {navigate_to: clearance, effects: [{op: equals, path: current_page, value: clearance}, {op: equals, path: last_action, value: nav_clearance}]}}
+
+  role_student_button:
+    kind: button
+    selector: '[data-testid="role-student"]'
+    actions: {click: {effects: [{op: equals, path: active_role, value: student}, {op: equals, path: last_action, value: role_student}]}}
+  role_advisor_button:
+    kind: button
+    selector: '[data-testid="role-advisor"]'
+    actions: {click: {effects: [{op: equals, path: active_role, value: advisor}, {op: equals, path: last_action, value: role_advisor}]}}
+  role_bursar_button:
+    kind: button
+    selector: '[data-testid="role-bursar"]'
+    actions: {click: {effects: [{op: equals, path: active_role, value: bursar}, {op: equals, path: last_action, value: role_bursar}]}}
+  role_registrar_button:
+    kind: button
+    selector: '[data-testid="role-registrar"]'
+    actions: {click: {effects: [{op: equals, path: active_role, value: registrar}, {op: equals, path: last_action, value: role_registrar}]}}
+
+  filter_all_students_button:
+    kind: button
+    selector: '[data-testid="filter-all-students"]'
+    page: command
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_filter, value: all}
+          - {op: equals, path: visible_students, value: [{id: REG-410, name: "Nora Singh", year: senior, status: clearance, risk: red, hold: financial, credits_completed: 104}, {id: REG-318, name: "Mateo Lee", year: junior, status: studio_waitlist, risk: amber, hold: none, credits_completed: 76}, {id: REG-225, name: "Imani Brooks", year: sophomore, status: prerequisite_review, risk: amber, hold: prerequisite, credits_completed: 52}, {id: REG-119, name: "Theo Park", year: first_year, status: ready, risk: green, hold: none, credits_completed: 18}]}
+          - {op: equals, path: last_action, value: filter_all_students}
+  filter_at_risk_button:
+    kind: button
+    selector: '[data-testid="filter-at-risk"]'
+    page: command
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_filter, value: at_risk}
+          - {op: equals, path: visible_students, value: [{id: REG-410, name: "Nora Singh", year: senior, status: clearance, risk: red, hold: financial, credits_completed: 104}, {id: REG-318, name: "Mateo Lee", year: junior, status: studio_waitlist, risk: amber, hold: none, credits_completed: 76}, {id: REG-225, name: "Imani Brooks", year: sophomore, status: prerequisite_review, risk: amber, hold: prerequisite, credits_completed: 52}]}
+          - {op: equals, path: last_action, value: filter_at_risk}
+
+  filter_capstone_sections_button:
+    kind: button
+    selector: '[data-testid="filter-capstone-sections"]'
+    page: matrix
+    actions:
+      click:
+        effects:
+          - {op: equals, path: selected_section_group, value: capstone}
+          - {op: equals, path: visible_sections, value: [{id: SEC-CS-401, code: CS 401, title: Advanced Systems, group: capstone, credits: 4, slot: MW 09:00, seat_state: open}, {id: SEC-INT-450, code: INT 450, title: Senior Seminar, group: capstone, credits: 2, slot: W 16:00, seat_state: open}]}
+          - {op: equals, path: last_action, value: filter_capstone_sections}
+
+  select_nora_button:
+    kind: button
+    selector: '[data-testid="select-REG-410"]'
+    page: command
+    actions:
+      click:
+        navigate_to: matrix
+        effects:
+          - {op: equals, path: current_page, value: matrix}
+          - {op: equals, path: selected_student_id, value: REG-410}
+          - {op: equals, path: selected_student_name, value: "Nora Singh"}
+          - {op: equals, path: selected_student_status, value: clearance}
+          - {op: equals, path: selected_student_risk, value: red}
+          - {op: equals, path: selected_student_hold, value: financial}
+          - {op: equals, path: selected_student_credits_completed, value: 104}
+          - {op: equals, path: financial_hold_status, value: uncleared}
+          - {op: equals, path: prereq_status, value: eligible}
+          - {op: equals, path: last_action, value: select_student}
+  select_mateo_button:
+    kind: button
+    selector: '[data-testid="select-REG-318"]'
+    page: command
+    actions:
+      click:
+        navigate_to: matrix
+        effects:
+          - {op: equals, path: current_page, value: matrix}
+          - {op: equals, path: selected_student_id, value: REG-318}
+          - {op: equals, path: selected_student_name, value: "Mateo Lee"}
+          - {op: equals, path: selected_student_status, value: studio_waitlist}
+          - {op: equals, path: selected_student_risk, value: amber}
+          - {op: equals, path: selected_student_hold, value: none}
+          - {op: equals, path: selected_student_credits_completed, value: 76}
+          - {op: equals, path: financial_hold_status, value: cleared}
+          - {op: equals, path: prereq_status, value: eligible}
+          - {op: equals, path: last_action, value: select_student}
+  select_imani_button:
+    kind: button
+    selector: '[data-testid="select-REG-225"]'
+    page: command
+    actions:
+      click:
+        navigate_to: matrix
+        effects:
+          - {op: equals, path: current_page, value: matrix}
+          - {op: equals, path: selected_student_id, value: REG-225}
+          - {op: equals, path: selected_student_name, value: "Imani Brooks"}
+          - {op: equals, path: selected_student_status, value: prerequisite_review}
+          - {op: equals, path: selected_student_risk, value: amber}
+          - {op: equals, path: selected_student_hold, value: prerequisite}
+          - {op: equals, path: selected_student_credits_completed, value: 52}
+          - {op: equals, path: financial_hold_status, value: cleared}
+          - {op: equals, path: prereq_status, value: review_required}
+          - {op: equals, path: last_action, value: select_student}
+
+  select_cs401_button:
+    kind: button
+    selector: '[data-testid="select-SEC-CS-401"]'
+    page: matrix
+    actions:
+      click:
+        effects:
+          - {op: equals, path: selected_section_id, value: SEC-CS-401}
+          - {op: equals, path: selected_section_code, value: CS 401}
+          - {op: equals, path: selected_section_title, value: Advanced Systems}
+          - {op: equals, path: selected_section_slot, value: MW 09:00}
+          - {op: equals, path: selected_section_credits, value: 4}
+          - {op: equals, path: last_action, value: select_section}
+  select_math342_button:
+    kind: button
+    selector: '[data-testid="select-SEC-MATH-342"]'
+    page: matrix
+    actions:
+      click:
+        effects:
+          - {op: equals, path: selected_section_id, value: SEC-MATH-342}
+          - {op: equals, path: selected_section_code, value: MATH 342}
+          - {op: equals, path: selected_section_title, value: Probability Lab}
+          - {op: equals, path: selected_section_slot, value: MW 09:00}
+          - {op: equals, path: selected_section_credits, value: 4}
+          - {op: equals, path: last_action, value: select_section}
+  select_des310_button:
+    kind: button
+    selector: '[data-testid="select-SEC-DES-310"]'
+    page: matrix
+    actions:
+      click:
+        effects:
+          - {op: equals, path: selected_section_id, value: SEC-DES-310}
+          - {op: equals, path: selected_section_code, value: DES 310}
+          - {op: equals, path: selected_section_title, value: Studio Intensive}
+          - {op: equals, path: selected_section_slot, value: TR 14:00}
+          - {op: equals, path: selected_section_credits, value: 3}
+          - {op: equals, path: last_action, value: select_section}
+
+  add_selected_section_button:
+    kind: button
+    selector: '[data-testid="add-selected-section"]'
+    page: matrix
+    actions:
+      click:
+        preconditions:
+          - {op: one_of, path: selected_section_id, values: [SEC-CS-401, SEC-MATH-342, SEC-DES-310]}
+        effects:
+          - {op: appended_object, path: plan_rows, value: {id: {from_path: selected_section_id}, code: {from_path: selected_section_code}, title: {from_path: selected_section_title}, slot: {from_path: selected_section_slot}, credits: {from_path: selected_section_credits}, status: planned}}
+          - *derive_plan_count
+          - {op: changed_by_path, path: planned_credit_total, by_path: selected_section_credits}
+          - {op: equals, path: petition_status, value: open}
+          - {op: equals, path: last_action, value: add_selected_section}
+
+  detect_conflict_button:
+    kind: button
+    selector: '[data-testid="detect-conflict"]'
+    page: matrix
+    actions:
+      click:
+        effects:
+          - {op: equals, path: conflict_status, value: conflict}
+          - {op: equals, path: conflict_count, value: 1}
+          - {op: equals, path: last_action, value: detect_conflict}
+  remove_math_conflict_button:
+    kind: button
+    selector: '[data-testid="remove-math-conflict"]'
+    page: matrix
+    actions:
+      click:
+        effects:
+          - {op: removed_first_where, path: plan_rows, where: [{op: equals, field: id, value: SEC-MATH-342}]}
+          - {op: equals, path: plan_count, value: 1}
+          - {op: equals, path: planned_credit_total, value: 4}
+          - {op: equals, path: conflict_status, value: resolved}
+          - {op: equals, path: conflict_count, value: 0}
+          - {op: equals, path: last_action, value: remove_math_conflict}
+
+  petition_note_input:
+    kind: input
+    selector: '[data-testid="petition-note"]'
+    page: petitions
+    actions:
+      fill:
+        effects:
+          - {op: equals_normalized, path: petition_note, value_from: input.value, normalizers: [trim, collapse_whitespace]}
+          - {op: equals, path: last_action, value: edit_petition_note}
+  transfer_upload_input:
+    kind: input
+    selector: '[data-testid="transfer-upload"]'
+    page: petitions
+    actions:
+      upload:
+        file_schema:
+          format: csv
+          columns:
+            - {name: id, type: string}
+            - {name: source, type: string}
+            - {name: course, type: string}
+            - {name: credits, type: string}
+            - {name: status, type: string}
+        effects:
+          - {op: equals, path: transfer_rows, value_from: input.rows}
+          - *derive_transfer_count
+          - {op: equals, path: last_transfer_file, value_from: input.file.name}
+          - {op: equals, path: last_action, value: upload_transfer}
+
+  finance_clear_button:
+    kind: button
+    selector: '[data-testid="finance-clear"]'
+    page: petitions
+    actions:
+      click:
+        allowed_roles: [bursar]
+        effects:
+          - {op: equals, path: financial_hold_status, value: cleared}
+          - {op: equals, path: billing_status, value: cleared}
+          - {op: equals, path: last_action, value: finance_clear}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_bursar}
+
+  advisor_approve_button:
+    kind: button
+    selector: '[data-testid="advisor-approve"]'
+    page: petitions
+    actions:
+      click:
+        allowed_roles: [advisor]
+        preconditions:
+          - {op: relation, path: plan_count, operator: ">", value: 0}
+        effects:
+          - {op: equals, path: advisor_status, value: approved}
+          - {op: equals, path: petition_status, value: advisor_approved}
+          - {op: appended_object, path: audit_log, value: {id: AUD-ADVISOR, event: advisor_approval, actor: advisor, status: approved}}
+          - *derive_audit_count
+          - {op: equals, path: last_action, value: advisor_approve}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_advisor}
+
+  join_studio_waitlist_button:
+    kind: button
+    selector: '[data-testid="join-studio-waitlist"]'
+    page: petitions
+    actions:
+      click:
+        preconditions:
+          - {op: one_of, path: selected_section_id, values: [SEC-DES-310]}
+        effects:
+          - {op: appended_object, path: waitlist_rows, value: {id: WAIT-DES-310, student: {from_path: selected_student_name}, section: DES 310, position: 4, status: active}}
+          - *derive_waitlist_count
+          - {op: equals, path: petition_status, value: waitlisted}
+          - {op: equals, path: last_action, value: join_studio_waitlist}
+
+  registrar_release_button:
+    kind: button
+    selector: '[data-testid="registrar-release"]'
+    page: clearance
+    actions:
+      click:
+        allowed_roles: [registrar]
+        preconditions:
+          - {op: one_of, path: advisor_status, values: [approved]}
+          - {op: one_of, path: financial_hold_status, values: [cleared]}
+          - {op: one_of, path: conflict_status, values: [none, resolved]}
+        effects:
+          - {op: equals, path: clearance_status, value: released}
+          - {op: equals, path: registrar_status, value: released}
+          - {op: equals, path: petition_status, value: released}
+          - {op: appended_object, path: release_rows, value: {id: REL-001, student: {from_path: selected_student_name}, section: {from_path: selected_section_code}, role: registrar, status: released}}
+          - *derive_release_count
+          - {op: appended_object, path: audit_log, value: {id: AUD-REGISTRAR, event: registrar_release, actor: registrar, status: released}}
+          - *derive_audit_count
+          - {op: equals, path: last_action, value: registrar_release}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_registrar}

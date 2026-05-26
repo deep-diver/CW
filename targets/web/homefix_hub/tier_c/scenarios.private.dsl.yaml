@@ -1,0 +1,783 @@
+dsl_version: "3.0.0"
+visibility: private
+tier_weights:
+  smoke: 1
+  core: 2
+  validation: 3
+  service: 4
+  upload: 4
+  permission: 4
+  persistence: 5
+  journey: 6
+
+scenarios:
+  - id: private_01_ac_quote_and_acceptance_journey
+    tier: journey
+    steps:
+      - do: reset_button.click
+      - do: select_ac_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+      - do: customer_name_input.fill
+        input: {value: "Mina Park"}
+      - do: address_input.fill
+        input: {value: "88 Cedar House"}
+      - do: get_quote_button.click
+        expect:
+          - {op: equals, path: quote_amount, value: 18900}
+      - do: approve_quote_button.click
+      - do: book_visit_button.click
+      - do: go_visits_button.click
+      - do: role_pro_button.click
+      - do: pro_accept_button.click
+        expect:
+          - {op: equals, path: booking_status, value: accepted}
+
+  - id: private_02_address_normalization
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: go_booking_button.click
+      - do: address_input.fill
+        input: {value: "  9 Oak Terrace  "}
+        expect:
+          - {op: equals, path: address, value: "9 Oak Terrace"}
+
+  - id: private_03_homeowner_cannot_assign_technician
+    tier: permission
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: get_quote_button.click
+      - do: approve_quote_button.click
+      - do: go_dispatch_button.click
+      - do: assign_mina_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: assigned_technician, value: ""}
+
+  - id: private_04_dispatch_persists_after_reload
+    tier: persistence
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+      - do: get_quote_button.click
+      - do: approve_quote_button.click
+      - do: role_dispatcher_button.click
+      - do: go_dispatch_button.click
+      - do: assign_mina_button.click
+      - do: ready_parts_button.click
+      - do: dispatch_visit_button.click
+      - browser: reload
+        expect:
+          - {op: equals, path: dispatch_status, value: dispatched}
+          - {op: equals, path: assigned_technician, value: TECH-MINA}
+
+  - id: private_05_invoice_requires_qa
+    tier: permission
+    steps:
+      - do: reset_button.click
+      - do: role_quality_manager_button.click
+      - do: go_quality_button.click
+      - do: issue_invoice_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: invoice_status, value: idle}
+
+  - id: private_06_full_quality_invoice_path
+    tier: journey
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+      - do: get_quote_button.click
+      - do: approve_homeowner_button.click
+      - do: role_dispatcher_button.click
+      - do: go_dispatch_button.click
+      - do: assign_mina_button.click
+      - do: ready_parts_button.click
+      - do: dispatch_visit_button.click
+      - do: role_quality_manager_button.click
+      - do: go_quality_button.click
+      - do: permit_upload_input.upload
+        input:
+          file:
+            name: final-dossier.csv
+            mime_type: text/csv
+            content: |
+              id,document,status
+              PM-1,Before photos,ready
+              PM-2,Fixture permit,ready
+          rows:
+            - {id: PM-1, document: "Before photos", status: ready}
+            - {id: PM-2, document: "Fixture permit", status: ready}
+      - do: pass_qa_button.click
+      - do: issue_invoice_button.click
+        expect:
+          - {op: equals, path: invoice_status, value: issued}
+          - {op: equals, path: invoice_total, value: 31700}
+
+# density-extension:start
+
+  - id: private_07_homeowner_approval_persists_after_reload
+    tier: persistence
+    steps:
+      - do: reset_button.click
+      - do: go_booking_button.click
+      - do: approve_homeowner_button.click
+      - browser: reload
+        expect:
+          - {op: equals, path: homeowner_approval_status, value: approved}
+
+  - id: private_08_permit_upload_replaces_existing_rows
+    tier: upload
+    steps:
+      - do: reset_button.click
+      - do: role_quality_manager_button.click
+      - do: go_quality_button.click
+      - do: permit_upload_input.upload
+
+        input:
+          file:
+            name: permit-three.csv
+            mime_type: text/csv
+            content: |
+              id,document,status
+              PM-1,Before photos,ready
+              PM-2,Fixture permit,ready
+              PM-3,Access waiver,ready
+          rows:
+            - {id: PM-1, document: "Before photos", status: ready}
+            - {id: PM-2, document: "Fixture permit", status: ready}
+            - {id: PM-3, document: "Access waiver", status: ready}
+      - do: permit_upload_input.upload
+        input:
+          file:
+            name: permit-one.csv
+            mime_type: text/csv
+            content: |
+              id,document,status
+              PM-9,Final signoff,ready
+          rows:
+            - {id: PM-9, document: "Final signoff", status: ready}
+        expect:
+          - {op: equals, path: permit_count, value: 1}
+
+  - id: private_09_dispatch_to_quality_page_persists
+    tier: persistence
+    steps:
+      - do: reset_button.click
+      - do: role_quality_manager_button.click
+      - do: go_quality_button.click
+      - browser: reload
+        expect:
+          - {op: equals, path: current_page, value: quality}
+
+  - id: private_10_invoice_rejected_after_permit_without_qa
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: role_quality_manager_button.click
+      - do: go_quality_button.click
+      - do: permit_upload_input.upload
+
+        input:
+          file:
+            name: permit-three.csv
+            mime_type: text/csv
+            content: |
+              id,document,status
+              PM-1,Before photos,ready
+              PM-2,Fixture permit,ready
+              PM-3,Access waiver,ready
+          rows:
+            - {id: PM-1, document: "Before photos", status: ready}
+            - {id: PM-2, document: "Fixture permit", status: ready}
+            - {id: PM-3, document: "Access waiver", status: ready}
+      - do: issue_invoice_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: invoice_status, value: idle}
+
+  - id: private_11_quality_role_after_navigation_roundtrip
+    tier: permission
+    steps:
+      - do: reset_button.click
+      - do: role_quality_manager_button.click
+      - do: go_jobs_button.click
+      - do: go_quality_button.click
+        expect:
+          - {op: equals, path: active_role, value: quality_manager}
+
+  - id: private_12_pass_qa_marks_ready_count
+    tier: journey
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+      - do: get_quote_button.click
+      - do: approve_homeowner_button.click
+      - do: role_dispatcher_button.click
+      - do: go_dispatch_button.click
+      - do: assign_mina_button.click
+      - do: ready_parts_button.click
+      - do: dispatch_visit_button.click
+      - do: role_quality_manager_button.click
+      - do: go_quality_button.click
+      - do: permit_upload_input.upload
+
+        input:
+          file:
+            name: permit-three.csv
+            mime_type: text/csv
+            content: |
+              id,document,status
+              PM-1,Before photos,ready
+              PM-2,Fixture permit,ready
+              PM-3,Access waiver,ready
+          rows:
+            - {id: PM-1, document: "Before photos", status: ready}
+            - {id: PM-2, document: "Fixture permit", status: ready}
+            - {id: PM-3, document: "Access waiver", status: ready}
+      - do: pass_qa_button.click
+        expect:
+          - {op: equals, path: qa_ready_count, value: 3}
+          - {op: equals, path: booking_status, value: complete}
+
+  - id: private_13_invoice_total_persists_after_reload
+    tier: persistence
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+      - do: get_quote_button.click
+      - do: approve_homeowner_button.click
+      - do: role_dispatcher_button.click
+      - do: go_dispatch_button.click
+      - do: assign_mina_button.click
+      - do: ready_parts_button.click
+      - do: dispatch_visit_button.click
+      - do: role_quality_manager_button.click
+      - do: go_quality_button.click
+      - do: permit_upload_input.upload
+
+        input:
+          file:
+            name: permit-three.csv
+            mime_type: text/csv
+            content: |
+              id,document,status
+              PM-1,Before photos,ready
+              PM-2,Fixture permit,ready
+              PM-3,Access waiver,ready
+          rows:
+            - {id: PM-1, document: "Before photos", status: ready}
+            - {id: PM-2, document: "Fixture permit", status: ready}
+            - {id: PM-3, document: "Access waiver", status: ready}
+      - do: pass_qa_button.click
+      - do: issue_invoice_button.click
+      - browser: reload
+        expect:
+          - {op: equals, path: invoice_total, value: 31700}
+
+  - id: private_14_quality_reset_returns_homeowner
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: role_quality_manager_button.click
+      - do: go_quality_button.click
+      - do: reset_button.click
+        expect:
+          - {op: equals, path: active_role, value: homeowner}
+          - {op: equals, path: current_page, value: jobs}
+
+  - id: private_15_pass_qa_rejected_without_dispatch
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: role_quality_manager_button.click
+      - do: go_quality_button.click
+      - do: permit_upload_input.upload
+        input:
+          file:
+            name: permit-before-dispatch.csv
+            mime_type: text/csv
+            content: |
+              id,document,status
+              PM-1,Before photos,ready
+          rows:
+            - {id: PM-1, document: "Before photos", status: ready}
+      - do: pass_qa_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: qa_status, value: idle}
+          - {op: equals, path: qa_ready_count, value: 0}
+
+  - id: private_16_technician_cannot_dispatch_even_after_assignment
+    tier: permission
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: get_quote_button.click
+      - do: approve_quote_button.click
+      - do: role_dispatcher_button.click
+      - do: go_dispatch_button.click
+      - do: assign_mina_button.click
+      - do: ready_parts_button.click
+      - do: role_technician_button.click
+      - do: dispatch_visit_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: dispatch_status, value: idle}
+          - {op: equals, path: denied_count, value: 1}
+
+  - id: private_17_permit_table_order_after_reupload
+    tier: upload
+    steps:
+      - do: reset_button.click
+      - do: role_quality_manager_button.click
+      - do: go_quality_button.click
+      - do: permit_upload_input.upload
+        input:
+          file:
+            name: permit-old.csv
+            mime_type: text/csv
+            content: |
+              id,document,status
+              PM-OLD,Old permit,ready
+          rows:
+            - {id: PM-OLD, document: "Old permit", status: ready}
+      - do: permit_upload_input.upload
+        input:
+          file:
+            name: permit-reupload.csv
+            mime_type: text/csv
+            content: |
+              id,document,status
+              PM-A,Access waiver,ready
+              PM-B,Before photos,ready
+              PM-C,Fixture permit,ready
+          rows:
+            - {id: PM-A, document: "Access waiver", status: ready}
+            - {id: PM-B, document: "Before photos", status: ready}
+            - {id: PM-C, document: "Fixture permit", status: ready}
+        expect:
+          - {op: equals, path: permit_count, value: 3}
+      - table: permit_grid
+        expect_order: [PM-A, PM-B, PM-C]
+        expect_row_count: 3
+
+  - id: private_18_qa_table_open_before_pass
+    tier: core
+    steps:
+      - do: reset_button.click
+      - do: role_quality_manager_button.click
+      - do: go_quality_button.click
+      - table: qa_grid
+        expect_order: [Q-PHOTO, Q-PERMIT, Q-PARTS]
+        expect_rows:
+          - id: Q-PHOTO
+            cells: {status: open}
+          - id: Q-PERMIT
+            cells: {status: open}
+          - id: Q-PARTS
+            cells: {status: open}
+
+  - id: private_19_homeowner_cannot_issue_invoice_after_qa
+    tier: permission
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+      - do: get_quote_button.click
+      - do: approve_homeowner_button.click
+      - do: role_dispatcher_button.click
+      - do: go_dispatch_button.click
+      - do: assign_mina_button.click
+      - do: ready_parts_button.click
+      - do: dispatch_visit_button.click
+      - do: role_quality_manager_button.click
+      - do: go_quality_button.click
+      - do: permit_upload_input.upload
+        input:
+          file:
+            name: invoice-role.csv
+            mime_type: text/csv
+            content: |
+              id,document,status
+              PM-1,Before photos,ready
+          rows:
+            - {id: PM-1, document: "Before photos", status: ready}
+      - do: pass_qa_button.click
+      - do: role_homeowner_button.click
+      - do: issue_invoice_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: invoice_status, value: idle}
+
+  - id: private_20_reset_after_invoice_clears_quality_state
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+      - do: get_quote_button.click
+      - do: approve_homeowner_button.click
+      - do: role_dispatcher_button.click
+      - do: go_dispatch_button.click
+      - do: assign_mina_button.click
+      - do: ready_parts_button.click
+      - do: dispatch_visit_button.click
+      - do: role_quality_manager_button.click
+      - do: go_quality_button.click
+      - do: permit_upload_input.upload
+        input:
+          file:
+            name: reset-quality.csv
+            mime_type: text/csv
+            content: |
+              id,document,status
+              PM-1,Before photos,ready
+          rows:
+            - {id: PM-1, document: "Before photos", status: ready}
+      - do: pass_qa_button.click
+      - do: issue_invoice_button.click
+      - do: reset_button.click
+        expect:
+          - {op: equals, path: invoice_status, value: idle}
+          - {op: equals, path: permit_rows, value: []}
+          - {op: equals, path: qa_status, value: idle}
+
+  - id: private_21_ac_invoice_total_is_quote_plus_diagnostic
+    tier: journey
+    steps:
+      - do: reset_button.click
+      - do: select_ac_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+      - do: get_quote_button.click
+      - do: approve_homeowner_button.click
+      - do: role_dispatcher_button.click
+      - do: go_dispatch_button.click
+      - do: assign_mina_button.click
+      - do: ready_parts_button.click
+      - do: dispatch_visit_button.click
+      - do: role_quality_manager_button.click
+      - do: go_quality_button.click
+      - do: permit_upload_input.upload
+        input:
+          file:
+            name: ac-invoice.csv
+            mime_type: text/csv
+            content: |
+              id,document,status
+              PM-1,Before photos,ready
+          rows:
+            - {id: PM-1, document: "Before photos", status: ready}
+      - do: pass_qa_button.click
+      - do: issue_invoice_button.click
+        expect:
+          - {op: equals, path: invoice_total, value: 23800}
+
+  - id: private_22_permit_count_survives_double_reload
+    tier: persistence
+    steps:
+      - do: reset_button.click
+      - do: role_quality_manager_button.click
+      - do: go_quality_button.click
+      - do: permit_upload_input.upload
+        input:
+          file:
+            name: double-reload-permit.csv
+            mime_type: text/csv
+            content: |
+              id,document,status
+              PM-A,Access waiver,ready
+              PM-B,Before photos,ready
+          rows:
+            - {id: PM-A, document: "Access waiver", status: ready}
+            - {id: PM-B, document: "Before photos", status: ready}
+      - browser: reload
+      - browser: reload
+        expect:
+          - {op: equals, path: permit_count, value: 2}
+          - {op: equals, path: current_page, value: quality}
+
+  - id: private_23_filter_all_restores_price_order
+    tier: core
+    steps:
+      - do: reset_button.click
+      - do: filter_plumbing_button.click
+      - do: filter_all_button.click
+      - table: service_grid
+        expect_order: [HF-AC, HF-LIGHT, HF-LEAK, HF-ROOF]
+        expect_row_count: 4
+
+  - id: private_24_pro_accept_does_not_reopen_dispatched_visit
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+      - do: get_quote_button.click
+      - do: approve_quote_button.click
+      - do: role_dispatcher_button.click
+      - do: go_dispatch_button.click
+      - do: assign_mina_button.click
+      - do: ready_parts_button.click
+      - do: dispatch_visit_button.click
+      - do: role_pro_button.click
+      - do: go_visits_button.click
+      - do: pro_accept_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: booking_status, value: dispatched}
+
+  - id: private_25_rework_flag_reopens_qa_after_invoice
+    tier: journey
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+      - do: get_quote_button.click
+      - do: approve_homeowner_button.click
+      - do: role_dispatcher_button.click
+      - do: go_dispatch_button.click
+      - do: assign_mina_button.click
+      - do: ready_parts_button.click
+      - do: dispatch_visit_button.click
+      - do: role_quality_manager_button.click
+      - do: go_quality_button.click
+      - do: permit_upload_input.upload
+        input:
+          file: {name: rework-permit.csv, mime_type: text/csv, content: "id,document,status\nPM-1,Before photos,ready\n"}
+          rows:
+            - {id: PM-1, document: "Before photos", status: ready}
+      - do: pass_qa_button.click
+      - do: issue_invoice_button.click
+      - do: flag_rework_button.click
+        expect:
+          - {op: equals, path: rework_status, value: open}
+          - {op: equals, path: qa_status, value: rework}
+          - {op: equals, path: invoice_status, value: idle}
+
+  - id: private_26_rework_table_marks_parts_open
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+      - do: get_quote_button.click
+      - do: approve_homeowner_button.click
+      - do: role_dispatcher_button.click
+      - do: go_dispatch_button.click
+      - do: assign_mina_button.click
+      - do: ready_parts_button.click
+      - do: dispatch_visit_button.click
+      - do: role_quality_manager_button.click
+      - do: go_quality_button.click
+      - do: permit_upload_input.upload
+        input:
+          file: {name: rework-table.csv, mime_type: text/csv, content: "id,document,status\nPM-1,Before photos,ready\n"}
+          rows:
+            - {id: PM-1, document: "Before photos", status: ready}
+      - do: pass_qa_button.click
+      - do: flag_rework_button.click
+      - table: qa_grid
+        expect_rows:
+          - id: Q-PHOTO
+            cells: {status: cleared}
+          - id: Q-PARTS
+            cells: {status: open}
+
+  - id: private_27_supplement_rejected_before_rework_resolution
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+      - do: get_quote_button.click
+      - do: approve_homeowner_button.click
+      - do: role_dispatcher_button.click
+      - do: go_dispatch_button.click
+      - do: assign_mina_button.click
+      - do: ready_parts_button.click
+      - do: dispatch_visit_button.click
+      - do: role_quality_manager_button.click
+      - do: go_quality_button.click
+      - do: permit_upload_input.upload
+        input:
+          file: {name: supplement-block.csv, mime_type: text/csv, content: "id,document,status\nPM-1,Before photos,ready\n"}
+          rows:
+            - {id: PM-1, document: "Before photos", status: ready}
+      - do: pass_qa_button.click
+      - do: issue_invoice_button.click
+      - do: issue_supplement_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: supplement_status, value: blocked}
+          - {op: equals, path: release_packet_status, value: idle}
+
+  - id: private_28_resolved_rework_supplement_total
+    tier: journey
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+      - do: get_quote_button.click
+      - do: approve_homeowner_button.click
+      - do: role_dispatcher_button.click
+      - do: go_dispatch_button.click
+      - do: assign_mina_button.click
+      - do: ready_parts_button.click
+      - do: dispatch_visit_button.click
+      - do: role_quality_manager_button.click
+      - do: go_quality_button.click
+      - do: permit_upload_input.upload
+        input:
+          file: {name: supplement-total.csv, mime_type: text/csv, content: "id,document,status\nPM-1,Before photos,ready\n"}
+          rows:
+            - {id: PM-1, document: "Before photos", status: ready}
+      - do: pass_qa_button.click
+      - do: flag_rework_button.click
+      - do: resolve_rework_button.click
+      - do: issue_invoice_button.click
+      - do: issue_supplement_button.click
+        expect:
+          - {op: equals, path: rework_count, value: 1}
+          - {op: equals, path: supplement_total, value: 32900}
+          - {op: equals, path: release_packet_status, value: staged}
+
+  - id: private_29_ac_rework_supplement_total
+    tier: journey
+    steps:
+      - do: reset_button.click
+      - do: select_ac_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+      - do: get_quote_button.click
+      - do: approve_homeowner_button.click
+      - do: role_dispatcher_button.click
+      - do: go_dispatch_button.click
+      - do: assign_mina_button.click
+      - do: ready_parts_button.click
+      - do: dispatch_visit_button.click
+      - do: role_quality_manager_button.click
+      - do: go_quality_button.click
+      - do: permit_upload_input.upload
+        input:
+          file: {name: ac-supplement.csv, mime_type: text/csv, content: "id,document,status\nPM-1,Before photos,ready\n"}
+          rows:
+            - {id: PM-1, document: "Before photos", status: ready}
+      - do: pass_qa_button.click
+      - do: flag_rework_button.click
+      - do: resolve_rework_button.click
+      - do: issue_invoice_button.click
+      - do: issue_supplement_button.click
+        expect:
+          - {op: equals, path: supplement_total, value: 25000}
+
+  - id: private_30_homeowner_cannot_issue_supplement
+    tier: permission
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+      - do: get_quote_button.click
+      - do: approve_homeowner_button.click
+      - do: role_dispatcher_button.click
+      - do: go_dispatch_button.click
+      - do: assign_mina_button.click
+      - do: ready_parts_button.click
+      - do: dispatch_visit_button.click
+      - do: role_quality_manager_button.click
+      - do: go_quality_button.click
+      - do: permit_upload_input.upload
+        input:
+          file: {name: supplement-role.csv, mime_type: text/csv, content: "id,document,status\nPM-1,Before photos,ready\n"}
+          rows:
+            - {id: PM-1, document: "Before photos", status: ready}
+      - do: pass_qa_button.click
+      - do: flag_rework_button.click
+      - do: resolve_rework_button.click
+      - do: issue_invoice_button.click
+      - do: role_homeowner_button.click
+      - do: issue_supplement_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: supplement_status, value: idle}
+
+  - id: private_31_release_packet_after_supplement
+    tier: journey
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+      - do: get_quote_button.click
+      - do: approve_homeowner_button.click
+      - do: role_dispatcher_button.click
+      - do: go_dispatch_button.click
+      - do: assign_mina_button.click
+      - do: ready_parts_button.click
+      - do: dispatch_visit_button.click
+      - do: role_quality_manager_button.click
+      - do: go_quality_button.click
+      - do: permit_upload_input.upload
+        input:
+          file: {name: release-packet.csv, mime_type: text/csv, content: "id,document,status\nPM-1,Before photos,ready\n"}
+          rows:
+            - {id: PM-1, document: "Before photos", status: ready}
+      - do: pass_qa_button.click
+      - do: flag_rework_button.click
+      - do: resolve_rework_button.click
+      - do: issue_invoice_button.click
+      - do: issue_supplement_button.click
+      - do: release_packet_button.click
+        expect:
+          - {op: equals, path: release_packet_status, value: released}
+          - {op: equals, path: booking_status, value: released}
+
+  - id: private_32_rework_state_survives_reload
+    tier: persistence
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+      - do: get_quote_button.click
+      - do: approve_homeowner_button.click
+      - do: role_dispatcher_button.click
+      - do: go_dispatch_button.click
+      - do: assign_mina_button.click
+      - do: ready_parts_button.click
+      - do: dispatch_visit_button.click
+      - do: role_quality_manager_button.click
+      - do: go_quality_button.click
+      - do: permit_upload_input.upload
+        input:
+          file: {name: rework-reload.csv, mime_type: text/csv, content: "id,document,status\nPM-1,Before photos,ready\n"}
+          rows:
+            - {id: PM-1, document: "Before photos", status: ready}
+      - do: pass_qa_button.click
+      - do: flag_rework_button.click
+      - browser: reload
+        expect:
+          - {op: equals, path: rework_status, value: open}
+          - {op: equals, path: qa_status, value: rework}
+# density-extension:end

@@ -1,0 +1,48 @@
+{
+  "batch_id": "20260512T015752Z",
+  "generated": 30,
+  "generation_total": 30,
+  "evaluated": 30,
+  "evaluation_total": 30,
+  "models": [
+    {
+      "key": "claude_haiku45",
+      "model_tier": "M",
+      "slug": "claude_haiku45",
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "n": 10,
+      "mean_ratio": 0.07837837837837838,
+      "std_ratio": 0.16633763479528568,
+      "mean_stepwise": 0.24138523263523265,
+      "std_stepwise": 0.2988358906468229,
+      "full_pass_count": 0
+    },
+    {
+      "key": "gemini31_flash_lite",
+      "model_tier": "M",
+      "slug": "gemini31_flash_lite",
+      "provider": "google",
+      "model": "gemini-3.1-flash-lite",
+      "n": 10,
+      "mean_ratio": 0.0,
+      "std_ratio": 0.0,
+      "mean_stepwise": 0.0870982995982996,
+      "std_stepwise": 0.0,
+      "full_pass_count": 0
+    },
+    {
+      "key": "gpt54_nano",
+      "model_tier": "M",
+      "slug": "gpt54_nano",
+      "provider": "openai",
+      "model": "gpt-5.4-nano",
+      "n": 10,
+      "mean_ratio": 0.0936936936936937,
+      "std_ratio": 0.21501165967821692,
+      "mean_stepwise": 0.21400047775047773,
+      "std_stepwise": 0.30067011678122374,
+      "full_pass_count": 0
+    }
+  ]
+}

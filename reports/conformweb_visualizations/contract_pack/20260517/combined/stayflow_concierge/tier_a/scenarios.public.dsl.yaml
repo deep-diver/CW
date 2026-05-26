@@ -1,0 +1,92 @@
+dsl_version: "3.0.0"
+visibility: public
+tier_weights:
+  smoke: 1
+  core: 2
+  validation: 3
+  service: 4
+  upload: 4
+  permission: 4
+  persistence: 5
+  journey: 6
+scenarios:
+  - id: public_01_filter_seoul_catalog
+    tier: smoke
+    steps:
+      - do: reset_button.click
+      - do: filter_seoul_button.click
+        expect:
+          - {op: equals, path: current_destination, value: Seoul}
+      - table: property_grid
+        expect_order: [SF-SEOUL-LOFT]
+        expect_row_count: 1
+        expect_rows:
+          - id: SF-SEOUL-LOFT
+            cells:
+              name: Han River Loft
+              city: Seoul
+              base: "480"
+
+  - id: public_02_select_busan_quote
+    tier: core
+    steps:
+      - do: reset_button.click
+      - do: select_busan_button.click
+        expect:
+          - {op: equals, path: selected_property_id, value: SF-BUSAN-HARBOR}
+          - {op: equals, path: total_due, value: 352}
+
+  - id: public_03_missing_guest_name_rejected
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: select_seoul_button.click
+      - do: go_checkout_button.click
+      - do: guest_email_input.fill
+        input: {value: "pilot@example.com"}
+      - do: validate_guest_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: booking_status, value: validation_failed}
+          - {op: equals, path: error_count, value: 1}
+
+  - id: public_04_service_promo_credit
+    tier: service
+    steps:
+      - do: reset_button.click
+      - do: select_seoul_button.click
+      - do: go_checkout_button.click
+      - do: promo_code_input.fill
+        input: {value: " stay20 "}
+      - do: apply_promo_button.click
+        expect:
+          - {op: equals, path: promo_code, value: STAY20}
+          - {op: equals, path: promo_credit, value: 80}
+          - {op: equals, path: availability_status, value: applied}
+          - {op: equals, path: total_due, value: 432}
+
+  - id: public_05_group_manifest_upload
+    tier: upload
+    steps:
+      - do: reset_button.click
+      - do: go_manage_button.click
+      - do: group_upload_input.upload
+        input:
+          file:
+            name: stayflow-guests.csv
+            mime_type: text/csv
+            content: |
+              id,name,tier,meal
+              G-1,Nora Kim,gold,vegetarian
+              G-2,Sam Lee,standard,standard
+          rows:
+            - {id: G-1, name: Nora Kim, tier: gold, meal: vegetarian}
+            - {id: G-2, name: Sam Lee, tier: standard, meal: standard}
+      - table: guest_grid
+        expect_order: [G-1, G-2]
+        expect_row_count: 2
+        expect_rows:
+          - id: G-1
+            cells:
+              name: Nora Kim
+              tier: gold

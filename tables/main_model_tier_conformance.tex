@@ -1,0 +1,36 @@
+\begin{table*}[t]
+\centering
+\scriptsize
+\caption{Model-level behavioral conformance and tier stress. Panel A and Panel B use the complete 2,160-run paper scope after filling the three previously missing evaluation results. Individual model rows use explicit per-model raw summaries or retained per-model report rows; no model-level values are inferred from group aggregates.}
+\label{tab:model-tier-conformance}
+\setlength{\tabcolsep}{3.0pt}
+\renewcommand{\arraystretch}{1.08}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}llccccccc@{}}
+\toprule
+Group & Model & Full pass & $S_{\mathrm{scen}}$ & $S_{\mathrm{step}}$ & A & B & C & D \\
+\midrule
+\multicolumn{9}{@{}l}{\textit{Panel A: complete blind full-pass evidence}} \\
+All & Complete aggregate & 252/2160 (11.7\%) & 36.7\% & 49.4\% & 116/540 (21.5\%) & 82/540 (15.2\%) & 44/540 (8.1\%) & 10/540 (1.9\%) \\
+\midrule
+\multicolumn{9}{@{}l}{\textit{Panel B: model-level conformance and tier stress}} \\
+\textbf{Mini} & \textbf{Group aggregate} & \textbf{6/720 (0.8\%)} & \textbf{10.9\%} & \textbf{24.8\%} & \textbf{1/180 (0.6\%)} & \textbf{2/180 (1.1\%)} & \textbf{3/180 (1.7\%)} & \textbf{0/180 (0.0\%)} \\
+& GPT-5.4 nano & 5/240 (2.1\%) & 17.5\% & 32.0\% & 0/60 (0.0\%) & 2/60 (3.3\%) & 3/60 (5.0\%) & 0/60 (0.0\%) \\
+& Claude Haiku 4.5 & 1/240 (0.4\%) & 14.3\% & 31.5\% & 1/60 (1.7\%) & 0/60 (0.0\%) & 0/60 (0.0\%) & 0/60 (0.0\%) \\
+& Gemini 3.1 Flash Lite & 0/240 (0.0\%) & 0.9\% & 10.9\% & 0/60 (0.0\%) & 0/60 (0.0\%) & 0/60 (0.0\%) & 0/60 (0.0\%) \\
+\midrule
+\textbf{Turbo} & \textbf{Group aggregate} & \textbf{72/720 (10.0\%)} & \textbf{31.9\%} & \textbf{43.9\%} & \textbf{35/180 (19.4\%)} & \textbf{22/180 (12.2\%)} & \textbf{12/180 (6.7\%)} & \textbf{3/180 (1.7\%)} \\
+& GPT-5.4 mini & 3/240 (1.2\%) & 4.3\% & 13.5\% & 3/60 (5.0\%) & 0/60 (0.0\%) & 0/60 (0.0\%) & 0/60 (0.0\%) \\
+& Claude Sonnet 4.6 & 46/240 (19.2\%) & 55.0\% & 67.4\% & 19/60 (31.7\%) & 14/60 (23.3\%) & 10/60 (16.7\%) & 3/60 (5.0\%) \\
+& Gemini 3.1 Flash & 23/240 (9.6\%) & 36.5\% & 50.9\% & 13/60 (21.7\%) & 8/60 (13.3\%) & 2/60 (3.3\%) & 0/60 (0.0\%) \\
+\midrule
+\textbf{Frontier} & \textbf{Group aggregate} & \textbf{174/720 (24.2\%)} & \textbf{67.2\%} & \textbf{79.3\%} & \textbf{80/180 (44.4\%)} & \textbf{58/180 (32.2\%)} & \textbf{29/180 (16.1\%)} & \textbf{7/180 (3.9\%)} \\
+& GPT-5.4 & 47/240 (19.6\%) & 68.4\% & 81.0\% & 23/60 (38.3\%) & 17/60 (28.3\%) & 3/60 (5.0\%) & 4/60 (6.7\%) \\
+& Claude Opus 4.6 & 69/240 (28.8\%) & 70.8\% & 82.3\% & 32/60 (53.3\%) & 22/60 (36.7\%) & 15/60 (25.0\%) & 0/60 (0.0\%) \\
+& Gemini 3.1 Pro Preview & 58/240 (24.2\%) & 62.3\% & 74.7\% & 25/60 (41.7\%) & 19/60 (31.7\%) & 11/60 (18.3\%) & 3/60 (5.0\%) \\
+\bottomrule
+\end{tabular}%
+}
+\vspace{2pt}
+\footnotesize{\emph{Note.} Denominators are reportable runs. The complete aggregate has 2,160 reportable generations. Some retained per-model rows come from evaluation reports or tier README rollups rather than low-level raw summaries; no individual model value is inferred from a group aggregate.}
+\end{table*}

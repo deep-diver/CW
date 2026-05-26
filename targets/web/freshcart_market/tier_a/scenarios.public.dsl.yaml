@@ -1,0 +1,92 @@
+dsl_version: "3.0.0"
+visibility: public
+tier_weights:
+  smoke: 1
+  core: 2
+  validation: 3
+  service: 4
+  upload: 4
+  permission: 4
+  persistence: 5
+  journey: 6
+
+scenarios:
+  - id: public_01_filter_fruit_catalog
+    tier: smoke
+    steps:
+      - do: reset_button.click
+      - do: filter_fruit_button.click
+        expect:
+          - {op: equals, path: current_category, value: fruit}
+      - table: product_grid
+        expect_order: [FC-BNN-01, FC-APL-01]
+        expect_row_count: 2
+        expect_rows:
+          - id: FC-BNN-01
+            cells:
+              name: Cavendish Bananas
+              category: fruit
+          - id: FC-APL-01
+            cells:
+              name: Fuji Apples
+              category: fruit
+
+  - id: public_02_add_apple_updates_cart
+    tier: core
+    steps:
+      - do: reset_button.click
+      - do: add_apple_button.click
+        expect:
+          - {op: equals, path: cart_count, value: 1}
+          - {op: equals, path: cart_subtotal, value: 5900}
+          - {op: equals, path: delivery_fee, value: 3000}
+          - {op: equals, path: order_total, value: 8900}
+          - {op: equals, path: last_action, value: add_item}
+
+  - id: public_03_minimum_order_rejected
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: add_banana_button.click
+        expect:
+          - {op: equals, path: cart_subtotal, value: 3200}
+      - do: go_cart_button.click
+      - do: slot_morning_button.click
+      - do: customer_name_input.fill
+        input: {value: "Test User"}
+      - do: place_order_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: order_placed, value: false}
+
+  - id: public_04_coupon_fresh10_credit
+    tier: service
+    steps:
+      - do: reset_button.click
+      - do: add_cheese_button.click
+      - do: go_cart_button.click
+      - do: coupon_code_input.fill
+        input: {value: " fresh10 "}
+        expect:
+          - {op: equals, path: coupon_code, value: FRESH10}
+      - do: apply_coupon_button.click
+        expect:
+          - {op: equals, path: coupon_credit, value: 3000}
+          - {op: equals, path: coupon_status, value: applied}
+          - {op: equals, path: service_call_count, value: 1}
+
+  - id: public_05_place_order_creates_receipt
+    tier: journey
+    steps:
+      - do: reset_button.click
+      - do: add_salmon_button.click
+      - do: add_rice_button.click
+      - do: go_cart_button.click
+      - do: slot_evening_button.click
+      - do: customer_name_input.fill
+        input: {value: "Jiyeon Park"}
+      - do: place_order_button.click
+        expect:
+          - {op: equals, path: order_placed, value: true}
+          - {op: equals, path: order_id, value: "ORD-001"}
+      - do: go_receipts_button.click

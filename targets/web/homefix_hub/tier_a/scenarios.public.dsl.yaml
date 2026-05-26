@@ -1,0 +1,207 @@
+dsl_version: "3.0.0"
+visibility: public
+tier_weights:
+  smoke: 1
+  core: 2
+  validation: 3
+  service: 4
+  upload: 4
+  permission: 4
+  persistence: 5
+  journey: 6
+
+scenarios:
+  - id: public_01_filter_plumbing_services
+    tier: smoke
+    steps:
+      - do: reset_button.click
+      - do: filter_plumbing_button.click
+        expect:
+          - {op: equals, path: selected_category, value: plumbing}
+      - table: service_grid
+        expect_order: [HF-LEAK]
+        expect_row_count: 1
+        expect_rows:
+          - id: HF-LEAK
+            cells: {name: "Burst pipe repair", category: plumbing}
+
+  - id: public_02_quote_emergency_pipe_repair
+    tier: service
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: urgency_emergency_button.click
+      - do: get_quote_button.click
+        expect:
+          - {op: equals, path: quote_status, value: ready}
+          - {op: equals, path: quote_amount, value: 26800}
+          - {op: equals, path: diagnostic_fee, value: 4900}
+          - {op: equals, path: service_call_count, value: 1}
+
+  - id: public_03_booking_requires_slot
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: get_quote_button.click
+      - do: approve_quote_button.click
+      - do: book_visit_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: booking_status, value: blocked}
+
+  - id: public_04_book_visit_creates_timeline
+    tier: journey
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: urgency_emergency_button.click
+      - do: slot_today_button.click
+      - do: customer_name_input.fill
+        input: {value: "Ari Lee"}
+      - do: address_input.fill
+        input: {value: "  42 Maple Loft  "}
+      - do: get_quote_button.click
+      - do: approve_quote_button.click
+      - do: book_visit_button.click
+        expect:
+          - {op: equals, path: booking_status, value: scheduled}
+          - {op: equals, path: visit_count, value: 1}
+      - table: visit_grid
+        expect_order: [VIS-001]
+        expect_row_count: 1
+        expect_rows:
+          - id: VIS-001
+            cells: {service: "Burst pipe repair", slot: today_4pm, status: scheduled}
+
+  - id: public_05_pro_accept_is_role_gated
+    tier: permission
+    steps:
+      - do: reset_button.click
+      - do: select_ac_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+      - do: get_quote_button.click
+      - do: approve_quote_button.click
+      - do: book_visit_button.click
+      - do: go_visits_button.click
+      - do: pro_accept_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: booking_status, value: scheduled}
+      - do: role_pro_button.click
+      - do: pro_accept_button.click
+        expect:
+          - {op: equals, path: booking_status, value: accepted}
+
+  - id: public_06_reload_preserves_booking
+    tier: persistence
+    steps:
+      - do: reset_button.click
+      - do: select_ac_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+      - do: get_quote_button.click
+      - do: approve_quote_button.click
+      - do: book_visit_button.click
+      - browser: reload
+        expect:
+          - {op: equals, path: booking_status, value: scheduled}
+          - {op: equals, path: visit_count, value: 1}
+
+# density-extension:start
+
+  - id: public_07_filter_all_restores_price_order
+    tier: smoke
+    steps:
+      - do: reset_button.click
+      - do: filter_plumbing_button.click
+      - do: filter_all_button.click
+        expect:
+          - {op: equals, path: selected_category, value: all}
+      - table: service_grid
+        expect_order: [HF-AC, HF-LIGHT, HF-LEAK, HF-ROOF]
+        expect_row_count: 4
+
+  - id: public_08_select_ac_sets_booking_context
+    tier: core
+    steps:
+      - do: reset_button.click
+      - do: select_ac_button.click
+        expect:
+          - {op: equals, path: selected_service_id, value: HF-AC}
+          - {op: equals, path: selected_service_name, value: "Air conditioner tune-up"}
+
+  - id: public_09_slot_selection_sets_marker
+    tier: core
+    steps:
+      - do: reset_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+        expect:
+          - {op: equals, path: selected_slot, value: today_4pm}
+
+  - id: public_10_customer_name_is_trimmed
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: go_booking_button.click
+      - do: customer_name_input.fill
+        input: {value: "  Jordan Vale  "}
+        expect:
+          - {op: equals, path: customer_name, value: "Jordan Vale"}
+
+  - id: public_11_reset_clears_quote_workflow
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+      - do: get_quote_button.click
+      - do: approve_quote_button.click
+      - do: reset_button.click
+        expect:
+          - {op: equals, path: selected_service_id, value: ""}
+          - {op: equals, path: quote_amount, value: 0}
+          - {op: equals, path: booking_status, value: idle}
+
+  - id: public_12_ac_booking_timeline_row
+    tier: journey
+    steps:
+      - do: reset_button.click
+      - do: select_ac_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+      - do: get_quote_button.click
+      - do: approve_quote_button.click
+      - do: book_visit_button.click
+      - table: visit_grid
+        expect_order: [VIS-001]
+        expect_row_count: 1
+        expect_rows:
+          - id: VIS-001
+            cells: {service: "Air conditioner tune-up", slot: today_4pm, status: scheduled}
+
+  - id: public_13_role_homeowner_roundtrip
+    tier: permission
+    steps:
+      - do: reset_button.click
+      - do: role_pro_button.click
+      - do: role_homeowner_button.click
+        expect:
+          - {op: equals, path: active_role, value: homeowner}
+          - {op: equals, path: last_action, value: role_homeowner}
+
+  - id: public_14_pro_role_persists_on_reload
+    tier: persistence
+    steps:
+      - do: reset_button.click
+      - do: role_pro_button.click
+      - browser: reload
+        expect:
+          - {op: equals, path: active_role, value: pro}
+# density-extension:end

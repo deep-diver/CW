@@ -1,0 +1,561 @@
+dsl_version: "3.0.0"
+
+app:
+  id: freshcart_market
+  name: FreshCart Market
+  capability: grocery_delivery_service
+
+runtime:
+  target: web
+  start_url: /#/shop
+
+  state_probe:
+    kind: javascript
+    expression: window.__DETOX_STATE__
+
+  pages:
+    shop:
+      path: /#/shop
+      purpose: Product catalog with category filters and add-to-cart actions.
+    cart:
+      path: /#/cart
+      purpose: Cart review, coupon validation, delivery slot, and checkout.
+    receipts:
+      path: /#/receipts
+      purpose: Order history, receipt details, and staff cancellation.
+
+  session:
+    role_path: active_role
+    roles: [customer, staff]
+
+  persistence:
+    reload:
+      scope: local_storage
+      paths:
+        - current_page
+        - active_role
+        - products
+        - current_category
+        - visible_products
+        - cart_items
+        - cart_count
+        - cart_subtotal
+        - delivery_fee
+        - coupon_code
+        - coupon_credit
+        - coupon_status
+        - service_call_count
+        - delivery_slot
+        - customer_name
+        - customer_phone
+        - order_placed
+        - order_id
+        - order_history
+        - last_action
+
+  services:
+    coupon_validate:
+      endpoint: /api/coupon
+      method: GET
+      responses:
+        - id: fresh10
+          match:
+            query:
+              code: FRESH10
+          status: 200
+          json:
+            valid: true
+            credit: 3000
+            status: applied
+        - id: save20
+          match:
+            query:
+              code: SAVE20
+          status: 200
+          json:
+            valid: true
+            credit: 5000
+            status: applied
+        - id: invalid
+          match:
+            query:
+              code: BADCODE
+          status: 200
+          json:
+            valid: false
+            credit: 0
+            status: rejected
+
+  tables:
+    product_grid:
+      selector: '[data-testid="product-grid"]'
+      row_selector: '[data-testid="product-row"]'
+      row_id_attribute: data-product-id
+      source_path: visible_products
+      row_id_field: id
+      columns:
+        name:
+          selector: '[data-col="name"]'
+          state_field: name
+        category:
+          selector: '[data-col="category"]'
+          state_field: category
+        price:
+          selector: '[data-col="price"]'
+          state_field: price
+        unit:
+          selector: '[data-col="unit"]'
+          state_field: unit
+    cart_grid:
+      selector: '[data-testid="cart-grid"]'
+      row_selector: '[data-testid="cart-row"]'
+      row_id_attribute: data-item-id
+      source_path: cart_items
+      row_id_field: product_id
+      columns:
+        name:
+          selector: '[data-col="name"]'
+          state_field: name
+        quantity:
+          selector: '[data-col="quantity"]'
+          state_field: quantity
+        unit_price:
+          selector: '[data-col="unit-price"]'
+          state_field: unit_price
+        line_total:
+          selector: '[data-col="line-total"]'
+          state_field: line_total
+
+state:
+  initial:
+    current_page: shop
+    active_role: customer
+    products:
+      - {id: FC-APL-01, name: "Fuji Apples", category: fruit, price: 5900, unit: "1kg"}
+      - {id: FC-BNN-01, name: "Cavendish Bananas", category: fruit, price: 3200, unit: bunch}
+      - {id: FC-SPN-01, name: "Baby Spinach", category: vegetable, price: 2800, unit: "200g"}
+      - {id: FC-TMT-01, name: "Vine Tomatoes", category: vegetable, price: 4500, unit: "500g"}
+      - {id: FC-MLK-01, name: "Organic Whole Milk", category: dairy, price: 3800, unit: "1L"}
+      - {id: FC-CHS-01, name: "Aged Gouda", category: dairy, price: 7200, unit: "200g"}
+      - {id: FC-CKN-01, name: "Free-Range Chicken Breast", category: meat, price: 9800, unit: "500g"}
+      - {id: FC-SAL-01, name: "Norwegian Salmon Fillet", category: seafood, price: 14500, unit: "200g"}
+      - {id: FC-RCE-01, name: "Premium Short-Grain Rice", category: pantry, price: 11900, unit: "5kg"}
+      - {id: FC-OLV-01, name: "Extra Virgin Olive Oil", category: pantry, price: 8500, unit: "500ml"}
+    current_category: all
+    visible_products:
+      - {id: FC-APL-01, name: "Fuji Apples", category: fruit, price: 5900, unit: "1kg"}
+      - {id: FC-BNN-01, name: "Cavendish Bananas", category: fruit, price: 3200, unit: bunch}
+      - {id: FC-SPN-01, name: "Baby Spinach", category: vegetable, price: 2800, unit: "200g"}
+      - {id: FC-TMT-01, name: "Vine Tomatoes", category: vegetable, price: 4500, unit: "500g"}
+      - {id: FC-MLK-01, name: "Organic Whole Milk", category: dairy, price: 3800, unit: "1L"}
+      - {id: FC-CHS-01, name: "Aged Gouda", category: dairy, price: 7200, unit: "200g"}
+      - {id: FC-CKN-01, name: "Free-Range Chicken Breast", category: meat, price: 9800, unit: "500g"}
+      - {id: FC-SAL-01, name: "Norwegian Salmon Fillet", category: seafood, price: 14500, unit: "200g"}
+      - {id: FC-RCE-01, name: "Premium Short-Grain Rice", category: pantry, price: 11900, unit: "5kg"}
+      - {id: FC-OLV-01, name: "Extra Virgin Olive Oil", category: pantry, price: 8500, unit: "500ml"}
+    cart_items: []
+    cart_count: 0
+    cart_subtotal: 0
+    delivery_fee: 0
+    order_total: 0
+    coupon_code: ""
+    coupon_credit: 0
+    coupon_status: idle
+    service_call_count: 0
+    delivery_slot: ""
+    customer_name: ""
+    customer_phone: ""
+    validation_errors: {}
+    order_placed: false
+    order_id: ""
+    order_history: []
+    last_action: ""
+    __services.calls: []
+
+  schema:
+    current_page: {type: string, purpose: "Active route page."}
+    active_role: {type: string, purpose: "Current user role: customer or staff."}
+    products: {type: array, purpose: "Full product catalog."}
+    current_category: {type: string, purpose: "Active category filter."}
+    visible_products: {type: array, purpose: "Filtered product list."}
+    cart_items: {type: array, purpose: "Items in the shopping cart."}
+    cart_count: {type: number, purpose: "Number of distinct items in cart."}
+    cart_subtotal: {type: number, purpose: "Sum of all line_total values."}
+    delivery_fee: {type: number, purpose: "0 if subtotal >= 40000, else 3000."}
+    order_total: {type: number, purpose: "cart_subtotal + delivery_fee - coupon_credit."}
+    coupon_code: {type: string, purpose: "Entered coupon code."}
+    coupon_credit: {type: number, purpose: "Credit from applied coupon."}
+    coupon_status: {type: string, purpose: "idle, applied, or rejected."}
+    service_call_count: {type: number, purpose: "Number of coupon service calls made."}
+    delivery_slot: {type: string, purpose: "Selected delivery time slot."}
+    customer_name: {type: string, purpose: "Customer name for checkout."}
+    customer_phone: {type: string, purpose: "Customer phone for checkout."}
+    validation_errors: {type: object, purpose: "Field-level validation errors."}
+    order_placed: {type: boolean, purpose: "Whether the current order has been placed."}
+    order_id: {type: string, purpose: "ID of the placed order."}
+    order_history: {type: array, purpose: "Past placed orders."}
+    last_action: {type: string, purpose: "Label of the last user action."}
+    __services.calls: {type: array, purpose: "Evaluator-provided service call ledger."}
+
+components:
+  reset_button:
+    kind: button
+    selector: '[data-testid="reset"]'
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_page, value: shop}
+          - {op: equals, path: active_role, value: customer}
+          - {op: equals, path: current_category, value: all}
+          - {op: equals, path: cart_items, value: []}
+          - {op: equals, path: cart_count, value: 0}
+          - {op: equals, path: cart_subtotal, value: 0}
+          - {op: equals, path: delivery_fee, value: 0}
+          - {op: equals, path: order_total, value: 0}
+          - {op: equals, path: coupon_code, value: ""}
+          - {op: equals, path: coupon_credit, value: 0}
+          - {op: equals, path: coupon_status, value: idle}
+          - {op: equals, path: service_call_count, value: 0}
+          - {op: equals, path: delivery_slot, value: ""}
+          - {op: equals, path: customer_name, value: ""}
+          - {op: equals, path: customer_phone, value: ""}
+          - {op: equals, path: validation_errors, value: {}}
+          - {op: equals, path: order_placed, value: false}
+          - {op: equals, path: order_id, value: ""}
+          - {op: equals, path: order_history, value: []}
+          - {op: equals, path: last_action, value: reset}
+
+  go_shop_button:
+    kind: button
+    selector: '[data-testid="go-shop"]'
+    actions:
+      click:
+        navigate_to: shop
+
+  go_cart_button:
+    kind: button
+    selector: '[data-testid="go-cart"]'
+    actions:
+      click:
+        navigate_to: cart
+
+  go_receipts_button:
+    kind: button
+    selector: '[data-testid="go-receipts"]'
+    actions:
+      click:
+        navigate_to: receipts
+
+  filter_all_button:
+    kind: button
+    selector: '[data-testid="filter-all"]'
+    page: shop
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_category, value: all}
+
+  filter_fruit_button:
+    kind: button
+    selector: '[data-testid="filter-fruit"]'
+    page: shop
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_category, value: fruit}
+          - {op: equals_filter, path: visible_products, source_path: products, where: [{op: equals, field: category, value: fruit}], order_by: [{field: price, direction: asc}]}
+
+  filter_vegetable_button:
+    kind: button
+    selector: '[data-testid="filter-vegetable"]'
+    page: shop
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_category, value: vegetable}
+          - {op: equals_filter, path: visible_products, source_path: products, where: [{op: equals, field: category, value: vegetable}], order_by: [{field: price, direction: asc}]}
+
+  filter_dairy_button:
+    kind: button
+    selector: '[data-testid="filter-dairy"]'
+    page: shop
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_category, value: dairy}
+          - {op: equals_filter, path: visible_products, source_path: products, where: [{op: equals, field: category, value: dairy}], order_by: [{field: price, direction: asc}]}
+
+  add_apple_button:
+    kind: button
+    selector: '[data-testid="add-FC-APL-01"]'
+    page: shop
+    actions:
+      click:
+        effects:
+          - {op: changed_by, path: cart_count, by: 1}
+          - {op: changed_by, path: cart_subtotal, by: 5900}
+          - {op: appended_object, path: cart_items, value: {product_id: "FC-APL-01", name: "Fuji Apples", quantity: 1, unit_price: 5900, line_total: 5900}}
+          - {op: equals_piecewise_linear, path: delivery_fee, cases: [{when: [{op: relation, path: cart_subtotal, operator: ">=", value: 40000}], formula: {constant: 0}}], default: {constant: 3000}}
+          - {op: equals_linear, path: order_total, terms: [{path: cart_subtotal}, {path: delivery_fee}, {path: coupon_credit, multiplier: -1}]}
+          - {op: equals, path: last_action, value: add_item}
+
+  add_banana_button:
+    kind: button
+    selector: '[data-testid="add-FC-BNN-01"]'
+    page: shop
+    actions:
+      click:
+        effects:
+          - {op: changed_by, path: cart_count, by: 1}
+          - {op: changed_by, path: cart_subtotal, by: 3200}
+          - {op: appended_object, path: cart_items, value: {product_id: "FC-BNN-01", name: "Cavendish Bananas", quantity: 1, unit_price: 3200, line_total: 3200}}
+          - {op: equals_piecewise_linear, path: delivery_fee, cases: [{when: [{op: relation, path: cart_subtotal, operator: ">=", value: 40000}], formula: {constant: 0}}], default: {constant: 3000}}
+          - {op: equals_linear, path: order_total, terms: [{path: cart_subtotal}, {path: delivery_fee}, {path: coupon_credit, multiplier: -1}]}
+          - {op: equals, path: last_action, value: add_item}
+
+  add_spinach_button:
+    kind: button
+    selector: '[data-testid="add-FC-SPN-01"]'
+    page: shop
+    actions:
+      click:
+        effects:
+          - {op: changed_by, path: cart_count, by: 1}
+          - {op: changed_by, path: cart_subtotal, by: 2800}
+          - {op: appended_object, path: cart_items, value: {product_id: "FC-SPN-01", name: "Baby Spinach", quantity: 1, unit_price: 2800, line_total: 2800}}
+          - {op: equals_piecewise_linear, path: delivery_fee, cases: [{when: [{op: relation, path: cart_subtotal, operator: ">=", value: 40000}], formula: {constant: 0}}], default: {constant: 3000}}
+          - {op: equals_linear, path: order_total, terms: [{path: cart_subtotal}, {path: delivery_fee}, {path: coupon_credit, multiplier: -1}]}
+          - {op: equals, path: last_action, value: add_item}
+
+  add_tomato_button:
+    kind: button
+    selector: '[data-testid="add-FC-TMT-01"]'
+    page: shop
+    actions:
+      click:
+        effects:
+          - {op: changed_by, path: cart_count, by: 1}
+          - {op: changed_by, path: cart_subtotal, by: 4500}
+          - {op: appended_object, path: cart_items, value: {product_id: "FC-TMT-01", name: "Vine Tomatoes", quantity: 1, unit_price: 4500, line_total: 4500}}
+          - {op: equals_piecewise_linear, path: delivery_fee, cases: [{when: [{op: relation, path: cart_subtotal, operator: ">=", value: 40000}], formula: {constant: 0}}], default: {constant: 3000}}
+          - {op: equals_linear, path: order_total, terms: [{path: cart_subtotal}, {path: delivery_fee}, {path: coupon_credit, multiplier: -1}]}
+          - {op: equals, path: last_action, value: add_item}
+
+  add_milk_button:
+    kind: button
+    selector: '[data-testid="add-FC-MLK-01"]'
+    page: shop
+    actions:
+      click:
+        effects:
+          - {op: changed_by, path: cart_count, by: 1}
+          - {op: changed_by, path: cart_subtotal, by: 3800}
+          - {op: appended_object, path: cart_items, value: {product_id: "FC-MLK-01", name: "Organic Whole Milk", quantity: 1, unit_price: 3800, line_total: 3800}}
+          - {op: equals_piecewise_linear, path: delivery_fee, cases: [{when: [{op: relation, path: cart_subtotal, operator: ">=", value: 40000}], formula: {constant: 0}}], default: {constant: 3000}}
+          - {op: equals_linear, path: order_total, terms: [{path: cart_subtotal}, {path: delivery_fee}, {path: coupon_credit, multiplier: -1}]}
+          - {op: equals, path: last_action, value: add_item}
+
+  add_cheese_button:
+    kind: button
+    selector: '[data-testid="add-FC-CHS-01"]'
+    page: shop
+    actions:
+      click:
+        effects:
+          - {op: changed_by, path: cart_count, by: 1}
+          - {op: changed_by, path: cart_subtotal, by: 7200}
+          - {op: appended_object, path: cart_items, value: {product_id: "FC-CHS-01", name: "Aged Gouda", quantity: 1, unit_price: 7200, line_total: 7200}}
+          - {op: equals_piecewise_linear, path: delivery_fee, cases: [{when: [{op: relation, path: cart_subtotal, operator: ">=", value: 40000}], formula: {constant: 0}}], default: {constant: 3000}}
+          - {op: equals_linear, path: order_total, terms: [{path: cart_subtotal}, {path: delivery_fee}, {path: coupon_credit, multiplier: -1}]}
+          - {op: equals, path: last_action, value: add_item}
+
+  add_chicken_button:
+    kind: button
+    selector: '[data-testid="add-FC-CKN-01"]'
+    page: shop
+    actions:
+      click:
+        effects:
+          - {op: changed_by, path: cart_count, by: 1}
+          - {op: changed_by, path: cart_subtotal, by: 9800}
+          - {op: appended_object, path: cart_items, value: {product_id: "FC-CKN-01", name: "Free-Range Chicken Breast", quantity: 1, unit_price: 9800, line_total: 9800}}
+          - {op: equals_piecewise_linear, path: delivery_fee, cases: [{when: [{op: relation, path: cart_subtotal, operator: ">=", value: 40000}], formula: {constant: 0}}], default: {constant: 3000}}
+          - {op: equals_linear, path: order_total, terms: [{path: cart_subtotal}, {path: delivery_fee}, {path: coupon_credit, multiplier: -1}]}
+          - {op: equals, path: last_action, value: add_item}
+
+  add_salmon_button:
+    kind: button
+    selector: '[data-testid="add-FC-SAL-01"]'
+    page: shop
+    actions:
+      click:
+        effects:
+          - {op: changed_by, path: cart_count, by: 1}
+          - {op: changed_by, path: cart_subtotal, by: 14500}
+          - {op: appended_object, path: cart_items, value: {product_id: "FC-SAL-01", name: "Norwegian Salmon Fillet", quantity: 1, unit_price: 14500, line_total: 14500}}
+          - {op: equals_piecewise_linear, path: delivery_fee, cases: [{when: [{op: relation, path: cart_subtotal, operator: ">=", value: 40000}], formula: {constant: 0}}], default: {constant: 3000}}
+          - {op: equals_linear, path: order_total, terms: [{path: cart_subtotal}, {path: delivery_fee}, {path: coupon_credit, multiplier: -1}]}
+          - {op: equals, path: last_action, value: add_item}
+
+  add_rice_button:
+    kind: button
+    selector: '[data-testid="add-FC-RCE-01"]'
+    page: shop
+    actions:
+      click:
+        effects:
+          - {op: changed_by, path: cart_count, by: 1}
+          - {op: changed_by, path: cart_subtotal, by: 11900}
+          - {op: appended_object, path: cart_items, value: {product_id: "FC-RCE-01", name: "Premium Short-Grain Rice", quantity: 1, unit_price: 11900, line_total: 11900}}
+          - {op: equals_piecewise_linear, path: delivery_fee, cases: [{when: [{op: relation, path: cart_subtotal, operator: ">=", value: 40000}], formula: {constant: 0}}], default: {constant: 3000}}
+          - {op: equals_linear, path: order_total, terms: [{path: cart_subtotal}, {path: delivery_fee}, {path: coupon_credit, multiplier: -1}]}
+          - {op: equals, path: last_action, value: add_item}
+
+  add_oil_button:
+    kind: button
+    selector: '[data-testid="add-FC-OLV-01"]'
+    page: shop
+    actions:
+      click:
+        effects:
+          - {op: changed_by, path: cart_count, by: 1}
+          - {op: changed_by, path: cart_subtotal, by: 8500}
+          - {op: appended_object, path: cart_items, value: {product_id: "FC-OLV-01", name: "Extra Virgin Olive Oil", quantity: 1, unit_price: 8500, line_total: 8500}}
+          - {op: equals_piecewise_linear, path: delivery_fee, cases: [{when: [{op: relation, path: cart_subtotal, operator: ">=", value: 40000}], formula: {constant: 0}}], default: {constant: 3000}}
+          - {op: equals_linear, path: order_total, terms: [{path: cart_subtotal}, {path: delivery_fee}, {path: coupon_credit, multiplier: -1}]}
+          - {op: equals, path: last_action, value: add_item}
+
+  remove_last_item_button:
+    kind: button
+    selector: '[data-testid="remove-last-item"]'
+    page: cart
+    actions:
+      click:
+        preconditions:
+          - {op: relation, path: cart_count, operator: ">=", value: 1}
+        effects:
+          - {op: changed_by, path: cart_count, by: -1}
+          - {op: removed_object_fields, path: validation_errors, fields: [minimum_order]}
+          - {op: equals, path: last_action, value: remove_item}
+
+  coupon_code_input:
+    kind: input
+    selector: '[data-testid="coupon-code"]'
+    page: cart
+    actions:
+      fill:
+        effects:
+          - {op: equals_normalized, path: coupon_code, value_from: input.value, normalizers: [trim, uppercase]}
+
+  apply_coupon_button:
+    kind: button
+    selector: '[data-testid="apply-coupon"]'
+    page: cart
+    actions:
+      click:
+        preconditions:
+          - {op: relation, path: cart_count, operator: ">=", value: 1}
+        effects:
+          - {op: changed_by, path: service_call_count, by: 1}
+          - {op: one_of, path: coupon_status, values: [applied, rejected]}
+          - {op: equals_linear, path: order_total, terms: [{path: cart_subtotal}, {path: delivery_fee}, {path: coupon_credit, multiplier: -1}]}
+          - {op: equals, path: last_action, value: apply_coupon}
+
+  slot_morning_button:
+    kind: button
+    selector: '[data-testid="slot-morning"]'
+    page: cart
+    actions:
+      click:
+        effects:
+          - {op: equals, path: delivery_slot, value: morning}
+          - {op: equals, path: last_action, value: select_slot}
+
+  slot_afternoon_button:
+    kind: button
+    selector: '[data-testid="slot-afternoon"]'
+    page: cart
+    actions:
+      click:
+        effects:
+          - {op: equals, path: delivery_slot, value: afternoon}
+          - {op: equals, path: last_action, value: select_slot}
+
+  slot_evening_button:
+    kind: button
+    selector: '[data-testid="slot-evening"]'
+    page: cart
+    actions:
+      click:
+        effects:
+          - {op: equals, path: delivery_slot, value: evening}
+          - {op: equals, path: last_action, value: select_slot}
+
+  customer_name_input:
+    kind: input
+    selector: '[data-testid="customer-name"]'
+    page: cart
+    actions:
+      fill:
+        effects:
+          - {op: equals_normalized, path: customer_name, value_from: input.value, normalizers: [trim]}
+          - {op: removed_object_fields, path: validation_errors, fields: [name]}
+
+  customer_phone_input:
+    kind: input
+    selector: '[data-testid="customer-phone"]'
+    page: cart
+    actions:
+      fill:
+        effects:
+          - {op: equals_normalized, path: customer_phone, value_from: input.value, normalizers: [trim]}
+          - {op: removed_object_fields, path: validation_errors, fields: [phone]}
+
+  place_order_button:
+    kind: button
+    selector: '[data-testid="place-order"]'
+    page: cart
+    actions:
+      click:
+        preconditions:
+          - {op: relation, path: cart_subtotal, operator: ">=", value: 10000}
+          - {op: relation, path: cart_count, operator: ">=", value: 1}
+          - {op: relation, path: customer_name, operator: "!=", value: ""}
+          - {op: one_of, path: delivery_slot, values: [morning, afternoon, evening]}
+        rejected_when:
+          - {op: relation, path: cart_subtotal, operator: "<", value: 10000}
+        rejected_effects:
+          - {op: equals, path: order_placed, value: false}
+        effects:
+          - {op: equals, path: order_placed, value: true}
+          - {op: one_of, path: order_id, values: ["ORD-001", "ORD-002", "ORD-003", "ORD-004", "ORD-005"]}
+          - {op: equals, path: last_action, value: place_order}
+
+  role_customer_button:
+    kind: button
+    selector: '[data-testid="role-customer"]'
+    actions:
+      click:
+        effects:
+          - {op: equals, path: active_role, value: customer}
+
+  role_staff_button:
+    kind: button
+    selector: '[data-testid="role-staff"]'
+    actions:
+      click:
+        effects:
+          - {op: equals, path: active_role, value: staff}
+
+  cancel_order_button:
+    kind: button
+    selector: '[data-testid="cancel-order"]'
+    page: receipts
+    actions:
+      click:
+        allowed_roles: [staff]
+        effects:
+          - {op: equals, path: last_action, value: cancel_order}
+        unauthorized_effects:
+          - {op: unchanged, path: order_history}
+          - {op: equals, path: last_action, value: unauthorized}

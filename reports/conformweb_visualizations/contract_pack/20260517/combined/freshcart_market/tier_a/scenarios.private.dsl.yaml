@@ -1,0 +1,336 @@
+dsl_version: "3.0.0"
+visibility: private
+tier_weights:
+  smoke: 1
+  core: 2
+  validation: 3
+  service: 4
+  upload: 4
+  permission: 4
+  persistence: 5
+  journey: 6
+
+scenarios:
+  - id: private_01_show_all_catalog_order
+    tier: smoke
+    steps:
+      - do: reset_button.click
+      - do: filter_fruit_button.click
+      - do: filter_all_button.click
+        expect:
+          - {op: equals, path: current_category, value: all}
+      - table: product_grid
+        expect_order: [FC-APL-01, FC-BNN-01, FC-SPN-01, FC-TMT-01, FC-MLK-01, FC-CHS-01, FC-CKN-01, FC-SAL-01, FC-RCE-01, FC-OLV-01]
+        expect_row_count: 10
+
+  - id: private_02_filter_dairy_two_items
+    tier: smoke
+    steps:
+      - do: reset_button.click
+      - do: filter_dairy_button.click
+        expect:
+          - {op: equals, path: current_category, value: dairy}
+      - table: product_grid
+        expect_order: [FC-MLK-01, FC-CHS-01]
+        expect_row_count: 2
+        expect_rows:
+          - id: FC-MLK-01
+            cells:
+              name: Organic Whole Milk
+              price: 3800
+          - id: FC-CHS-01
+            cells:
+              name: Aged Gouda
+              price: 7200
+
+  - id: private_03_add_multiple_linear_total
+    tier: core
+    steps:
+      - do: reset_button.click
+      - do: add_milk_button.click
+        expect:
+          - {op: equals, path: cart_subtotal, value: 3800}
+          - {op: equals, path: delivery_fee, value: 3000}
+      - do: add_cheese_button.click
+        expect:
+          - {op: equals, path: cart_subtotal, value: 11000}
+          - {op: equals, path: delivery_fee, value: 3000}
+      - do: add_chicken_button.click
+        expect:
+          - {op: equals, path: cart_count, value: 3}
+          - {op: equals, path: cart_subtotal, value: 20800}
+          - {op: equals, path: delivery_fee, value: 3000}
+          - {op: equals, path: order_total, value: 23800}
+
+  - id: private_04_salmon_rice_free_delivery
+    tier: core
+    steps:
+      - do: reset_button.click
+      - do: add_salmon_button.click
+        expect:
+          - {op: equals, path: cart_subtotal, value: 14500}
+          - {op: equals, path: delivery_fee, value: 3000}
+      - do: add_rice_button.click
+        expect:
+          - {op: equals, path: cart_subtotal, value: 26400}
+          - {op: equals, path: delivery_fee, value: 3000}
+      - do: add_cheese_button.click
+        expect:
+          - {op: equals, path: cart_subtotal, value: 33600}
+          - {op: equals, path: delivery_fee, value: 3000}
+      - do: add_chicken_button.click
+        expect:
+          - {op: equals, path: cart_subtotal, value: 43400}
+          - {op: equals, path: delivery_fee, value: 0}
+          - {op: equals, path: order_total, value: 43400}
+
+  - id: private_05_remove_item_recalculates
+    tier: core
+    steps:
+      - do: reset_button.click
+      - do: add_apple_button.click
+      - do: add_banana_button.click
+      - do: add_spinach_button.click
+        expect:
+          - {op: equals, path: cart_count, value: 3}
+          - {op: equals, path: cart_subtotal, value: 11900}
+      - do: go_cart_button.click
+      - do: remove_last_item_button.click
+        expect:
+          - {op: equals, path: cart_count, value: 2}
+          - {op: equals, path: last_action, value: remove_item}
+
+  - id: private_06_phone_normalizes
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: add_salmon_button.click
+      - do: go_cart_button.click
+      - do: customer_phone_input.fill
+        input: {value: " 010-1234-5678 "}
+        expect:
+          - {op: equals, path: customer_phone, value: "010-1234-5678"}
+
+  - id: private_07_minimum_order_10000_rejected
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: add_banana_button.click
+        expect:
+          - {op: equals, path: cart_subtotal, value: 3200}
+      - do: go_cart_button.click
+      - do: slot_morning_button.click
+      - do: customer_name_input.fill
+        input: {value: "Test User"}
+      - do: place_order_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: order_placed, value: false}
+
+  - id: private_08_save20_coupon_credit
+    tier: service
+    steps:
+      - do: reset_button.click
+      - do: add_salmon_button.click
+      - do: add_chicken_button.click
+      - do: go_cart_button.click
+      - do: coupon_code_input.fill
+        input: {value: save20}
+      - do: apply_coupon_button.click
+        expect:
+          - {op: equals, path: coupon_credit, value: 5000}
+          - {op: equals, path: coupon_status, value: applied}
+          - {op: equals, path: service_call_count, value: 1}
+
+  - id: private_09_bad_coupon_rejected_no_credit
+    tier: service
+    steps:
+      - do: reset_button.click
+      - do: add_milk_button.click
+      - do: go_cart_button.click
+      - do: coupon_code_input.fill
+        input: {value: badcode}
+      - do: apply_coupon_button.click
+        expect:
+          - {op: equals, path: coupon_credit, value: 0}
+          - {op: equals, path: coupon_status, value: rejected}
+          - {op: equals, path: service_call_count, value: 1}
+
+  - id: private_10_second_coupon_call_increments_count
+    tier: service
+    steps:
+      - do: reset_button.click
+      - do: add_cheese_button.click
+      - do: go_cart_button.click
+      - do: coupon_code_input.fill
+        input: {value: fresh10}
+      - do: apply_coupon_button.click
+        expect:
+          - {op: equals, path: service_call_count, value: 1}
+      - do: coupon_code_input.fill
+        input: {value: badcode}
+      - do: apply_coupon_button.click
+        expect:
+          - {op: equals, path: service_call_count, value: 2}
+          - {op: equals, path: coupon_status, value: rejected}
+
+  - id: private_11_low_subtotal_with_slot_rejected
+    tier: upload
+    steps:
+      - do: reset_button.click
+      - do: add_spinach_button.click
+        expect:
+          - {op: equals, path: cart_subtotal, value: 2800}
+      - do: go_cart_button.click
+      - do: slot_morning_button.click
+      - do: customer_name_input.fill
+        input: {value: "Minho Kim"}
+      - do: place_order_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: order_placed, value: false}
+
+  - id: private_12_customer_cannot_cancel
+    tier: permission
+    steps:
+      - do: reset_button.click
+      - do: add_salmon_button.click
+      - do: go_cart_button.click
+      - do: slot_morning_button.click
+      - do: customer_name_input.fill
+        input: {value: "Soyeon Lee"}
+      - do: place_order_button.click
+      - do: go_receipts_button.click
+      - do: cancel_order_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: last_action, value: unauthorized}
+
+  - id: private_13_staff_cancels_order
+    tier: permission
+    steps:
+      - do: reset_button.click
+      - do: add_salmon_button.click
+      - do: go_cart_button.click
+      - do: slot_afternoon_button.click
+      - do: customer_name_input.fill
+        input: {value: "Staff Test"}
+      - do: place_order_button.click
+      - do: role_staff_button.click
+      - do: go_receipts_button.click
+      - do: cancel_order_button.click
+        expect:
+          - {op: equals, path: last_action, value: cancel_order}
+
+  - id: private_14_reload_preserves_cart
+    tier: persistence
+    steps:
+      - do: reset_button.click
+      - do: add_apple_button.click
+      - do: add_milk_button.click
+        expect:
+          - {op: equals, path: cart_count, value: 2}
+          - {op: equals, path: cart_subtotal, value: 9700}
+      - browser: reload
+        expect_page: shop
+        expect:
+          - {op: unchanged, path: cart_count}
+          - {op: unchanged, path: cart_subtotal}
+          - {op: unchanged, path: cart_items}
+
+  - id: private_15_reload_preserves_order_history
+    tier: persistence
+    steps:
+      - do: reset_button.click
+      - do: add_rice_button.click
+      - do: go_cart_button.click
+      - do: slot_evening_button.click
+      - do: customer_name_input.fill
+        input: {value: "Persistent User"}
+      - do: place_order_button.click
+      - do: go_receipts_button.click
+      - browser: reload
+        expect_page: receipts
+        expect:
+          - {op: unchanged, path: order_history}
+
+  - id: private_16_browser_back_restores_shop
+    tier: persistence
+    steps:
+      - do: reset_button.click
+      - do: add_cheese_button.click
+      - do: go_cart_button.click
+      - browser: back
+        expect_page: shop
+        expect:
+          - {op: equals, path: current_page, value: shop}
+          - {op: unchanged, path: cart_count}
+
+  - id: private_17_role_persists_across_reload
+    tier: persistence
+    steps:
+      - do: reset_button.click
+      - do: role_staff_button.click
+        expect:
+          - {op: equals, path: active_role, value: staff}
+      - browser: reload
+        expect:
+          - {op: equals, path: active_role, value: staff}
+
+  - id: private_18_full_grocery_run
+    tier: journey
+    steps:
+      - do: reset_button.click
+      - do: filter_vegetable_button.click
+      - do: add_spinach_button.click
+      - do: add_tomato_button.click
+      - do: filter_all_button.click
+      - do: add_chicken_button.click
+      - do: add_rice_button.click
+      - do: add_oil_button.click
+        expect:
+          - {op: equals, path: cart_count, value: 5}
+      - do: go_cart_button.click
+      - do: coupon_code_input.fill
+        input: {value: fresh10}
+      - do: apply_coupon_button.click
+        expect:
+          - {op: equals, path: coupon_credit, value: 3000}
+      - do: slot_morning_button.click
+      - do: customer_name_input.fill
+        input: {value: "Eunjung Choi"}
+      - do: customer_phone_input.fill
+        input: {value: "010-9876-5432"}
+      - do: place_order_button.click
+        expect:
+          - {op: equals, path: order_placed, value: true}
+      - do: go_receipts_button.click
+      - do: reset_button.click
+        expect:
+          - {op: equals, path: cart_count, value: 0}
+          - {op: equals, path: order_placed, value: false}
+
+  - id: private_19_reset_clears_after_full_flow
+    tier: journey
+    steps:
+      - do: reset_button.click
+      - do: add_salmon_button.click
+      - do: add_cheese_button.click
+      - do: add_milk_button.click
+      - do: go_cart_button.click
+      - do: coupon_code_input.fill
+        input: {value: save20}
+      - do: apply_coupon_button.click
+      - do: slot_afternoon_button.click
+      - do: customer_name_input.fill
+        input: {value: "Deep Cleaner"}
+      - do: place_order_button.click
+      - do: reset_button.click
+        expect:
+          - {op: equals, path: cart_items, value: []}
+          - {op: equals, path: cart_count, value: 0}
+          - {op: equals, path: cart_subtotal, value: 0}
+          - {op: equals, path: coupon_code, value: ""}
+          - {op: equals, path: coupon_credit, value: 0}
+          - {op: equals, path: order_placed, value: false}
+          - {op: equals, path: order_history, value: []}

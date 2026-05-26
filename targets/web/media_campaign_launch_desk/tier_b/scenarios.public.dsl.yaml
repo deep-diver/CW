@@ -1,0 +1,305 @@
+dsl_version: "3.0.0"
+visibility: public
+tier_weights:
+  smoke: 1
+  core: 2
+  validation: 3
+  upload: 4
+  permission: 4
+  persistence: 5
+  journey: 6
+
+scenarios:
+  - id: public_01_filter_broadcast_source_wall
+    tier: smoke
+    difficulty: B
+    steps:
+      - do: reset_button.click
+      - do: filter_broadcast_sources_button.click
+        expect:
+          - {op: equals, path: current_filter, value: broadcast}
+          - {op: equals, path: last_action, value: filter_broadcast_sources}
+      - table: source_wall
+        expect_order: [SRC-OPEN-45, SRC-CTV-30, SRC-DOOH-15]
+        expect_row_count: 3
+        expect_rows:
+          - id: SRC-OPEN-45
+            cells: {title: Northstar Opening Film, duration: 45, clearance: review}
+          - id: SRC-CTV-30
+            cells: {channel: ctv, market: EU}
+
+  - id: public_02_select_opening_and_cue_prime_rundown
+    tier: core
+    difficulty: B
+    steps:
+      - do: reset_button.click
+      - do: select_opening_button.click
+        expect:
+          - {op: equals, path: selected_source_id, value: SRC-OPEN-45}
+          - {op: equals, path: selected_duration, value: 45}
+          - {op: equals, path: current_page, value: switcher}
+      - do: cue_selected_source_button.click
+        expect:
+          - {op: equals, path: rundown_count, value: 1}
+          - {op: equals, path: runtime_total, value: 45}
+          - {op: equals, path: spend_total, value: 5800}
+          - {op: equals, path: runtime_status, value: building}
+      - table: rundown_grid
+        expect_order: [SRC-OPEN-45]
+        expect_rows:
+          - id: SRC-OPEN-45
+            cells: {title: Northstar Opening Film, channel: social, slot: prime_clock, state: cued}
+
+  - id: public_03_runtime_overrun_trim_and_lock
+    tier: validation
+    difficulty: B
+    steps:
+      - do: reset_button.click
+      - do: select_opening_button.click
+      - do: cue_selected_source_button.click
+      - do: go_studio_button.click
+      - do: filter_broadcast_sources_button.click
+      - do: select_ctv_button.click
+      - do: cue_selected_source_button.click
+        expect:
+          - {op: equals, path: rundown_count, value: 2}
+          - {op: equals, path: runtime_total, value: 75}
+          - {op: equals, path: spend_total, value: 13000}
+      - do: flag_runtime_overrun_button.click
+        expect:
+          - {op: equals, path: runtime_status, value: overrun}
+      - do: trim_ctv_to_fifteen_button.click
+        expect:
+          - {op: equals, path: runtime_total, value: 60}
+          - {op: equals, path: runtime_status, value: locked}
+          - {op: equals, path: split_status, value: balanced}
+      - table: rundown_grid
+        expect_order: [SRC-OPEN-45, SRC-CTV-30]
+        expect_rows:
+          - id: SRC-CTV-30
+            cells: {duration: 15, state: trimmed}
+
+  - id: public_04_package_manifest_upload
+    tier: upload
+    difficulty: B
+    steps:
+      - do: reset_button.click
+      - do: go_clearance_button.click
+      - do: package_upload_input.upload
+        input:
+          file:
+            name: broadcast-package-public.csv
+            mime_type: text/csv
+            content: |
+              id,outlet,market,source,status
+              PKG-1,BrightBeam DSP,global,Northstar Opening Film,ready
+              PKG-2,CTV House,EU,CTV Night Bumper,review
+          rows:
+            - {id: PKG-1, outlet: BrightBeam DSP, market: global, source: Northstar Opening Film, status: ready}
+            - {id: PKG-2, outlet: CTV House, market: EU, source: CTV Night Bumper, status: review}
+        expect:
+          - {op: equals, path: package_count, value: 2}
+          - {op: equals, path: last_package_file, value: broadcast-package-public.csv}
+          - {op: equals, path: last_action, value: upload_package}
+      - table: package_grid
+        expect_order: [PKG-1, PKG-2]
+        expect_rows:
+          - id: PKG-1
+            cells: {outlet: BrightBeam DSP, market: global, status: ready}
+
+  - id: public_05_producer_cannot_mark_captions_ready
+    tier: permission
+    difficulty: B
+    steps:
+      - do: reset_button.click
+      - do: select_ctv_button.click
+      - do: go_clearance_button.click
+      - do: mark_captions_ready_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: caption_status, value: missing}
+          - {op: equals, path: localization_status, value: missing}
+          - {op: equals, path: denied_count, value: 1}
+          - {op: equals, path: last_action, value: unauthorized_scheduler}
+
+  - id: public_06_scheduler_marks_captions_and_localization_ready
+    tier: permission
+    difficulty: B
+    steps:
+      - do: reset_button.click
+      - do: select_ctv_button.click
+      - do: go_clearance_button.click
+      - do: role_scheduler_button.click
+      - do: mark_captions_ready_button.click
+        expect:
+          - {op: equals, path: active_role, value: scheduler}
+          - {op: equals, path: caption_status, value: ready}
+          - {op: equals, path: localization_status, value: ready}
+
+  - id: public_07_legal_approves_broadcast_clearance
+    tier: permission
+    difficulty: B
+    steps:
+      - do: reset_button.click
+      - do: select_opening_button.click
+      - do: go_clearance_button.click
+      - do: role_legal_button.click
+      - do: legal_approve_button.click
+        expect:
+          - {op: equals, path: legal_status, value: approved}
+          - {op: equals, path: audit_count, value: 1}
+      - table: audit_grid
+        expect_order: [AUD-LEGAL]
+        expect_rows:
+          - id: AUD-LEGAL
+            cells: {event: legal_clearance, actor: legal, status: approved}
+
+  - id: public_08_finance_commits_spend_total
+    tier: permission
+    difficulty: B
+    steps:
+      - do: reset_button.click
+      - do: select_opening_button.click
+      - do: cue_selected_source_button.click
+      - do: go_clearance_button.click
+      - do: role_finance_button.click
+      - do: finance_commit_button.click
+        expect:
+          - {op: equals, path: finance_status, value: committed}
+          - {op: equals, path: committed_spend, value: 5800}
+          - {op: equals, path: last_action, value: finance_commit}
+
+  - id: public_09_scheduler_traffics_uploaded_outlets
+    tier: permission
+    difficulty: B
+    steps:
+      - do: reset_button.click
+      - do: go_clearance_button.click
+      - do: package_upload_input.upload
+        input:
+          file:
+            name: traffic-public.csv
+            mime_type: text/csv
+            content: |
+              id,outlet,market,source,status
+              PKG-1,BrightBeam DSP,global,Northstar Opening Film,ready
+          rows:
+            - {id: PKG-1, outlet: BrightBeam DSP, market: global, source: Northstar Opening Film, status: ready}
+      - do: go_transmit_button.click
+      - do: role_scheduler_button.click
+      - do: traffic_outlets_button.click
+        expect:
+          - {op: equals, path: partner_count, value: 1}
+          - {op: equals, path: trafficking_status, value: trafficked}
+      - table: partner_grid
+        expect_order: [TRAF-BRIGHTBEAM]
+        expect_rows:
+          - id: TRAF-BRIGHTBEAM
+            cells: {outlet: BrightBeam DSP, market: global, clock: prime_clock, status: trafficked}
+
+  - id: public_10_full_transmission_release_workflow
+    tier: journey
+    difficulty: B
+    steps:
+      - do: reset_button.click
+      - do: select_opening_button.click
+      - do: cue_selected_source_button.click
+      - do: go_studio_button.click
+      - do: filter_broadcast_sources_button.click
+      - do: select_ctv_button.click
+      - do: cue_selected_source_button.click
+      - do: flag_runtime_overrun_button.click
+      - do: trim_ctv_to_fifteen_button.click
+      - do: go_clearance_button.click
+      - do: package_upload_input.upload
+        input:
+          file:
+            name: release-public.csv
+            mime_type: text/csv
+            content: |
+              id,outlet,market,source,status
+              PKG-1,BrightBeam DSP,global,Northstar Opening Film,ready
+          rows:
+            - {id: PKG-1, outlet: BrightBeam DSP, market: global, source: Northstar Opening Film, status: ready}
+      - do: role_scheduler_button.click
+      - do: mark_captions_ready_button.click
+      - do: role_legal_button.click
+      - do: legal_approve_button.click
+      - do: role_finance_button.click
+      - do: finance_commit_button.click
+      - do: go_transmit_button.click
+      - do: role_scheduler_button.click
+      - do: traffic_outlets_button.click
+      - do: transmit_release_button.click
+        expect:
+          - {op: equals, path: transmission_status, value: transmitted}
+          - {op: equals, path: transmission_count, value: 1}
+          - {op: equals, path: audit_count, value: 2}
+      - table: transmission_grid
+        expect_order: [TX-001]
+        expect_rows:
+          - id: TX-001
+            cells: {campaign: Northstar Broadcast Release, outlet: BrightBeam DSP, market: global, status: transmitted}
+
+  - id: public_11_browser_history_between_broadcast_workspaces
+    tier: persistence
+    difficulty: B
+    steps:
+      - do: reset_button.click
+      - do: go_switcher_button.click
+        expect:
+          - {op: equals, path: current_page, value: switcher}
+      - do: go_clearance_button.click
+      - do: go_transmit_button.click
+      - browser: back
+        expect_page: clearance
+        expect:
+          - {op: equals, path: current_page, value: clearance}
+      - browser: back
+        expect_page: switcher
+        expect:
+          - {op: equals, path: current_page, value: switcher}
+
+  - id: public_12_transmission_persists_after_reload
+    tier: persistence
+    difficulty: B
+    steps:
+      - do: reset_button.click
+      - do: select_opening_button.click
+      - do: cue_selected_source_button.click
+      - do: go_studio_button.click
+      - do: filter_broadcast_sources_button.click
+      - do: select_ctv_button.click
+      - do: cue_selected_source_button.click
+      - do: flag_runtime_overrun_button.click
+      - do: trim_ctv_to_fifteen_button.click
+      - do: go_clearance_button.click
+      - do: package_upload_input.upload
+        input:
+          file:
+            name: reload-release.csv
+            mime_type: text/csv
+            content: |
+              id,outlet,market,source,status
+              PKG-1,BrightBeam DSP,global,Northstar Opening Film,ready
+          rows:
+            - {id: PKG-1, outlet: BrightBeam DSP, market: global, source: Northstar Opening Film, status: ready}
+      - do: role_scheduler_button.click
+      - do: mark_captions_ready_button.click
+      - do: role_legal_button.click
+      - do: legal_approve_button.click
+      - do: role_finance_button.click
+      - do: finance_commit_button.click
+      - do: go_transmit_button.click
+      - do: role_scheduler_button.click
+      - do: traffic_outlets_button.click
+      - do: transmit_release_button.click
+      - browser: reload
+        expect_page: transmit
+        expect:
+          - {op: equals, path: current_page, value: transmit}
+          - {op: equals, path: active_role, value: scheduler}
+          - {op: equals, path: transmission_status, value: transmitted}
+          - {op: equals, path: transmission_count, value: 1}
+      - table: transmission_grid
+        expect_order: [TX-001]

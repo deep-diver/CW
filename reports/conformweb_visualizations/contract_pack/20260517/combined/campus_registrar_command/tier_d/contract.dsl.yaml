@@ -1,0 +1,1180 @@
+dsl_version: "3.0.0"
+
+app:
+  id: campus_registrar_command_tier_d
+  name: Campus Registrar Command Tier D
+  capability: multi_authority_graduation_wave_command
+  ui_ux_brief: |
+    Campus Registrar Command Tier D should look like a severe institutional
+    graduation-certification command floor, not a bigger copy of Tier C. A
+    screenshot should immediately feel harder: multi-candidate risk stack,
+    degree graph, policy epoch lock, capstone seat arbitration, transcript
+    bundle intake, articulation crosswalk, identity/name variance service,
+    bursar bundle service, diploma-lane quote service, worksheet reconciliation,
+    committee vote import, senate docket, provost counterseal, commencement
+    wave manifest, accreditation freeze notice, blocker ledger, computed
+    readiness score, and audit timeline should all be visible as one dense
+    operating system. Use a polished registrar operations palette with carbon
+    ink, parchment gridlines, garnet alerts, emerald clearance states, brass
+    seal accents, violet provost tags, compact matrix tables, rails, gauges,
+    and document-like panels. Avoid landing pages, generic dashboards, state
+    debuggers, plain tables, travel/media/clinical/grocery motifs, or decorative
+    hero art. The UI should feel like a product used by analysts, advisors,
+    bursars, registrars, deans, and provost staff during final graduation wave
+    certification.
+
+runtime:
+  target: web
+  start_url: /#/cockpit
+  state_probe:
+    kind: javascript
+    expression: window.__DETOX_STATE__
+  pages:
+    cockpit:
+      path: /#/cockpit
+      purpose: Candidate risk stack, selected dossier header, role console, and blocker overview.
+    curriculum:
+      path: /#/curriculum
+      purpose: Degree audit graph, policy epoch lock, capstone seat plan, and collision resolution.
+    dossier:
+      path: /#/dossier
+      purpose: Transcript bundle upload, articulation crosswalk upload, equivalency certification, and exception dossier.
+    finance:
+      path: /#/finance
+      purpose: Identity/name variance service, bursar bundle service, diploma-lane quote, and worksheet reconciliation.
+    senate:
+      path: /#/senate
+      purpose: Committee vote import, quorum certification, senate docket, and provost counterseal.
+    release:
+      path: /#/release
+      purpose: Commencement wave sealing, diploma manifest publication, accreditation freeze, blockers, and audit log.
+  session:
+    role_path: active_role
+    roles: [analyst, advisor, bursar, registrar, dean, provost]
+  persistence:
+    reload:
+      scope: local_storage
+      paths:
+        - current_page
+        - active_role
+        - candidates
+        - visible_candidates
+        - current_filter
+        - selected_candidate_id
+        - selected_candidate_name
+        - selected_program
+        - selected_cohort
+        - selected_risk
+        - selected_catalog_version
+        - selected_honors_track
+        - selected_name_variance
+        - policy_epoch_input
+        - policy_epoch_status
+        - audit_rows
+        - audit_count
+        - deficiency_count
+        - shadow_gap_count
+        - audit_status
+        - plan_rows
+        - plan_count
+        - plan_credit_total
+        - collision_count
+        - seat_waitlist_count
+        - plan_status
+        - transcript_rows
+        - transcript_count
+        - transcript_credit_total
+        - transcript_residency_total
+        - last_transcript_file
+        - crosswalk_rows
+        - crosswalk_count
+        - crosswalk_status
+        - exception_rows
+        - exception_count
+        - exception_status
+        - identity_status
+        - name_match_status
+        - identity_trace_id
+        - finance_status
+        - sap_status
+        - balance_status
+        - bursar_trace_id
+        - diploma_quote_status
+        - diploma_lane
+        - diploma_trace_id
+        - reconciliation_rows
+        - reconciliation_count
+        - mismatch_count
+        - reconciliation_status
+        - last_reconciliation_file
+        - committee_rows
+        - committee_count
+        - affirm_vote_count
+        - oppose_vote_count
+        - abstain_vote_count
+        - quorum_status
+        - vote_status
+        - senate_docket_status
+        - senate_packet_hash
+        - provost_counterseal_status
+        - provost_token
+        - release_wave_status
+        - release_hash
+        - diploma_manifest_status
+        - diploma_manifest_hash
+        - release_rows
+        - release_count
+        - freeze_reason
+        - event_notice_count
+        - blocker_rows
+        - open_blockers
+        - readiness_score
+        - audit_log
+        - audit_log_count
+        - service_call_count
+        - identity_call_count
+        - bursar_call_count
+        - diploma_call_count
+        - denied_count
+        - validation_errors
+        - last_action
+  services:
+    identity_verify:
+      endpoint: /api/identity-verify
+      method: GET
+      responses:
+        - id: iona_name_variance
+          match: {query: {candidate: CAND-IONA}}
+          status: 200
+          json: {identity: review, name_match: variance, trace: IDV-IONA-773}
+        - id: marek_match
+          match: {query: {candidate: CAND-MAREK}}
+          status: 200
+          json: {identity: verified, name_match: match, trace: IDV-MAREK-118}
+    bursar_bundle:
+      endpoint: /api/bursar-bundle
+      method: GET
+      responses:
+        - id: iona_clear
+          match: {query: {candidate: CAND-IONA}}
+          status: 200
+          json: {finance: cleared, sap: clear, balance: zero_balance, trace: BUR-IONA-551}
+        - id: marek_lab_hold
+          match: {query: {candidate: CAND-MAREK}}
+          status: 200
+          json: {finance: blocked, sap: clear, balance: lab_fee_hold, trace: BUR-MAREK-402}
+    diploma_lane_quote:
+      endpoint: /api/diploma-lane
+      method: GET
+      responses:
+        - id: iona_rush
+          match: {query: {candidate: CAND-IONA}}
+          status: 200
+          json: {lane: rush-audit, trace: DPL-IONA-016}
+        - id: marek_standard
+          match: {query: {candidate: CAND-MAREK}}
+          status: 200
+          json: {lane: standard, trace: DPL-MAREK-044}
+  events:
+    accreditation_freeze:
+      payload: {reason: accreditation_audit}
+      preconditions:
+        - {op: one_of, path: release_wave_status, values: [sealed]}
+      effects:
+        - {op: equals, path: release_wave_status, value: frozen}
+        - {op: equals, path: freeze_reason, value: accreditation_audit}
+        - {op: changed_by, path: event_notice_count, by: 1}
+        - {op: equals, path: readiness_score, value: 91}
+        - {op: updated_object_fields, path: validation_errors, updates: {accreditation: "Wave frozen for accreditation_audit"}}
+        - {op: equals, path: audit_log, value: [
+            {id: AUD-SENATE, event: senate_docket, role: dean, status: ready},
+            {id: AUD-PROVOST, event: provost_counterseal, role: provost, status: sealed},
+            {id: AUD-WAVE, event: release_wave, role: registrar, status: sealed},
+            {id: AUD-FREEZE, event: accreditation_freeze, role: system, status: accreditation_audit}
+          ]}
+        - {op: equals_length, path: audit_log_count, source_path: audit_log}
+        - {op: equals, path: last_action, value: accreditation_freeze}
+    name_variance_escalation:
+      payload: {reason: late_alias}
+      preconditions:
+        - {op: one_of, path: identity_status, values: [verified]}
+      effects:
+        - {op: equals, path: identity_status, value: review}
+        - {op: equals, path: name_match_status, value: escalated}
+        - {op: changed_by, path: event_notice_count, by: 1}
+        - {op: updated_object_fields, path: validation_errors, updates: {identity: "Late alias review required"}}
+        - {op: equals, path: last_action, value: name_variance_escalation}
+  tables:
+    candidate_queue:
+      selector: '[data-testid="candidate-queue"]'
+      row_selector: '[data-testid="candidate-row"]'
+      row_id_attribute: data-candidate-id
+      source_path: visible_candidates
+      row_id_field: id
+      columns:
+        name: {selector: '[data-col="name"]', state_field: name}
+        program: {selector: '[data-col="program"]', state_field: program}
+        cohort: {selector: '[data-col="cohort"]', state_field: cohort}
+        risk: {selector: '[data-col="risk"]', state_field: risk}
+        catalog: {selector: '[data-col="catalog"]', state_field: catalog}
+        variance: {selector: '[data-col="variance"]', state_field: variance}
+    audit_grid:
+      selector: '[data-testid="audit-grid"]'
+      row_selector: '[data-testid="audit-row"]'
+      row_id_attribute: data-audit-id
+      source_path: audit_rows
+      row_id_field: id
+      columns:
+        area: {selector: '[data-col="area"]', state_field: area}
+        required: {selector: '[data-col="required"]', state_field: required}
+        earned: {selector: '[data-col="earned"]', state_field: earned}
+        shadow: {selector: '[data-col="shadow"]', state_field: shadow}
+        status: {selector: '[data-col="status"]', state_field: status}
+    plan_grid:
+      selector: '[data-testid="plan-grid"]'
+      row_selector: '[data-testid="plan-row"]'
+      row_id_attribute: data-plan-id
+      source_path: plan_rows
+      row_id_field: id
+      columns:
+        code: {selector: '[data-col="code"]', state_field: code}
+        slot: {selector: '[data-col="slot"]', state_field: slot}
+        seat: {selector: '[data-col="seat"]', state_field: seat}
+        credits: {selector: '[data-col="credits"]', state_field: credits}
+        status: {selector: '[data-col="status"]', state_field: status}
+    transcript_grid:
+      selector: '[data-testid="transcript-grid"]'
+      row_selector: '[data-testid="transcript-row"]'
+      row_id_attribute: data-transcript-id
+      source_path: transcript_rows
+      row_id_field: id
+      columns:
+        course: {selector: '[data-col="course"]', state_field: course}
+        credits: {selector: '[data-col="credits"]', state_field: credits}
+        residency: {selector: '[data-col="residency"]', state_field: residency}
+        grade: {selector: '[data-col="grade"]', state_field: grade}
+        status: {selector: '[data-col="status"]', state_field: status}
+    crosswalk_grid:
+      selector: '[data-testid="crosswalk-grid"]'
+      row_selector: '[data-testid="crosswalk-row"]'
+      row_id_attribute: data-crosswalk-id
+      source_path: crosswalk_rows
+      row_id_field: id
+      columns:
+        requirement: {selector: '[data-col="requirement"]', state_field: requirement}
+        transcript: {selector: '[data-col="transcript"]', state_field: transcript}
+        credits: {selector: '[data-col="credits"]', state_field: credits}
+        confidence: {selector: '[data-col="confidence"]', state_field: confidence}
+        status: {selector: '[data-col="status"]', state_field: status}
+    exception_grid:
+      selector: '[data-testid="exception-grid"]'
+      row_selector: '[data-testid="exception-row"]'
+      row_id_attribute: data-exception-id
+      source_path: exception_rows
+      row_id_field: id
+      columns:
+        gate: {selector: '[data-col="gate"]', state_field: gate}
+        owner: {selector: '[data-col="owner"]', state_field: owner}
+        evidence: {selector: '[data-col="evidence"]', state_field: evidence}
+        status: {selector: '[data-col="status"]', state_field: status}
+    reconciliation_grid:
+      selector: '[data-testid="reconciliation-grid"]'
+      row_selector: '[data-testid="reconciliation-row"]'
+      row_id_attribute: data-reconciliation-id
+      source_path: reconciliation_rows
+      row_id_field: id
+      columns:
+        source: {selector: '[data-col="source"]', state_field: source}
+        registrar: {selector: '[data-col="registrar"]', state_field: registrar}
+        senate: {selector: '[data-col="senate"]', state_field: senate}
+        status: {selector: '[data-col="status"]', state_field: status}
+    committee_grid:
+      selector: '[data-testid="committee-grid"]'
+      row_selector: '[data-testid="committee-row"]'
+      row_id_attribute: data-committee-id
+      source_path: committee_rows
+      row_id_field: id
+      columns:
+        member: {selector: '[data-col="member"]', state_field: member}
+        role: {selector: '[data-col="role"]', state_field: role}
+        vote: {selector: '[data-col="vote"]', state_field: vote}
+        note: {selector: '[data-col="note"]', state_field: note}
+    blocker_grid:
+      selector: '[data-testid="blocker-grid"]'
+      row_selector: '[data-testid="blocker-row"]'
+      row_id_attribute: data-blocker-id
+      source_path: blocker_rows
+      row_id_field: id
+      columns:
+        label: {selector: '[data-col="label"]', state_field: label}
+        owner: {selector: '[data-col="owner"]', state_field: owner}
+        status: {selector: '[data-col="status"]', state_field: status}
+    release_grid:
+      selector: '[data-testid="release-grid"]'
+      row_selector: '[data-testid="release-row"]'
+      row_id_attribute: data-release-id
+      source_path: release_rows
+      row_id_field: id
+      columns:
+        channel: {selector: '[data-col="channel"]', state_field: channel}
+        batch: {selector: '[data-col="batch"]', state_field: batch}
+        hash: {selector: '[data-col="hash"]', state_field: hash}
+        status: {selector: '[data-col="status"]', state_field: status}
+    audit_log_grid:
+      selector: '[data-testid="audit-log-grid"]'
+      row_selector: '[data-testid="audit-log-row"]'
+      row_id_attribute: data-audit-log-id
+      source_path: audit_log
+      row_id_field: id
+      columns:
+        event: {selector: '[data-col="event"]', state_field: event}
+        role: {selector: '[data-col="role"]', state_field: role}
+        status: {selector: '[data-col="status"]', state_field: status}
+
+state:
+  initial:
+    current_page: cockpit
+    active_role: analyst
+    candidates:
+      - {id: CAND-IONA, name: "Iona Rivera", program: "Computational Design BS", cohort: "May 2026", risk: scarlet, catalog: "CAT-2026D", variance: alias_review}
+      - {id: CAND-MAREK, name: "Marek Holt", program: "Robotics Engineering BS", cohort: "May 2026", risk: amber, catalog: "CAT-2026D", variance: clear}
+      - {id: CAND-SANA, name: "Sana Okafor", program: "Public Policy BA", cohort: "Aug 2026", risk: amber, catalog: "CAT-2025F", variance: suffix_review}
+      - {id: CAND-LUCIEN, name: "Lucien Park", program: "Mathematics BS", cohort: "May 2026", risk: green, catalog: "CAT-2026D", variance: clear}
+      - {id: CAND-PRIYA, name: "Priya Shah", program: "Bioinformatics BS", cohort: "Dec 2026", risk: scarlet, catalog: "CAT-2026D", variance: court_order}
+    visible_candidates:
+      - {id: CAND-IONA, name: "Iona Rivera", program: "Computational Design BS", cohort: "May 2026", risk: scarlet, catalog: "CAT-2026D", variance: alias_review}
+      - {id: CAND-MAREK, name: "Marek Holt", program: "Robotics Engineering BS", cohort: "May 2026", risk: amber, catalog: "CAT-2026D", variance: clear}
+      - {id: CAND-SANA, name: "Sana Okafor", program: "Public Policy BA", cohort: "Aug 2026", risk: amber, catalog: "CAT-2025F", variance: suffix_review}
+      - {id: CAND-LUCIEN, name: "Lucien Park", program: "Mathematics BS", cohort: "May 2026", risk: green, catalog: "CAT-2026D", variance: clear}
+      - {id: CAND-PRIYA, name: "Priya Shah", program: "Bioinformatics BS", cohort: "Dec 2026", risk: scarlet, catalog: "CAT-2026D", variance: court_order}
+    current_filter: all
+    selected_candidate_id: ""
+    selected_candidate_name: ""
+    selected_program: ""
+    selected_cohort: ""
+    selected_risk: ""
+    selected_catalog_version: "CAT-2026D"
+    selected_honors_track: ""
+    selected_name_variance: ""
+    policy_epoch_input: ""
+    policy_epoch_status: draft
+    audit_rows: []
+    audit_count: 0
+    deficiency_count: 0
+    shadow_gap_count: 0
+    audit_status: idle
+    plan_rows: []
+    plan_count: 0
+    plan_credit_total: 0
+    collision_count: 0
+    seat_waitlist_count: 0
+    plan_status: idle
+    transcript_rows: []
+    transcript_count: 0
+    transcript_credit_total: 0
+    transcript_residency_total: 0
+    last_transcript_file: ""
+    crosswalk_rows: []
+    crosswalk_count: 0
+    crosswalk_status: idle
+    exception_rows: []
+    exception_count: 0
+    exception_status: idle
+    identity_status: idle
+    name_match_status: idle
+    identity_trace_id: ""
+    finance_status: idle
+    sap_status: idle
+    balance_status: idle
+    bursar_trace_id: ""
+    diploma_quote_status: idle
+    diploma_lane: ""
+    diploma_trace_id: ""
+    reconciliation_rows: []
+    reconciliation_count: 0
+    mismatch_count: 0
+    reconciliation_status: idle
+    last_reconciliation_file: ""
+    committee_rows: []
+    committee_count: 0
+    affirm_vote_count: 0
+    oppose_vote_count: 0
+    abstain_vote_count: 0
+    quorum_status: idle
+    vote_status: idle
+    senate_docket_status: idle
+    senate_packet_hash: ""
+    provost_counterseal_status: idle
+    provost_token: ""
+    release_wave_status: idle
+    release_hash: ""
+    diploma_manifest_status: idle
+    diploma_manifest_hash: ""
+    release_rows: []
+    release_count: 0
+    freeze_reason: ""
+    event_notice_count: 0
+    blocker_rows:
+      - {id: BLK-POLICY, label: Policy epoch locked, owner: registrar, status: open}
+      - {id: BLK-SEATS, label: Seat collisions resolved, owner: analyst, status: open}
+      - {id: BLK-CROSSWALK, label: Articulation crosswalk certified, owner: advisor, status: open}
+      - {id: BLK-EXCEPTION, label: Exception dossier assembled, owner: advisor, status: open}
+      - {id: BLK-IDENTITY, label: Identity variance resolved, owner: registrar, status: open}
+      - {id: BLK-FINANCE, label: Bursar bundle cleared, owner: bursar, status: open}
+      - {id: BLK-RECON, label: Worksheet reconciliation locked, owner: registrar, status: open}
+      - {id: BLK-COMMITTEE, label: Committee quorum certified, owner: dean, status: open}
+      - {id: BLK-SENATE, label: Senate docket prepared, owner: dean, status: open}
+      - {id: BLK-PROVOST, label: Provost counterseal applied, owner: provost, status: open}
+      - {id: BLK-WAVE, label: Commencement wave sealed, owner: registrar, status: open}
+    open_blockers: 11
+    readiness_score: 0
+    audit_log: []
+    audit_log_count: 0
+    service_call_count: 0
+    identity_call_count: 0
+    bursar_call_count: 0
+    diploma_call_count: 0
+    denied_count: 0
+    validation_errors: {}
+    last_action: ready
+    __services.calls: []
+  schema:
+    current_page: {type: string, purpose: Active route page.}
+    active_role: {type: string, purpose: Current institutional role.}
+    candidates: {type: array, purpose: Master graduation wave candidate list.}
+    visible_candidates: {type: array, purpose: Filtered candidate list.}
+    current_filter: {type: string, purpose: Active risk filter.}
+    selected_candidate_id: {type: string, purpose: Selected candidate id.}
+    selected_candidate_name: {type: string, purpose: Selected candidate name.}
+    selected_program: {type: string, purpose: Selected academic program.}
+    selected_cohort: {type: string, purpose: Graduation cohort.}
+    selected_risk: {type: string, purpose: Risk band.}
+    selected_catalog_version: {type: string, purpose: Candidate catalog version.}
+    selected_honors_track: {type: string, purpose: Honors track marker.}
+    selected_name_variance: {type: string, purpose: Name variance status from dossier.}
+    policy_epoch_input: {type: string, purpose: Normalized policy epoch entered by registrar.}
+    policy_epoch_status: {type: string, purpose: draft, stale, or locked.}
+    audit_rows: {type: array, purpose: Degree audit rows.}
+    audit_count: {type: number, purpose: Number of audit rows.}
+    deficiency_count: {type: number, purpose: Open deficiencies.}
+    shadow_gap_count: {type: number, purpose: Shadow-curriculum gaps.}
+    audit_status: {type: string, purpose: idle, gaps_found, or satisfied.}
+    plan_rows: {type: array, purpose: Capstone and final-term plan rows.}
+    plan_count: {type: number, purpose: Number of plan rows.}
+    plan_credit_total: {type: number, purpose: Planned credits.}
+    collision_count: {type: number, purpose: Seat or time collisions.}
+    seat_waitlist_count: {type: number, purpose: Waitlisted capstone seats.}
+    plan_status: {type: string, purpose: idle, collision, or resolved.}
+    transcript_rows: {type: array, purpose: Uploaded transcript bundle rows.}
+    transcript_count: {type: number, purpose: Transcript row count.}
+    transcript_credit_total: {type: number, purpose: Transcript credits in upload.}
+    transcript_residency_total: {type: number, purpose: Uploaded residency credits.}
+    last_transcript_file: {type: string, purpose: Transcript upload file name.}
+    crosswalk_rows: {type: array, purpose: Articulation crosswalk rows.}
+    crosswalk_count: {type: number, purpose: Crosswalk row count.}
+    crosswalk_status: {type: string, purpose: idle, uploaded, staged, blocked, or certified.}
+    exception_rows: {type: array, purpose: Exception dossier rows.}
+    exception_count: {type: number, purpose: Exception row count.}
+    exception_status: {type: string, purpose: idle, blocked, or assembled.}
+    identity_status: {type: string, purpose: idle, review, or verified.}
+    name_match_status: {type: string, purpose: idle, variance, resolved, match, or escalated.}
+    identity_trace_id: {type: string, purpose: Identity service trace.}
+    finance_status: {type: string, purpose: idle, blocked, or cleared.}
+    sap_status: {type: string, purpose: idle or clear.}
+    balance_status: {type: string, purpose: idle or zero_balance.}
+    bursar_trace_id: {type: string, purpose: Bursar service trace.}
+    diploma_quote_status: {type: string, purpose: idle or quoted.}
+    diploma_lane: {type: string, purpose: Diploma fulfillment lane.}
+    diploma_trace_id: {type: string, purpose: Diploma service trace.}
+    reconciliation_rows: {type: array, purpose: Worksheet reconciliation rows.}
+    reconciliation_count: {type: number, purpose: Reconciliation row count.}
+    mismatch_count: {type: number, purpose: Reconciliation mismatches.}
+    reconciliation_status: {type: string, purpose: idle, uploaded, blocked, or locked.}
+    last_reconciliation_file: {type: string, purpose: Last worksheet reconciliation upload file.}
+    committee_rows: {type: array, purpose: Committee vote rows.}
+    committee_count: {type: number, purpose: Committee row count.}
+    affirm_vote_count: {type: number, purpose: Affirm votes.}
+    oppose_vote_count: {type: number, purpose: Oppose votes.}
+    abstain_vote_count: {type: number, purpose: Abstain votes.}
+    quorum_status: {type: string, purpose: idle, blocked, or certified.}
+    vote_status: {type: string, purpose: idle, uploaded, or certified.}
+    senate_docket_status: {type: string, purpose: idle, blocked, or ready.}
+    senate_packet_hash: {type: string, purpose: Public senate packet checksum.}
+    provost_counterseal_status: {type: string, purpose: idle, blocked, or sealed.}
+    provost_token: {type: string, purpose: Public provost counterseal token.}
+    release_wave_status: {type: string, purpose: idle, blocked, sealed, frozen, or published.}
+    release_hash: {type: string, purpose: Public release wave checksum.}
+    diploma_manifest_status: {type: string, purpose: idle, blocked, or queued.}
+    diploma_manifest_hash: {type: string, purpose: Diploma manifest checksum.}
+    release_rows: {type: array, purpose: Release and diploma rows.}
+    release_count: {type: number, purpose: Release row count.}
+    freeze_reason: {type: string, purpose: Accreditation freeze reason.}
+    event_notice_count: {type: number, purpose: Deterministic runtime event count.}
+    blocker_rows: {type: array, purpose: Eleven-gate blocker ledger.}
+    open_blockers: {type: number, purpose: Count of open blockers.}
+    readiness_score: {type: number, purpose: Certification readiness score.}
+    audit_log: {type: array, purpose: Ordered audit log rows.}
+    audit_log_count: {type: number, purpose: Audit log row count.}
+    service_call_count: {type: number, purpose: All deterministic service calls.}
+    identity_call_count: {type: number, purpose: Identity service calls.}
+    bursar_call_count: {type: number, purpose: Bursar service calls.}
+    diploma_call_count: {type: number, purpose: Diploma service calls.}
+    denied_count: {type: number, purpose: Unauthorized action count.}
+    validation_errors: {type: object, purpose: Public field-level validation errors.}
+    last_action: {type: string, purpose: Last public action marker.}
+    __services.calls: {type: array, purpose: Evaluator service call ledger.}
+
+x-derived:
+  audit_count: &derive_audit_count {op: equals_length, path: audit_count, source_path: audit_rows}
+  plan_count: &derive_plan_count {op: equals_length, path: plan_count, source_path: plan_rows}
+  transcript_count: &derive_transcript_count {op: equals_length, path: transcript_count, source_path: transcript_rows}
+  transcript_credit_total: &derive_transcript_credit_total {op: equals_sum, path: transcript_credit_total, source_path: transcript_rows, field: credits}
+  transcript_residency_total: &derive_transcript_residency_total {op: equals_sum, path: transcript_residency_total, source_path: transcript_rows, field: residency}
+  crosswalk_count: &derive_crosswalk_count {op: equals_length, path: crosswalk_count, source_path: crosswalk_rows}
+  exception_count: &derive_exception_count {op: equals_length, path: exception_count, source_path: exception_rows}
+  reconciliation_count: &derive_reconciliation_count {op: equals_length, path: reconciliation_count, source_path: reconciliation_rows}
+  mismatch_count: &derive_mismatch_count {op: equals_count_where, path: mismatch_count, source_path: reconciliation_rows, where: [{op: equals, field: status, value: mismatch}]}
+  committee_count: &derive_committee_count {op: equals_length, path: committee_count, source_path: committee_rows}
+  affirm_vote_count: &derive_affirm_vote_count {op: equals_count_where, path: affirm_vote_count, source_path: committee_rows, where: [{op: equals, field: vote, value: affirm}]}
+  oppose_vote_count: &derive_oppose_vote_count {op: equals_count_where, path: oppose_vote_count, source_path: committee_rows, where: [{op: equals, field: vote, value: oppose}]}
+  abstain_vote_count: &derive_abstain_vote_count {op: equals_count_where, path: abstain_vote_count, source_path: committee_rows, where: [{op: equals, field: vote, value: abstain}]}
+  release_count: &derive_release_count {op: equals_length, path: release_count, source_path: release_rows}
+  audit_log_count: &derive_audit_log_count {op: equals_length, path: audit_log_count, source_path: audit_log}
+  service_call_count: &derive_service_call_count {op: equals_length, path: service_call_count, source_path: __services.calls}
+  identity_call_count: &derive_identity_call_count {op: equals_count_where, path: identity_call_count, source_path: __services.calls, where: [{op: equals, field: service, value: identity_verify}]}
+  bursar_call_count: &derive_bursar_call_count {op: equals_count_where, path: bursar_call_count, source_path: __services.calls, where: [{op: equals, field: service, value: bursar_bundle}]}
+  diploma_call_count: &derive_diploma_call_count {op: equals_count_where, path: diploma_call_count, source_path: __services.calls, where: [{op: equals, field: service, value: diploma_lane_quote}]}
+
+components:
+  reset_button:
+    kind: button
+    selector: '[data-testid="reset"]'
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_page, value: cockpit}
+          - {op: equals, path: active_role, value: analyst}
+          - {op: equals, path: current_filter, value: all}
+          - {op: equals, path: selected_candidate_id, value: ""}
+          - {op: equals, path: selected_candidate_name, value: ""}
+          - {op: equals, path: policy_epoch_input, value: ""}
+          - {op: equals, path: policy_epoch_status, value: draft}
+          - {op: equals, path: audit_rows, value: []}
+          - {op: equals, path: plan_rows, value: []}
+          - {op: equals, path: transcript_rows, value: []}
+          - {op: equals, path: crosswalk_rows, value: []}
+          - {op: equals, path: exception_rows, value: []}
+          - {op: equals, path: reconciliation_rows, value: []}
+          - {op: equals, path: committee_rows, value: []}
+          - {op: equals, path: release_rows, value: []}
+          - {op: equals, path: audit_log, value: []}
+          - {op: equals, path: readiness_score, value: 0}
+          - {op: equals, path: open_blockers, value: 11}
+          - {op: equals, path: validation_errors, value: {}}
+          - {op: equals, path: last_action, value: reset}
+  go_cockpit_button:
+    kind: button
+    selector: '[data-testid="go-cockpit"]'
+    actions: {click: {navigate_to: cockpit, effects: [{op: equals, path: current_page, value: cockpit}, {op: equals, path: last_action, value: nav_cockpit}]}}
+  go_curriculum_button:
+    kind: button
+    selector: '[data-testid="go-curriculum"]'
+    actions: {click: {navigate_to: curriculum, effects: [{op: equals, path: current_page, value: curriculum}, {op: equals, path: last_action, value: nav_curriculum}]}}
+  go_dossier_button:
+    kind: button
+    selector: '[data-testid="go-dossier"]'
+    actions: {click: {navigate_to: dossier, effects: [{op: equals, path: current_page, value: dossier}, {op: equals, path: last_action, value: nav_dossier}]}}
+  go_finance_button:
+    kind: button
+    selector: '[data-testid="go-finance"]'
+    actions: {click: {navigate_to: finance, effects: [{op: equals, path: current_page, value: finance}, {op: equals, path: last_action, value: nav_finance}]}}
+  go_senate_button:
+    kind: button
+    selector: '[data-testid="go-senate"]'
+    actions: {click: {navigate_to: senate, effects: [{op: equals, path: current_page, value: senate}, {op: equals, path: last_action, value: nav_senate}]}}
+  go_release_button:
+    kind: button
+    selector: '[data-testid="go-release"]'
+    actions: {click: {navigate_to: release, effects: [{op: equals, path: current_page, value: release}, {op: equals, path: last_action, value: nav_release}]}}
+  role_analyst_button:
+    kind: button
+    selector: '[data-testid="role-analyst"]'
+    actions: {click: {effects: [{op: equals, path: active_role, value: analyst}, {op: equals, path: last_action, value: role_analyst}]}}
+  role_advisor_button:
+    kind: button
+    selector: '[data-testid="role-advisor"]'
+    actions: {click: {effects: [{op: equals, path: active_role, value: advisor}, {op: equals, path: last_action, value: role_advisor}]}}
+  role_bursar_button:
+    kind: button
+    selector: '[data-testid="role-bursar"]'
+    actions: {click: {effects: [{op: equals, path: active_role, value: bursar}, {op: equals, path: last_action, value: role_bursar}]}}
+  role_registrar_button:
+    kind: button
+    selector: '[data-testid="role-registrar"]'
+    actions: {click: {effects: [{op: equals, path: active_role, value: registrar}, {op: equals, path: last_action, value: role_registrar}]}}
+  role_dean_button:
+    kind: button
+    selector: '[data-testid="role-dean"]'
+    actions: {click: {effects: [{op: equals, path: active_role, value: dean}, {op: equals, path: last_action, value: role_dean}]}}
+  role_provost_button:
+    kind: button
+    selector: '[data-testid="role-provost"]'
+    actions: {click: {effects: [{op: equals, path: active_role, value: provost}, {op: equals, path: last_action, value: role_provost}]}}
+  filter_wave_risk_button:
+    kind: button
+    selector: '[data-testid="filter-wave-risk"]'
+    page: cockpit
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_filter, value: wave_risk}
+          - {op: equals, path: visible_candidates, value: [
+              {id: CAND-IONA, name: "Iona Rivera", program: "Computational Design BS", cohort: "May 2026", risk: scarlet, catalog: "CAT-2026D", variance: alias_review},
+              {id: CAND-PRIYA, name: "Priya Shah", program: "Bioinformatics BS", cohort: "Dec 2026", risk: scarlet, catalog: "CAT-2026D", variance: court_order},
+              {id: CAND-MAREK, name: "Marek Holt", program: "Robotics Engineering BS", cohort: "May 2026", risk: amber, catalog: "CAT-2026D", variance: clear},
+              {id: CAND-SANA, name: "Sana Okafor", program: "Public Policy BA", cohort: "Aug 2026", risk: amber, catalog: "CAT-2025F", variance: suffix_review}
+            ]}
+          - {op: equals, path: last_action, value: filter_wave_risk}
+  select_iona_button:
+    kind: button
+    selector: '[data-testid="select-CAND-IONA"]'
+    page: cockpit
+    actions:
+      click:
+        navigate_to: curriculum
+        effects:
+          - {op: equals, path: selected_candidate_id, value: CAND-IONA}
+          - {op: equals, path: selected_candidate_name, value: "Iona Rivera"}
+          - {op: equals, path: selected_program, value: "Computational Design BS"}
+          - {op: equals, path: selected_cohort, value: "May 2026"}
+          - {op: equals, path: selected_risk, value: scarlet}
+          - {op: equals, path: selected_catalog_version, value: "CAT-2026D"}
+          - {op: equals, path: selected_honors_track, value: "Thesis + Studio"}
+          - {op: equals, path: selected_name_variance, value: alias_review}
+          - {op: equals, path: current_page, value: curriculum}
+          - {op: equals, path: last_action, value: select_candidate}
+  select_marek_button:
+    kind: button
+    selector: '[data-testid="select-CAND-MAREK"]'
+    page: cockpit
+    actions:
+      click:
+        navigate_to: curriculum
+        effects:
+          - {op: equals, path: selected_candidate_id, value: CAND-MAREK}
+          - {op: equals, path: selected_candidate_name, value: "Marek Holt"}
+          - {op: equals, path: selected_program, value: "Robotics Engineering BS"}
+          - {op: equals, path: selected_cohort, value: "May 2026"}
+          - {op: equals, path: selected_risk, value: amber}
+          - {op: equals, path: selected_catalog_version, value: "CAT-2026D"}
+          - {op: equals, path: selected_honors_track, value: "Controls Lab"}
+          - {op: equals, path: selected_name_variance, value: clear}
+          - {op: equals, path: current_page, value: curriculum}
+          - {op: equals, path: last_action, value: select_candidate}
+  run_degree_graph_button:
+    kind: button
+    selector: '[data-testid="run-degree-graph"]'
+    page: curriculum
+    actions:
+      click:
+        preconditions: [{op: not_one_of, path: selected_candidate_id, values: [""]}]
+        effects:
+          - {op: equals, path: audit_status, value: gaps_found}
+          - {op: equals, path: audit_rows, value: [
+              {id: AUD-CAPSTONE, area: "Capstone studio", required: 6, earned: 0, shadow: "seat-linked", status: missing},
+              {id: AUD-RESIDENCY, area: Residency, required: 45, earned: 39, shadow: "2 shadow gaps", status: short},
+              {id: AUD-ETHICS, area: "AI ethics", required: 3, earned: 0, shadow: "policy locked", status: missing},
+              {id: AUD-HONORS, area: "Honors thesis", required: 3, earned: 0, shadow: "committee vote", status: missing},
+              {id: AUD-GPA, area: "Major GPA", required: 3.2, earned: 3.36, shadow: clear, status: met}
+            ]}
+          - *derive_audit_count
+          - {op: equals, path: deficiency_count, value: 4}
+          - {op: equals, path: shadow_gap_count, value: 2}
+          - {op: equals, path: readiness_score, value: 12}
+          - {op: equals, path: last_action, value: run_degree_graph}
+  plan_capstone_seats_button:
+    kind: button
+    selector: '[data-testid="plan-capstone-seats"]'
+    page: curriculum
+    actions:
+      click:
+        effects:
+          - {op: equals, path: plan_rows, value: [
+              {id: PLN-CD498, code: CD 498, slot: "MW 09:00", seat: waitlist, credits: 6, status: collision},
+              {id: PLN-CS455, code: CS 455, slot: "MW 09:00", seat: studio-2, credits: 4, status: collision},
+              {id: PLN-ETH410, code: ETH 410, slot: "TR 13:00", seat: seminar, credits: 3, status: planned},
+              {id: PLN-HON399, code: HON 399, slot: "F 10:00", seat: committee, credits: 3, status: planned},
+              {id: PLN-RES440, code: RES 440, slot: "TR 13:00", seat: residency, credits: 1, status: collision}
+            ]}
+          - *derive_plan_count
+          - {op: equals, path: plan_credit_total, value: 17}
+          - {op: equals, path: collision_count, value: 3}
+          - {op: equals, path: seat_waitlist_count, value: 1}
+          - {op: equals, path: plan_status, value: collision}
+          - {op: equals, path: readiness_score, value: 18}
+          - {op: equals, path: last_action, value: plan_capstone_seats}
+  resolve_seat_matrix_button:
+    kind: button
+    selector: '[data-testid="resolve-seat-matrix"]'
+    page: curriculum
+    actions:
+      click:
+        effects:
+          - {op: equals, path: plan_rows, value: [
+              {id: PLN-CD498, code: CD 498, slot: "MW 09:00", seat: studio-1, credits: 6, status: planned},
+              {id: PLN-CS455, code: CS 455, slot: "TR 15:00", seat: studio-2, credits: 4, status: planned},
+              {id: PLN-ETH410, code: ETH 410, slot: "TR 13:00", seat: seminar, credits: 3, status: planned},
+              {id: PLN-HON399, code: HON 399, slot: "F 10:00", seat: committee, credits: 3, status: planned},
+              {id: PLN-RES440, code: RES 440, slot: "W 17:00", seat: residency, credits: 1, status: planned}
+            ]}
+          - *derive_plan_count
+          - {op: equals, path: plan_credit_total, value: 17}
+          - {op: equals, path: collision_count, value: 0}
+          - {op: equals, path: seat_waitlist_count, value: 0}
+          - {op: equals, path: plan_status, value: resolved}
+          - {op: equals, path: readiness_score, value: 25}
+          - {op: equals, path: last_action, value: resolve_seat_matrix}
+  policy_epoch_input:
+    kind: input
+    selector: '[data-testid="policy-epoch"]'
+    page: curriculum
+    actions:
+      fill:
+        effects:
+          - {op: equals_normalized, path: policy_epoch_input, value_from: input.value, normalizers: [trim, uppercase]}
+          - {op: equals, path: last_action, value: edit_policy_epoch}
+  lock_policy_epoch_button:
+    kind: button
+    selector: '[data-testid="lock-policy-epoch"]'
+    page: curriculum
+    actions:
+      click:
+        allowed_roles: [registrar]
+        rejected_when:
+          - {op: not_one_of, path: policy_epoch_input, values: [POLICY-2026-MAY]}
+        rejected_effects:
+          - {op: equals, path: policy_epoch_status, value: stale}
+          - {op: updated_object_fields, path: validation_errors, updates: {policy: "Policy epoch mismatch"}}
+          - {op: equals, path: last_action, value: policy_epoch_mismatch}
+        effects:
+          - {op: equals, path: policy_epoch_status, value: locked}
+          - {op: removed_object_fields, path: validation_errors, fields: [policy]}
+          - {op: equals, path: readiness_score, value: 31}
+          - {op: equals, path: last_action, value: lock_policy_epoch}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_registrar}
+  transcript_upload_input:
+    kind: input
+    selector: '[data-testid="transcript-upload"]'
+    page: dossier
+    actions:
+      upload:
+        file_schema:
+          format: csv
+          columns:
+            - {name: id, type: string}
+            - {name: course, type: string}
+            - {name: credits, type: number}
+            - {name: residency, type: number}
+            - {name: grade, type: string}
+            - {name: status, type: string}
+        effects:
+          - {op: equals, path: transcript_rows, value_from: input.rows}
+          - *derive_transcript_count
+          - *derive_transcript_credit_total
+          - *derive_transcript_residency_total
+          - {op: equals, path: last_transcript_file, value_from: input.file.name}
+          - {op: equals, path: crosswalk_status, value: idle}
+          - {op: equals, path: last_action, value: upload_transcript_bundle}
+  crosswalk_upload_input:
+    kind: input
+    selector: '[data-testid="crosswalk-upload"]'
+    page: dossier
+    actions:
+      upload:
+        file_schema:
+          format: csv
+          columns:
+            - {name: id, type: string}
+            - {name: requirement, type: string}
+            - {name: transcript, type: string}
+            - {name: credits, type: number}
+            - {name: confidence, type: string}
+            - {name: status, type: string}
+        effects:
+          - {op: equals, path: crosswalk_rows, value_from: input.rows}
+          - *derive_crosswalk_count
+          - {op: equals, path: crosswalk_status, value: uploaded}
+          - {op: equals, path: last_action, value: upload_crosswalk}
+  stage_crosswalk_button:
+    kind: button
+    selector: '[data-testid="stage-crosswalk"]'
+    page: dossier
+    actions:
+      click:
+        allowed_roles: [advisor]
+        preconditions:
+          - {op: relation, path: transcript_count, operator: ">", value: 0}
+          - {op: relation, path: crosswalk_count, operator: ">", value: 0}
+        effects:
+          - {op: equals, path: crosswalk_status, value: staged}
+          - {op: equals, path: readiness_score, value: 39}
+          - {op: equals, path: last_action, value: stage_crosswalk}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_advisor}
+  certify_crosswalk_button:
+    kind: button
+    selector: '[data-testid="certify-crosswalk"]'
+    page: dossier
+    actions:
+      click:
+        allowed_roles: [advisor]
+        rejected_when:
+          - {op: not_one_of, path: policy_epoch_status, values: [locked]}
+        rejected_effects:
+          - {op: equals, path: crosswalk_status, value: blocked}
+          - {op: updated_object_fields, path: validation_errors, updates: {crosswalk: "Policy epoch and resolved seats required"}}
+          - {op: equals, path: last_action, value: crosswalk_requires_policy}
+        effects:
+          - {op: equals, path: crosswalk_status, value: certified}
+          - {op: equals, path: audit_status, value: satisfied}
+          - {op: equals, path: deficiency_count, value: 0}
+          - {op: equals, path: shadow_gap_count, value: 0}
+          - {op: equals, path: audit_rows, value: [
+              {id: AUD-CAPSTONE, area: "Capstone studio", required: 6, earned: 6, shadow: "seat-linked", status: met},
+              {id: AUD-RESIDENCY, area: Residency, required: 45, earned: 45, shadow: clear, status: met},
+              {id: AUD-ETHICS, area: "AI ethics", required: 3, earned: 3, shadow: clear, status: met},
+              {id: AUD-HONORS, area: "Honors thesis", required: 3, earned: 3, shadow: clear, status: met},
+              {id: AUD-GPA, area: "Major GPA", required: 3.2, earned: 3.36, shadow: clear, status: met}
+            ]}
+          - *derive_audit_count
+          - {op: removed_object_fields, path: validation_errors, fields: [crosswalk]}
+          - {op: equals, path: readiness_score, value: 48}
+          - {op: equals, path: last_action, value: certify_crosswalk}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_advisor}
+  assemble_exception_dossier_button:
+    kind: button
+    selector: '[data-testid="assemble-exception-dossier"]'
+    page: dossier
+    actions:
+      click:
+        allowed_roles: [advisor]
+        rejected_when:
+          - {op: not_one_of, path: crosswalk_status, values: [certified]}
+        rejected_effects:
+          - {op: equals, path: exception_status, value: blocked}
+          - {op: updated_object_fields, path: validation_errors, updates: {exception: "Certified crosswalk required"}}
+          - {op: equals, path: last_action, value: exception_requires_crosswalk}
+        effects:
+          - {op: equals, path: exception_status, value: assembled}
+          - {op: equals, path: exception_rows, value: [
+              {id: EX-POLICY, gate: policy_epoch, owner: registrar, evidence: POLICY-2026-MAY, status: attached},
+              {id: EX-SEAT, gate: seat_arbitration, owner: analyst, evidence: "5-row plan resolved", status: attached},
+              {id: EX-CROSS, gate: crosswalk_certification, owner: advisor, evidence: "4 mappings certified", status: attached}
+            ]}
+          - *derive_exception_count
+          - {op: removed_object_fields, path: validation_errors, fields: [exception]}
+          - {op: equals, path: readiness_score, value: 58}
+          - {op: equals, path: last_action, value: assemble_exception_dossier}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_advisor}
+  verify_identity_button:
+    kind: button
+    selector: '[data-testid="verify-identity"]'
+    page: finance
+    actions:
+      click:
+        allowed_roles: [registrar]
+        effects:
+          - *derive_service_call_count
+          - *derive_identity_call_count
+          - {op: equals, path: identity_status, value: review}
+          - {op: equals, path: name_match_status, value: variance}
+          - {op: equals, path: identity_trace_id, value: IDV-IONA-773}
+          - {op: equals, path: readiness_score, value: 62}
+          - {op: equals, path: last_action, value: verify_identity}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_registrar}
+  resolve_name_variance_button:
+    kind: button
+    selector: '[data-testid="resolve-name-variance"]'
+    page: finance
+    actions:
+      click:
+        allowed_roles: [registrar]
+        effects:
+          - {op: equals, path: identity_status, value: verified}
+          - {op: equals, path: name_match_status, value: resolved}
+          - {op: removed_object_fields, path: validation_errors, fields: [identity]}
+          - {op: equals, path: readiness_score, value: 66}
+          - {op: equals, path: last_action, value: resolve_name_variance}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_registrar}
+  run_bursar_bundle_button:
+    kind: button
+    selector: '[data-testid="run-bursar-bundle"]'
+    page: finance
+    actions:
+      click:
+        allowed_roles: [bursar]
+        rejected_when:
+          - {op: not_one_of, path: exception_status, values: [assembled]}
+        rejected_effects:
+          - {op: equals, path: finance_status, value: blocked}
+          - {op: updated_object_fields, path: validation_errors, updates: {finance: "Exception dossier required"}}
+          - {op: equals, path: last_action, value: finance_requires_exception}
+        effects:
+          - *derive_service_call_count
+          - *derive_bursar_call_count
+          - {op: equals, path: finance_status, value: cleared}
+          - {op: equals, path: sap_status, value: clear}
+          - {op: equals, path: balance_status, value: zero_balance}
+          - {op: equals, path: bursar_trace_id, value: BUR-IONA-551}
+          - {op: removed_object_fields, path: validation_errors, fields: [finance]}
+          - {op: equals, path: readiness_score, value: 70}
+          - {op: equals, path: last_action, value: run_bursar_bundle}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_bursar}
+  quote_diploma_lane_button:
+    kind: button
+    selector: '[data-testid="quote-diploma-lane"]'
+    page: finance
+    actions:
+      click:
+        allowed_roles: [registrar]
+        rejected_when:
+          - {op: not_one_of, path: identity_status, values: [verified]}
+        rejected_effects:
+          - {op: equals, path: diploma_quote_status, value: blocked}
+          - {op: updated_object_fields, path: validation_errors, updates: {diploma: "Identity and finance gates required"}}
+          - {op: equals, path: last_action, value: diploma_requires_identity}
+        effects:
+          - *derive_service_call_count
+          - *derive_diploma_call_count
+          - {op: equals, path: diploma_quote_status, value: quoted}
+          - {op: equals, path: diploma_lane, value: rush-audit}
+          - {op: equals, path: diploma_trace_id, value: DPL-IONA-016}
+          - {op: removed_object_fields, path: validation_errors, fields: [diploma]}
+          - {op: equals, path: readiness_score, value: 73}
+          - {op: equals, path: last_action, value: quote_diploma_lane}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_registrar}
+  reconciliation_upload_input:
+    kind: input
+    selector: '[data-testid="reconciliation-upload"]'
+    page: finance
+    actions:
+      upload:
+        file_schema:
+          format: csv
+          columns:
+            - {name: id, type: string}
+            - {name: source, type: string}
+            - {name: registrar, type: string}
+            - {name: senate, type: string}
+            - {name: status, type: string}
+        effects:
+          - {op: equals, path: reconciliation_rows, value_from: input.rows}
+          - *derive_reconciliation_count
+          - *derive_mismatch_count
+          - {op: equals, path: last_reconciliation_file, value_from: input.file.name}
+          - {op: equals, path: reconciliation_status, value: uploaded}
+          - {op: equals, path: last_action, value: upload_reconciliation}
+  lock_wave_reconciliation_button:
+    kind: button
+    selector: '[data-testid="lock-wave-reconciliation"]'
+    page: finance
+    actions:
+      click:
+        allowed_roles: [registrar]
+        rejected_when:
+          - {op: relation, path: mismatch_count, operator: ">", value: 0}
+        rejected_effects:
+          - {op: equals, path: reconciliation_status, value: blocked}
+          - {op: updated_object_fields, path: validation_errors, updates: {reconciliation: "Resolve senate worksheet mismatches"}}
+          - {op: equals, path: last_action, value: reconciliation_mismatch}
+        effects:
+          - {op: equals, path: reconciliation_status, value: locked}
+          - {op: equals, path: mismatch_count, value: 0}
+          - {op: removed_object_fields, path: validation_errors, fields: [reconciliation]}
+          - {op: equals, path: readiness_score, value: 78}
+          - {op: equals, path: last_action, value: lock_wave_reconciliation}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_registrar}
+  committee_upload_input:
+    kind: input
+    selector: '[data-testid="committee-upload"]'
+    page: senate
+    actions:
+      upload:
+        file_schema:
+          format: csv
+          columns:
+            - {name: id, type: string}
+            - {name: member, type: string}
+            - {name: role, type: string}
+            - {name: vote, type: string}
+            - {name: note, type: string}
+        effects:
+          - {op: equals, path: committee_rows, value_from: input.rows}
+          - *derive_committee_count
+          - *derive_affirm_vote_count
+          - *derive_oppose_vote_count
+          - *derive_abstain_vote_count
+          - {op: equals, path: vote_status, value: uploaded}
+          - {op: equals, path: last_action, value: upload_committee_votes}
+  certify_committee_quorum_button:
+    kind: button
+    selector: '[data-testid="certify-committee-quorum"]'
+    page: senate
+    actions:
+      click:
+        allowed_roles: [dean]
+        rejected_when:
+          - {op: relation, path: affirm_vote_count, operator: "<", value: 4}
+        rejected_effects:
+          - {op: equals, path: quorum_status, value: blocked}
+          - {op: updated_object_fields, path: validation_errors, updates: {committee: "Four affirm votes required"}}
+          - {op: equals, path: last_action, value: quorum_blocked}
+        effects:
+          - {op: equals, path: quorum_status, value: certified}
+          - {op: equals, path: vote_status, value: certified}
+          - {op: removed_object_fields, path: validation_errors, fields: [committee]}
+          - {op: equals, path: readiness_score, value: 84}
+          - {op: equals, path: last_action, value: certify_committee_quorum}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_dean}
+  prepare_senate_docket_button:
+    kind: button
+    selector: '[data-testid="prepare-senate-docket"]'
+    page: senate
+    actions:
+      click:
+        allowed_roles: [dean]
+        rejected_when:
+          - {op: not_one_of, path: quorum_status, values: [certified]}
+        rejected_effects:
+          - {op: equals, path: senate_docket_status, value: blocked}
+          - {op: updated_object_fields, path: validation_errors, updates: {senate: "Committee, reconciliation, and finance gates required"}}
+          - {op: equals, path: last_action, value: senate_requires_gates}
+        effects:
+          - {op: equals, path: senate_docket_status, value: ready}
+          - {op: equals_template, path: senate_packet_hash, template: "SEN-{selected_candidate_id}-V{affirm_vote_count}-R{reconciliation_count}-S{service_call_count}"}
+          - {op: equals, path: audit_log, value: [
+              {id: AUD-SENATE, event: senate_docket, role: dean, status: ready}
+            ]}
+          - *derive_audit_log_count
+          - {op: removed_object_fields, path: validation_errors, fields: [senate]}
+          - {op: equals, path: readiness_score, value: 90}
+          - {op: equals, path: last_action, value: prepare_senate_docket}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_dean}
+  provost_counterseal_button:
+    kind: button
+    selector: '[data-testid="provost-counterseal"]'
+    page: senate
+    actions:
+      click:
+        allowed_roles: [provost]
+        rejected_when:
+          - {op: not_one_of, path: senate_docket_status, values: [ready]}
+        rejected_effects:
+          - {op: equals, path: provost_counterseal_status, value: blocked}
+          - {op: equals, path: last_action, value: provost_requires_senate}
+        effects:
+          - {op: equals, path: provost_counterseal_status, value: sealed}
+          - {op: equals_template, path: provost_token, template: "PROV-{senate_packet_hash}-{diploma_lane}"}
+          - {op: equals, path: audit_log, value: [
+              {id: AUD-SENATE, event: senate_docket, role: dean, status: ready},
+              {id: AUD-PROVOST, event: provost_counterseal, role: provost, status: sealed}
+            ]}
+          - *derive_audit_log_count
+          - {op: equals, path: readiness_score, value: 94}
+          - {op: equals, path: last_action, value: provost_counterseal}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_provost}
+  seal_commencement_wave_button:
+    kind: button
+    selector: '[data-testid="seal-commencement-wave"]'
+    page: release
+    actions:
+      click:
+        allowed_roles: [registrar]
+        rejected_when:
+          - {op: not_one_of, path: provost_counterseal_status, values: [sealed]}
+        rejected_effects:
+          - {op: equals, path: release_wave_status, value: blocked}
+          - {op: updated_object_fields, path: validation_errors, updates: {release: "Provost counterseal required"}}
+          - {op: equals, path: last_action, value: release_requires_counterseal}
+        effects:
+          - {op: equals, path: release_wave_status, value: sealed}
+          - {op: equals_template, path: release_hash, template: "WAVE-{selected_candidate_id}-{provost_token}-D{diploma_call_count}"}
+          - {op: equals, path: blocker_rows, value: [
+              {id: BLK-POLICY, label: Policy epoch locked, owner: registrar, status: cleared},
+              {id: BLK-SEATS, label: Seat collisions resolved, owner: analyst, status: cleared},
+              {id: BLK-CROSSWALK, label: Articulation crosswalk certified, owner: advisor, status: cleared},
+              {id: BLK-EXCEPTION, label: Exception dossier assembled, owner: advisor, status: cleared},
+              {id: BLK-IDENTITY, label: Identity variance resolved, owner: registrar, status: cleared},
+              {id: BLK-FINANCE, label: Bursar bundle cleared, owner: bursar, status: cleared},
+              {id: BLK-RECON, label: Worksheet reconciliation locked, owner: registrar, status: cleared},
+              {id: BLK-COMMITTEE, label: Committee quorum certified, owner: dean, status: cleared},
+              {id: BLK-SENATE, label: Senate docket prepared, owner: dean, status: cleared},
+              {id: BLK-PROVOST, label: Provost counterseal applied, owner: provost, status: cleared},
+              {id: BLK-WAVE, label: Commencement wave sealed, owner: registrar, status: cleared}
+            ]}
+          - {op: equals, path: open_blockers, value: 0}
+          - {op: equals, path: release_rows, value: [
+              {id: REL-COMM, channel: commencement, batch: WAVE-MAY26-IONA, hash: pending, status: sealed},
+              {id: REL-TRANSCRIPT, channel: transcript_archive, batch: WAVE-MAY26-IONA, hash: pending, status: sealed}
+            ]}
+          - *derive_release_count
+          - {op: equals, path: audit_log, value: [
+              {id: AUD-SENATE, event: senate_docket, role: dean, status: ready},
+              {id: AUD-PROVOST, event: provost_counterseal, role: provost, status: sealed},
+              {id: AUD-WAVE, event: release_wave, role: registrar, status: sealed}
+            ]}
+          - *derive_audit_log_count
+          - {op: removed_object_fields, path: validation_errors, fields: [release]}
+          - {op: equals, path: readiness_score, value: 100}
+          - {op: equals, path: last_action, value: seal_commencement_wave}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_registrar}
+  publish_diploma_manifest_button:
+    kind: button
+    selector: '[data-testid="publish-diploma-manifest"]'
+    page: release
+    actions:
+      click:
+        allowed_roles: [registrar]
+        rejected_when:
+          - {op: not_one_of, path: release_wave_status, values: [sealed]}
+        rejected_effects:
+          - {op: equals, path: diploma_manifest_status, value: blocked}
+          - {op: equals, path: last_action, value: manifest_requires_wave}
+        effects:
+          - {op: equals, path: diploma_manifest_status, value: queued}
+          - {op: equals_template, path: diploma_manifest_hash, template: "DIP-{selected_candidate_id}-{release_hash}-{release_count}"}
+          - {op: equals, path: release_rows, value: [
+              {id: REL-COMM, channel: commencement, batch: WAVE-MAY26-IONA, hash: "WAVE-CAND-IONA", status: sealed},
+              {id: REL-TRANSCRIPT, channel: transcript_archive, batch: WAVE-MAY26-IONA, hash: "WAVE-CAND-IONA", status: queued},
+              {id: REL-DIPLOMA, channel: diploma_print, batch: rush-audit, hash: "DIP-CAND-IONA", status: queued}
+            ]}
+          - *derive_release_count
+          - {op: equals, path: last_action, value: publish_diploma_manifest}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_registrar}

@@ -1,0 +1,1412 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DetoxBench Dashboard</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f2f4f7;
+        --ink: #171b22;
+        --muted: #687382;
+        --faint: #8a95a3;
+        --panel: #ffffff;
+        --panel-2: #f8fafc;
+        --line: #d8dee7;
+        --line-strong: #b9c3cf;
+        --ok: #176f47;
+        --bad: #b22d36;
+        --warn: #9b6200;
+        --accent: #1e6686;
+        --accent-2: #704f9f;
+        --focus: rgba(30, 102, 134, 0.22);
+        --shadow: 0 16px 42px rgba(30, 41, 59, 0.1);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+      }
+
+      button,
+      select,
+      input {
+        font: inherit;
+      }
+
+      button,
+      select {
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        background: var(--panel);
+        color: var(--ink);
+      }
+
+      button {
+        min-height: 34px;
+        padding: 0 10px;
+        cursor: pointer;
+      }
+
+      button:hover,
+      select:hover {
+        border-color: var(--line-strong);
+      }
+
+      button:focus-visible,
+      select:focus-visible,
+      input:focus-visible {
+        outline: 3px solid var(--focus);
+        outline-offset: 2px;
+      }
+
+      button.primary,
+      button.active {
+        border-color: var(--accent);
+        background: var(--accent);
+        color: #fff;
+      }
+
+      button.danger {
+        border-color: rgba(178, 45, 54, 0.35);
+        color: var(--bad);
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin-top: 0;
+      }
+
+      h1 {
+        margin-bottom: 2px;
+        font-size: 1.1rem;
+      }
+
+      h2 {
+        margin-bottom: 0;
+        font-size: 0.92rem;
+      }
+
+      h3 {
+        margin-bottom: 8px;
+        font-size: 0.9rem;
+      }
+
+      .meta {
+        color: var(--muted);
+        font-size: 0.8rem;
+      }
+
+      .app {
+        min-height: 100vh;
+      }
+
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        border-bottom: 1px solid var(--line);
+        background: rgba(242, 244, 247, 0.94);
+        backdrop-filter: blur(10px);
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 14px 18px;
+      }
+
+      .crumbs {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        color: var(--muted);
+        font-size: 0.82rem;
+      }
+
+      .crumb {
+        border: 0;
+        background: transparent;
+        min-height: 24px;
+        padding: 0;
+        color: var(--accent);
+      }
+
+      .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 24px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 0 9px;
+        background: var(--panel);
+        color: var(--muted);
+        font-size: 0.78rem;
+        white-space: nowrap;
+      }
+
+      .pill.ok {
+        border-color: rgba(23, 111, 71, 0.24);
+        color: var(--ok);
+      }
+
+      .pill.bad {
+        border-color: rgba(178, 45, 54, 0.24);
+        color: var(--bad);
+      }
+
+      .pill.warn {
+        border-color: rgba(155, 98, 0, 0.24);
+        color: var(--warn);
+      }
+
+      .view {
+        display: none;
+      }
+
+      .view.active {
+        display: block;
+      }
+
+      .landing {
+        width: min(1120px, calc(100vw - 32px));
+        margin: 0 auto;
+        padding: 24px 0 42px;
+      }
+
+      .landing-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+        gap: 16px;
+      }
+
+      .panel {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        box-shadow: var(--shadow);
+      }
+
+      .panel-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        min-height: 48px;
+        border-bottom: 1px solid var(--line);
+        padding: 12px;
+      }
+
+      .panel-body {
+        padding: 12px;
+      }
+
+      .app-card {
+        display: grid;
+        gap: 14px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel-2);
+        padding: 16px;
+      }
+
+      .app-card h2 {
+        font-size: 1.45rem;
+      }
+
+      .metrics {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 10px;
+      }
+
+      .metric {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        padding: 10px;
+      }
+
+      .metric strong {
+        display: block;
+        font-size: 1.35rem;
+      }
+
+      .metric span {
+        color: var(--muted);
+        font-size: 0.78rem;
+      }
+
+      .tier-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 8px;
+      }
+
+      .tier-card {
+        display: grid;
+        gap: 4px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        padding: 9px;
+      }
+
+      .tier-card strong {
+        font-size: 0.86rem;
+        text-transform: capitalize;
+      }
+
+      .tier-card span {
+        color: var(--muted);
+        font-size: 0.76rem;
+      }
+
+      .workspace {
+        display: grid;
+        grid-template-columns: 300px minmax(0, 1fr);
+        min-height: calc(100vh - 67px);
+      }
+
+      aside {
+        border-right: 1px solid var(--line);
+        background: var(--panel);
+        padding: 14px;
+      }
+
+      .side-section + .side-section {
+        margin-top: 16px;
+      }
+
+      .side-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+
+      .run-list,
+      .scenario-list,
+      .failure-list {
+        display: grid;
+        gap: 8px;
+      }
+
+      .run-row,
+      .scenario-row,
+      .failure-row {
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel-2);
+        padding: 9px;
+        text-align: left;
+      }
+
+      .run-row {
+        display: grid;
+        gap: 7px;
+      }
+
+      .scenario-row,
+      .failure-row {
+        display: grid;
+        gap: 5px;
+      }
+
+      .scenario-row.active,
+      .failure-row.active {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px var(--focus);
+      }
+
+      .run-main {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .run-main strong,
+      .scenario-row strong,
+      .failure-row strong {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .run-row select {
+        width: 100%;
+        min-height: 30px;
+        padding: 0 7px;
+        font-size: 0.78rem;
+      }
+
+      .content {
+        min-width: 0;
+        padding: 14px;
+      }
+
+      .scenario-bar {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 12px;
+        align-items: center;
+        margin-bottom: 14px;
+      }
+
+      .scenario-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .scenario-title h2 {
+        font-size: 1.05rem;
+      }
+
+      .controls {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+
+      .step-strip {
+        display: grid;
+        grid-template-columns: auto minmax(160px, 1fr) auto;
+        gap: 10px;
+        align-items: center;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        padding: 10px;
+        margin-bottom: 14px;
+      }
+
+      input[type="range"] {
+        width: 100%;
+      }
+
+      .timeline {
+        display: flex;
+        gap: 5px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+
+      .dot {
+        width: 26px;
+        height: 26px;
+        min-height: 26px;
+        border-radius: 999px;
+        padding: 0;
+        font-size: 0.75rem;
+      }
+
+      .dot.failed {
+        border-color: rgba(178, 45, 54, 0.45);
+        color: var(--bad);
+      }
+
+      .dot.active {
+        background: var(--ink);
+        border-color: var(--ink);
+        color: #fff;
+      }
+
+      .replay-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+        gap: 12px;
+      }
+
+      .run-card {
+        min-width: 0;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        overflow: hidden;
+        background: var(--panel);
+      }
+
+      .run-card.failed {
+        border-color: rgba(178, 45, 54, 0.35);
+      }
+
+      .run-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        border-bottom: 1px solid var(--line);
+        background: var(--panel-2);
+        padding: 10px;
+      }
+
+      .step-meta {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 8px;
+        padding: 10px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .kv {
+        min-width: 0;
+      }
+
+      .kv span {
+        display: block;
+        color: var(--muted);
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+
+      .kv strong {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 0.86rem;
+      }
+
+      .screens {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        padding: 10px;
+      }
+
+      figure {
+        margin: 0;
+        min-width: 0;
+      }
+
+      figcaption {
+        margin-bottom: 5px;
+        color: var(--muted);
+        font-size: 0.73rem;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+
+      img {
+        display: block;
+        width: 100%;
+        max-height: 360px;
+        object-fit: contain;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: #fff;
+      }
+
+      .run-details {
+        display: grid;
+        gap: 8px;
+        padding: 0 10px 10px;
+      }
+
+      .assertions {
+        display: grid;
+        gap: 6px;
+      }
+
+      .assertion {
+        border-left: 3px solid var(--ok);
+        background: #f4faf6;
+        padding: 7px 8px;
+        font-size: 0.8rem;
+      }
+
+      .assertion.failed {
+        border-left-color: var(--bad);
+        background: #fff6f6;
+      }
+
+      details {
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: #fbfcfe;
+      }
+
+      summary {
+        cursor: pointer;
+        padding: 8px;
+        color: var(--muted);
+        font-size: 0.8rem;
+        font-weight: 700;
+      }
+
+      pre {
+        max-height: 280px;
+        margin: 0;
+        overflow: auto;
+        border-top: 1px solid var(--line);
+        padding: 8px;
+        font-size: 0.75rem;
+        line-height: 1.4;
+        white-space: pre-wrap;
+      }
+
+      .empty {
+        color: var(--muted);
+        padding: 24px;
+        text-align: center;
+      }
+
+      .failed-text {
+        color: var(--bad);
+      }
+
+      .ok-text {
+        color: var(--ok);
+      }
+
+      .small-actions {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+
+      @media (max-width: 980px) {
+        .landing-grid,
+        .workspace {
+          grid-template-columns: 1fr;
+        }
+
+        aside {
+          border-right: 0;
+          border-bottom: 1px solid var(--line);
+        }
+
+        .scenario-bar,
+        .step-strip {
+          grid-template-columns: 1fr;
+        }
+
+        .controls {
+          justify-content: flex-start;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <header>
+        <div class="topbar">
+          <div>
+            <h1 id="title">DetoxBench Dashboard</h1>
+            <div class="crumbs" id="crumbs"></div>
+          </div>
+          <div class="header-actions" id="headerActions"></div>
+        </div>
+      </header>
+
+      <section class="view active" id="appView">
+        <div class="landing">
+          <div class="landing-grid">
+            <div class="panel">
+              <div class="panel-head">
+                <h2>Apps</h2>
+                <span class="pill" id="appCount"></span>
+              </div>
+              <div class="panel-body">
+                <div class="app-card">
+                  <div>
+                    <h2 id="appName"></h2>
+                    <div class="meta" id="appPath"></div>
+                  </div>
+                  <div class="metrics" id="appMetrics"></div>
+                  <div class="tier-grid" id="tierCoverage"></div>
+                  <div class="small-actions">
+                    <button class="primary" id="enterApp" type="button">Open App</button>
+                    <button id="openFirstFailure" type="button">Open First Failure</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="panel">
+              <div class="panel-head">
+                <h2>Failure Inbox</h2>
+                <span class="pill bad" id="failureCount"></span>
+              </div>
+              <div class="panel-body">
+                <div class="failure-list" id="landingFailures"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="replayView">
+        <div class="workspace">
+          <aside>
+            <div class="side-section">
+              <div class="side-title">
+                <h2>Selected Runs</h2>
+                <button id="toggleAllRuns" type="button">All</button>
+              </div>
+              <div class="run-list" id="runList"></div>
+            </div>
+            <div class="side-section">
+              <div class="side-title">
+                <h2>Scenarios</h2>
+                <button id="showFailedScenarios" type="button">Failed</button>
+              </div>
+              <div class="scenario-list" id="scenarioList"></div>
+            </div>
+            <div class="side-section">
+              <div class="side-title">
+                <h2>Failures</h2>
+                <button id="jumpFirstFailure" type="button">First</button>
+              </div>
+              <div class="failure-list" id="failureList"></div>
+            </div>
+          </aside>
+
+          <div class="content">
+            <div class="scenario-bar">
+              <div class="scenario-title">
+                <h2 id="scenarioTitle"></h2>
+                <span id="scenarioTier"></span>
+                <span id="scenarioStatus"></span>
+                <span class="pill" id="visibleRunCount"></span>
+              </div>
+              <div class="controls">
+                <button id="prevScenario" type="button">Prev Scenario</button>
+                <button id="nextScenario" type="button">Next Scenario</button>
+                <button id="backToApps" type="button">Apps</button>
+              </div>
+            </div>
+
+            <div class="step-strip">
+              <div>
+                <strong id="stepHeadline"></strong>
+                <div class="meta" id="stepSubhead"></div>
+              </div>
+              <input id="stepSlider" type="range" min="1" max="1" value="1" />
+              <div class="controls">
+                <button id="prevStep" type="button">Prev</button>
+                <button id="playPause" type="button">Play</button>
+                <button id="nextStep" type="button">Next</button>
+              </div>
+            </div>
+
+            <div class="timeline" id="timeline"></div>
+            <div class="replay-grid" id="replayGrid"></div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script id="dashboard-data" type="application/json">__DASHBOARD_DATA__</script>
+    <script>
+      const data = JSON.parse(document.getElementById("dashboard-data").textContent);
+      const bySubjectRun = new Map();
+      const state = {
+        view: "apps",
+        visibleSubjects: new Set(),
+        selectedRuns: new Map(),
+        selectedScenario: null,
+        selectedStep: 1,
+        failedOnly: false,
+        playing: false,
+        timer: null,
+      };
+
+      for (const run of data.runs) {
+        bySubjectRun.set(run.subject + "::" + run.run_id, run);
+      }
+
+      for (const subject of data.subjects) {
+        state.selectedRuns.set(subject.name, subject.default_run_id);
+        if (subject.default_visible) {
+          state.visibleSubjects.add(subject.name);
+        }
+      }
+
+      function runFor(subject) {
+        return bySubjectRun.get(subject + "::" + state.selectedRuns.get(subject));
+      }
+
+      function activeRuns() {
+        return [...state.visibleSubjects].map(runFor).filter(Boolean);
+      }
+
+      function allVisibleScenarioIds() {
+        const ids = new Set();
+        for (const run of activeRuns()) {
+          for (const scenario of run.scenarios) {
+            ids.add(scenario.id);
+          }
+        }
+        return [...ids].sort();
+      }
+
+      function scenarioFor(run, scenarioId) {
+        return run.scenarios.find((scenario) => scenario.id === scenarioId);
+      }
+
+      function selectedScenarioIds() {
+        const ids = allVisibleScenarioIds();
+        if (!state.failedOnly) {
+          return ids;
+        }
+        return ids.filter((id) => activeRuns().some((run) => {
+          const scenario = scenarioFor(run, id);
+          return scenario && !scenario.passed;
+        }));
+      }
+
+      function selectedScenario() {
+        const run = activeRuns().find((candidate) => scenarioFor(candidate, state.selectedScenario));
+        return run ? scenarioFor(run, state.selectedScenario) : null;
+      }
+
+      function maxStepForSelectedScenario() {
+        return Math.max(1, ...activeRuns().map((run) => {
+          const scenario = scenarioFor(run, state.selectedScenario);
+          return scenario ? (scenario.expected_step_count || scenario.steps.length) : 0;
+        }));
+      }
+
+      function failureItems() {
+        const failures = [];
+        for (const run of data.runs) {
+          for (const scenario of run.scenarios) {
+            for (const step of scenario.steps) {
+              const failedAssertions = step.assertions.filter((assertion) => !assertion.passed);
+            for (const assertion of failedAssertions) {
+                failures.push({
+                  kind: "assertion",
+                  subject: run.subject,
+                  run_id: run.run_id,
+                  scenario_id: scenario.id,
+                  scenario_kind: scenario.kind || "scoring",
+                  failure_category: scenario.failure_category || `assertion_${assertion.type || "unknown"}`,
+                  step_index: step.step_index,
+                  assertion,
+                  message: assertion.message,
+                  diagnostic: isDiagnosticSubject(run.subject) || scenario.kind === "probe",
+                });
+              }
+            }
+            const firstFailure = scenario.first_failure;
+            const hasAssertionFailures = failures.some((failure) =>
+              failure.run_id === run.run_id &&
+              failure.scenario_id === scenario.id &&
+              failure.kind === "assertion"
+            );
+            if (firstFailure && (!hasAssertionFailures || firstFailure.kind !== "assertion")) {
+              failures.push({
+                kind: firstFailure.kind || "scenario_error",
+                subject: run.subject,
+                run_id: run.run_id,
+                scenario_id: scenario.id,
+                scenario_kind: scenario.kind || "scoring",
+                failure_category: scenario.failure_category,
+                step_index: firstFailure.step_index || scenario.first_failed_step || 1,
+                message: firstFailure.message || scenario.error || "Scenario failed.",
+                first_failure: firstFailure,
+                diagnostic: isDiagnosticSubject(run.subject) || scenario.kind === "probe",
+              });
+            } else if (!scenario.passed && !hasAssertionFailures && !firstFailure) {
+              failures.push({
+                kind: "scenario_error",
+                subject: run.subject,
+                run_id: run.run_id,
+                scenario_id: scenario.id,
+                scenario_kind: scenario.kind || "scoring",
+                failure_category: scenario.failure_category,
+                step_index: scenario.first_failed_step || 1,
+                message: scenario.error || "Scenario failed without a recorded reason.",
+                diagnostic: isDiagnosticSubject(run.subject) || scenario.kind === "probe",
+              });
+            }
+          }
+        }
+        return failures.sort((a, b) =>
+          Number(a.diagnostic) - Number(b.diagnostic) ||
+          a.subject.localeCompare(b.subject) ||
+          a.scenario_id.localeCompare(b.scenario_id) ||
+          Number(a.step_index) - Number(b.step_index)
+        );
+      }
+
+      const failures = failureItems();
+
+      function isDiagnosticSubject(subject) {
+        return /diagnostic|probe|known_bad/i.test(subject);
+      }
+
+      function escapeHtml(value) {
+        return String(value ?? "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      function statusPill(passed) {
+        return `<span class="pill ${passed ? "ok" : "bad"}">${passed ? "PASS" : "FAIL"}</span>`;
+      }
+
+      function tierPill(tier) {
+        return `<span class="pill">${escapeHtml(tier || "unclassified")}</span>`;
+      }
+
+      function scenarioProgress(scenario) {
+        if (!scenario) {
+          return "0/0";
+        }
+        if (scenario.progress_label) {
+          return scenario.progress_label;
+        }
+        const passed = scenario.passed_until_step ?? scenario.passed_step_count ?? scenario.steps.filter((step) => step.passed).length;
+        const total = scenario.expected_step_count ?? Math.max(scenario.steps.length, passed);
+        return `${passed}/${total}`;
+      }
+
+      function failureKind(failure) {
+        return failure.failure_category || failure.assertion?.type || failure.first_failure?.assertion_type || failure.kind || "failure";
+      }
+
+      function failureMessage(failure) {
+        return failure.assertion?.message || failure.message || failure.first_failure?.message || "";
+      }
+
+      function scenarioFailureSummary(scenario) {
+        if (!scenario) {
+          return "";
+        }
+        const failure = scenario.first_failure;
+        if (!failure) {
+          return scenario.error || "";
+        }
+        const kind = scenario.failure_category || failure.assertion_type || failure.kind || "failure";
+        const message = failure.message || "";
+        return `step ${failure.step_index}: ${kind}${message ? ` - ${message}` : ""}`;
+      }
+
+      function scenarioMetadata(id) {
+        return data.scenarios.find((scenario) => scenario.id === id) || { id, tier: "unclassified" };
+      }
+
+      function shortRunId(runId) {
+        return String(runId).replace(/^(\d{8})-(\d{6})-/, "$1-$2 ");
+      }
+
+      function ensureSelection() {
+        const ids = selectedScenarioIds();
+        if (!state.selectedScenario || !ids.includes(state.selectedScenario)) {
+          state.selectedScenario = ids[0] || allVisibleScenarioIds()[0] || null;
+        }
+        const maxStep = maxStepForSelectedScenario();
+        state.selectedStep = Math.min(Math.max(1, state.selectedStep), maxStep);
+      }
+
+      function showView(view) {
+        state.view = view;
+        document.getElementById("appView").classList.toggle("active", view === "apps");
+        document.getElementById("replayView").classList.toggle("active", view === "replay");
+        render();
+      }
+
+      function openFailure(failure) {
+        state.selectedRuns.set(failure.subject, failure.run_id);
+        state.visibleSubjects.add(failure.subject);
+        state.selectedScenario = failure.scenario_id;
+        state.selectedStep = failure.step_index;
+        state.failedOnly = false;
+        showView("replay");
+      }
+
+      function navigateStep(delta) {
+        const maxStep = maxStepForSelectedScenario();
+        state.selectedStep += delta;
+        if (state.selectedStep > maxStep) {
+          state.selectedStep = 1;
+        }
+        if (state.selectedStep < 1) {
+          state.selectedStep = maxStep;
+        }
+        renderReplayOnly();
+      }
+
+      function navigateScenario(delta) {
+        const ids = selectedScenarioIds();
+        if (!ids.length) {
+          return;
+        }
+        const current = Math.max(0, ids.indexOf(state.selectedScenario));
+        const next = (current + delta + ids.length) % ids.length;
+        state.selectedScenario = ids[next];
+        state.selectedStep = 1;
+        render();
+      }
+
+      function play() {
+        stop();
+        state.playing = true;
+        state.timer = setInterval(() => navigateStep(1), 1400);
+        renderReplayOnly();
+      }
+
+      function stop() {
+        if (state.timer) {
+          clearInterval(state.timer);
+        }
+        state.timer = null;
+        state.playing = false;
+      }
+
+      function renderHeader() {
+        document.getElementById("title").textContent = data.title;
+        const crumbs = state.view === "apps"
+          ? `<span>Apps</span>`
+          : `<button class="crumb" id="crumbApps" type="button">Apps</button><span>/</span><span>${escapeHtml(data.target_label || data.target)}</span><span>/</span><span>${escapeHtml(state.selectedScenario || "Scenario")}</span>`;
+        document.getElementById("crumbs").innerHTML = crumbs;
+        const visible = activeRuns().length;
+        document.getElementById("headerActions").innerHTML = [
+          `<span class="pill">${data.runs.length} runs</span>`,
+          `<span class="pill">${data.subjects.length} subjects</span>`,
+          `<span class="pill">${escapeHtml(bestFormalScore())} best formal</span>`,
+          `<span class="pill">${escapeHtml(bestStepwiseScore())} best stepwise</span>`,
+          `<span class="pill ${failures.length ? "bad" : "ok"}">${failures.length} failures</span>`,
+        ].join("");
+        const crumbApps = document.getElementById("crumbApps");
+        if (crumbApps) {
+          crumbApps.onclick = () => showView("apps");
+        }
+      }
+
+      function renderApps() {
+        document.getElementById("appCount").textContent = "1 app";
+        document.getElementById("appName").textContent = data.target_label || data.target;
+        document.getElementById("appPath").textContent = data.target_path;
+        const failedRuns = data.runs.filter((run) => !run.passed).length;
+        document.getElementById("appMetrics").innerHTML = [
+          metric(data.subjects.length, "subjects"),
+          metric(data.scenarios.length, "known scenarios"),
+          metric(data.runs.length, "recorded runs"),
+          metric(bestFormalScore(), "best formal score"),
+          metric(bestStepwiseScore(), "best stepwise score"),
+          metric(failedRuns, "failed runs"),
+        ].join("");
+        document.getElementById("tierCoverage").innerHTML = renderTierCoverage();
+        document.getElementById("landingFailures").innerHTML = renderFailureRows(failures.slice(0, 6), "landing");
+        const formalFailures = failures.filter((failure) => !failure.diagnostic).length;
+        document.getElementById("failureCount").textContent = `${formalFailures} formal / ${failures.length} total`;
+        document.getElementById("enterApp").onclick = () => showView("replay");
+        document.getElementById("openFirstFailure").onclick = () => {
+          if (failures[0]) {
+            openFailure(failures[0]);
+          }
+        };
+        wireFailureRows();
+      }
+
+      function metric(value, label) {
+        return `<div class="metric"><strong>${escapeHtml(value)}</strong><span>${escapeHtml(label)}</span></div>`;
+      }
+
+      function percent(value) {
+        return `${Math.round(Number(value || 0) * 100)}%`;
+      }
+
+      function bestFormalScore() {
+        return percent(Math.max(0, ...data.runs.map((run) => run.score?.formal?.ratio || 0)));
+      }
+
+      function bestStepwiseScore() {
+        return percent(Math.max(0, ...data.runs.map((run) => run.score?.stepwise?.ratio || 0)));
+      }
+
+      function renderTierCoverage() {
+        const preferred = ["smoke", "behavior", "journey", "adversarial"];
+        const tiers = [...new Set([...preferred, ...Object.keys(data.tier_summary || {})])];
+        return tiers
+          .filter((tier) => (data.tier_summary || {})[tier])
+          .map((tier) => {
+            const count = data.tier_summary[tier];
+            const latestStats = activeRuns().map((run) => run.tier_stats?.[tier]).filter(Boolean);
+            const passed = latestStats.reduce((sum, stat) => sum + stat.passed, 0);
+            const total = latestStats.reduce((sum, stat) => sum + stat.total, 0);
+            const result = total ? `${passed}/${total} visible pass` : `${count} scenarios`;
+            return `<div class="tier-card"><strong>${escapeHtml(tier)}</strong><span>${escapeHtml(result)}</span></div>`;
+          })
+          .join("");
+      }
+
+      function renderRuns() {
+        const html = data.subjects.map((subject) => {
+          const checked = state.visibleSubjects.has(subject.name) ? "checked" : "";
+          const run = runFor(subject.name);
+          const score = run ? percent(run.score?.formal?.ratio || 0) : "n/a";
+          const stepScore = run ? percent(run.score?.stepwise?.ratio || 0) : "n/a";
+          const contractFailures = run?.score?.contract?.failures ?? 0;
+          const options = subject.runs.map((candidate) => {
+            const selected = candidate.run_id === state.selectedRuns.get(subject.name) ? "selected" : "";
+            const label = `${shortRunId(candidate.run_id)} ${candidate.passed ? "PASS" : "FAIL"}`;
+            return `<option value="${escapeHtml(candidate.run_id)}" ${selected}>${escapeHtml(label)}</option>`;
+          }).join("");
+          return `
+            <div class="run-row">
+              <div class="run-main">
+                <input type="checkbox" data-run-toggle="${escapeHtml(subject.name)}" ${checked} />
+                <strong title="${escapeHtml(subject.name)}">${escapeHtml(subject.name)}</strong>
+                ${run ? statusPill(run.passed) : `<span class="pill">missing</span>`}
+              </div>
+              <span class="meta">formal ${escapeHtml(score)} · stepwise ${escapeHtml(stepScore)} · contract failures ${escapeHtml(contractFailures)} · probe ${escapeHtml(run?.score?.probe?.passed ?? 0)}/${escapeHtml(run?.score?.probe?.total ?? 0)}</span>
+              <select data-run-select="${escapeHtml(subject.name)}">${options}</select>
+            </div>
+          `;
+        }).join("");
+        document.getElementById("runList").innerHTML = html || `<div class="empty">No runs found.</div>`;
+        document.querySelectorAll("[data-run-toggle]").forEach((input) => {
+          input.addEventListener("change", () => {
+            const subject = input.getAttribute("data-run-toggle");
+            if (input.checked) {
+              state.visibleSubjects.add(subject);
+            } else {
+              state.visibleSubjects.delete(subject);
+            }
+            render();
+          });
+        });
+        document.querySelectorAll("[data-run-select]").forEach((select) => {
+          select.addEventListener("change", () => {
+            state.selectedRuns.set(select.getAttribute("data-run-select"), select.value);
+            render();
+          });
+        });
+        document.getElementById("toggleAllRuns").onclick = () => {
+          const allVisible = state.visibleSubjects.size === data.subjects.length;
+          state.visibleSubjects = new Set(allVisible ? [] : data.subjects.map((subject) => subject.name));
+          render();
+        };
+      }
+
+      function renderScenarioList() {
+        const ids = selectedScenarioIds();
+        const html = ids.map((id) => {
+          const scenarioRuns = activeRuns().map((run) => scenarioFor(run, id)).filter(Boolean);
+          const failed = scenarioRuns.some((scenario) => !scenario.passed);
+          const active = id === state.selectedScenario ? "active" : "";
+          const tier = scenarioRuns[0]?.tier || scenarioMetadata(id).tier;
+          const kind = scenarioRuns[0]?.kind || scenarioMetadata(id).kind || "scoring";
+          const weight = scenarioRuns[0]?.weight || scenarioMetadata(id).weight || 1;
+          const progress = activeRuns().map((run) => {
+            const scenario = scenarioFor(run, id);
+            return `${run.subject}: ${scenario ? scenarioProgress(scenario) : "missing"}`;
+          }).join(" | ");
+          const firstFailed = scenarioRuns.find((scenario) => !scenario.passed);
+          return `
+            <button class="scenario-row ${active}" data-scenario="${escapeHtml(id)}" type="button">
+              <strong>${escapeHtml(id)}</strong>
+              <span class="meta">${escapeHtml(tier)} · ${escapeHtml(kind)} · weight ${escapeHtml(weight)} · ${escapeHtml(progress)}</span>
+              ${firstFailed ? `<span class="failed-text">${escapeHtml(scenarioFailureSummary(firstFailed))}</span>` : ""}
+              ${statusPill(!failed)}
+            </button>
+          `;
+        }).join("");
+        document.getElementById("scenarioList").innerHTML = html || `<div class="empty">No scenarios in selected runs.</div>`;
+        document.querySelectorAll("[data-scenario]").forEach((button) => {
+          button.addEventListener("click", () => {
+            state.selectedScenario = button.getAttribute("data-scenario");
+            state.selectedStep = 1;
+            render();
+          });
+        });
+        const failedButton = document.getElementById("showFailedScenarios");
+        failedButton.classList.toggle("active", state.failedOnly);
+        failedButton.onclick = () => {
+          state.failedOnly = !state.failedOnly;
+          state.selectedStep = 1;
+          render();
+        };
+      }
+
+      function renderFailureRows(items, scope) {
+        if (!items.length) {
+          return `<div class="empty">No failures found.</div>`;
+        }
+        return items.map((failure, index) => `
+          <button class="failure-row" data-failure="${scope}-${index}" type="button">
+            <strong>${escapeHtml(failure.scenario_id)}</strong>
+            <span class="meta">${escapeHtml(failure.subject)} / step ${failure.step_index}</span>
+            <span class="${failure.diagnostic ? "meta" : "failed-text"}">${escapeHtml(failureKind(failure))}${failure.diagnostic ? " / diagnostic" : ""}</span>
+            <span class="meta">${escapeHtml(failureMessage(failure))}</span>
+          </button>
+        `).join("");
+      }
+
+      function renderFailures() {
+        document.getElementById("failureList").innerHTML = renderFailureRows(failures, "side");
+        document.getElementById("jumpFirstFailure").onclick = () => {
+          if (failures[0]) {
+            openFailure(failures[0]);
+          }
+        };
+        wireFailureRows();
+      }
+
+      function wireFailureRows() {
+        document.querySelectorAll("[data-failure]").forEach((button) => {
+          button.addEventListener("click", () => {
+            const raw = button.getAttribute("data-failure");
+            const [scope, indexText] = raw.split("-");
+            const list = scope === "landing" ? failures.slice(0, 6) : failures;
+            const failure = list[Number(indexText)];
+            if (failure) {
+              openFailure(failure);
+            }
+          });
+        });
+      }
+
+      function renderReplayOnly() {
+        ensureSelection();
+        renderScenarioHeader();
+        renderTimeline();
+        renderReplayGrid();
+      }
+
+      function renderScenarioHeader() {
+        const ids = selectedScenarioIds();
+        const scenarios = activeRuns().map((run) => scenarioFor(run, state.selectedScenario)).filter(Boolean);
+        const failed = scenarios.some((scenario) => !scenario.passed);
+        document.getElementById("scenarioTitle").textContent = state.selectedScenario || "No scenario selected";
+        const meta = scenarioMetadata(state.selectedScenario);
+        const kind = scenarios[0]?.kind || meta.kind || "scoring";
+        const weight = scenarios[0]?.weight || meta.weight || 1;
+        document.getElementById("scenarioTier").innerHTML = `${tierPill(scenarios[0]?.tier || meta.tier)}<span class="pill ${kind === "probe" ? "warn" : ""}">${escapeHtml(kind)} · weight ${escapeHtml(weight)}</span>`;
+        document.getElementById("scenarioStatus").innerHTML = scenarios.length ? statusPill(!failed) : `<span class="pill">missing</span>`;
+        document.getElementById("visibleRunCount").textContent = `${activeRuns().length} selected runs`;
+        document.getElementById("prevScenario").onclick = () => navigateScenario(-1);
+        document.getElementById("nextScenario").onclick = () => navigateScenario(1);
+        document.getElementById("backToApps").onclick = () => showView("apps");
+        const maxStep = maxStepForSelectedScenario();
+        const referenceStep = scenarios.map((scenario) => scenario.steps[state.selectedStep - 1]).find(Boolean);
+        const stoppedScenario = scenarios.find((scenario) =>
+          !scenario.passed && Number(scenario.first_failed_step) === state.selectedStep
+        );
+        document.getElementById("stepHeadline").textContent = referenceStep
+          ? `Step ${state.selectedStep} of ${maxStep}: ${referenceStep.action}`
+          : `Step ${state.selectedStep} of ${maxStep}`;
+        document.getElementById("stepSubhead").textContent = referenceStep
+          ? `component ${referenceStep.component || "none"} | ${referenceStep.assertions.length} assertions | ${referenceStep.state_diff.length} state changes`
+          : stoppedScenario
+            ? scenarioFailureSummary(stoppedScenario)
+            : "No selected run has this step.";
+        const slider = document.getElementById("stepSlider");
+        slider.max = String(maxStep);
+        slider.value = String(state.selectedStep);
+        slider.oninput = () => {
+          state.selectedStep = Number(slider.value);
+          renderReplayOnly();
+        };
+        document.getElementById("prevStep").onclick = () => navigateStep(-1);
+        document.getElementById("nextStep").onclick = () => navigateStep(1);
+        const playPause = document.getElementById("playPause");
+        playPause.textContent = state.playing ? "Pause" : "Play";
+        playPause.classList.toggle("active", state.playing);
+        playPause.onclick = () => state.playing ? stopAndRender() : play();
+      }
+
+      function stopAndRender() {
+        stop();
+        renderReplayOnly();
+      }
+
+      function renderTimeline() {
+        const maxStep = maxStepForSelectedScenario();
+        const dots = [];
+        for (let index = 1; index <= maxStep; index += 1) {
+          const failed = activeRuns().some((run) => {
+            const scenario = scenarioFor(run, state.selectedScenario);
+            const step = scenario ? scenario.steps[index - 1] : null;
+            return (step && !step.passed) || Number(scenario?.first_failed_step) === index;
+          });
+          dots.push(`<button class="dot ${failed ? "failed" : ""} ${index === state.selectedStep ? "active" : ""}" data-step="${index}" type="button">${index}</button>`);
+        }
+        document.getElementById("timeline").innerHTML = dots.join("");
+        document.querySelectorAll("[data-step]").forEach((button) => {
+          button.addEventListener("click", () => {
+            state.selectedStep = Number(button.getAttribute("data-step"));
+            renderReplayOnly();
+          });
+        });
+      }
+
+      function renderReplayGrid() {
+        const runs = activeRuns();
+        document.getElementById("replayGrid").innerHTML = runs.map((run) => {
+          const scenario = scenarioFor(run, state.selectedScenario);
+          if (!scenario) {
+            return `
+              <div class="run-card">
+                <div class="run-head"><strong>${escapeHtml(run.subject)}</strong><span class="pill">missing</span></div>
+                <div class="empty">Scenario is not present in this run.</div>
+              </div>
+            `;
+          }
+          const step = scenario.steps[state.selectedStep - 1];
+          if (!step) {
+            const failure = scenario.first_failure;
+            const stoppedAt = failure?.step_index || scenario.first_failed_step;
+            const reason = failure
+              ? scenarioFailureSummary(scenario)
+              : (scenario.error || `This run has no step ${state.selectedStep}.`);
+            return `
+              <div class="run-card ${scenario.passed ? "" : "failed"}">
+                <div class="run-head"><strong>${escapeHtml(run.subject)}</strong>${statusPill(scenario.passed)}</div>
+                <div class="step-meta">
+                  ${kv("Scenario Progress", scenarioProgress(scenario))}
+                  ${kv("Stopped At", stoppedAt || "not stopped")}
+                  ${scenario.failure_category ? kv("Failure Category", scenario.failure_category) : ""}
+                </div>
+                <div class="empty">${escapeHtml(reason)}</div>
+              </div>
+            `;
+          }
+          const failedAssertions = step.assertions.filter((assertion) => !assertion.passed).length;
+          const stepPassed = step.passed && Number(scenario.first_failed_step) !== state.selectedStep;
+          return `
+            <div class="run-card ${stepPassed ? "" : "failed"}">
+              <div class="run-head">
+                <div>
+                  <strong>${escapeHtml(run.subject)}</strong>
+                  <div class="meta">${escapeHtml(shortRunId(run.run_id))}</div>
+                </div>
+                ${statusPill(stepPassed)}
+              </div>
+              <div class="step-meta">
+                ${kv("Scenario Progress", scenarioProgress(scenario))}
+                ${kv("Scenario Kind", `${scenario.kind || "scoring"} / ${scenario.weight || 1}`)}
+                ${kv("Action", step.action)}
+                ${kv("Component", step.component || "none")}
+                ${kv("Diffs", step.state_diff.length)}
+                ${kv("Failed", failedAssertions)}
+                ${scenario.failure_category ? kv("Failure Category", scenario.failure_category) : ""}
+                ${scenario.first_failure ? kv("First Failure", scenarioFailureSummary(scenario)) : ""}
+              </div>
+              <div class="screens">
+                <figure>
+                  <figcaption>Before</figcaption>
+                  <img src="${escapeHtml(step.screenshots.before)}" alt="before screenshot" />
+                </figure>
+                <figure>
+                  <figcaption>After</figcaption>
+                  <img src="${escapeHtml(step.screenshots.after)}" alt="after screenshot" />
+                </figure>
+              </div>
+              <div class="run-details">
+                <div class="assertions">${renderAssertions(step)}</div>
+                <details ${step.state_diff.length ? "" : ""}>
+                  <summary>State diff (${step.state_diff.length})</summary>
+                  <pre>${escapeHtml(JSON.stringify(step.state_diff, null, 2))}</pre>
+                </details>
+                <details>
+                  <summary>After state</summary>
+                  <pre>${escapeHtml(JSON.stringify(step.after_state, null, 2))}</pre>
+                </details>
+              </div>
+            </div>
+          `;
+        }).join("") || `<div class="empty">Select at least one run.</div>`;
+      }
+
+      function kv(label, value) {
+        return `<div class="kv"><span>${escapeHtml(label)}</span><strong title="${escapeHtml(value)}">${escapeHtml(value)}</strong></div>`;
+      }
+
+      function renderAssertions(step) {
+        if (!step.assertions.length) {
+          return `<div class="meta">No assertions on this step.</div>`;
+        }
+        return step.assertions.map((assertion) => `
+          <div class="assertion ${assertion.passed ? "" : "failed"}">
+            <strong>${escapeHtml(assertion.type)} ${assertion.passed ? "PASS" : "FAIL"}</strong>
+            <div>${escapeHtml(assertion.message)}</div>
+            ${assertion.passed ? "" : `<pre>${escapeHtml(JSON.stringify({ actual: assertion.actual, expected: assertion.expected }, null, 2))}</pre>`}
+          </div>
+        `).join("");
+      }
+
+      function renderReplay() {
+        ensureSelection();
+        renderRuns();
+        renderScenarioList();
+        renderFailures();
+        renderReplayOnly();
+      }
+
+      function render() {
+        ensureSelection();
+        renderHeader();
+        if (state.view === "apps") {
+          renderApps();
+        } else {
+          renderReplay();
+        }
+      }
+
+      document.addEventListener("keydown", (event) => {
+        if (state.view !== "replay") {
+          return;
+        }
+        if (event.key === "ArrowRight") {
+          event.preventDefault();
+          navigateStep(1);
+        }
+        if (event.key === "ArrowLeft") {
+          event.preventDefault();
+          navigateStep(-1);
+        }
+        if (event.key === "ArrowDown") {
+          event.preventDefault();
+          navigateScenario(1);
+        }
+        if (event.key === "ArrowUp") {
+          event.preventDefault();
+          navigateScenario(-1);
+        }
+        if (event.key === " ") {
+          event.preventDefault();
+          state.playing ? stopAndRender() : play();
+        }
+      });
+
+      render();
+    </script>
+  </body>
+</html>

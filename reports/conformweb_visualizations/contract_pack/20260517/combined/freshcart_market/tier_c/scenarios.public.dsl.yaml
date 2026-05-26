@@ -1,0 +1,159 @@
+dsl_version: "3.0.0"
+visibility: public
+tier_weights:
+  smoke: 1
+  core: 2
+  validation: 3
+  service: 4
+  permission: 5
+  journey: 6
+
+scenarios:
+  - id: public_01_filter_oceancatch_catalog
+    tier: smoke
+    steps:
+      - do: reset_button.click
+      - do: filter_oceancatch_button.click
+        expect:
+          - {op: equals, path: current_vendor, value: OceanCatch}
+      - table: product_grid
+        expect_order: [FCM-SAL-01, FCM-UNI-01]
+        expect_row_count: 2
+        expect_rows:
+          - id: FCM-SAL-01
+            cells:
+              name: Sashimi Salmon
+              temp_band: frozen
+          - id: FCM-UNI-01
+            cells:
+              name: Sea Urchin Tray
+              price: 24500
+
+  - id: public_02_cold_chain_fees_from_two_items
+    tier: core
+    steps:
+      - do: reset_button.click
+      - do: add_milk_button.click
+        expect:
+          - {op: equals, path: cold_chain_count, value: 1}
+          - {op: equals, path: packaging_fee, value: 2500}
+          - {op: equals, path: service_fee, value: 900}
+      - do: add_salmon_button.click
+        expect:
+          - {op: equals, path: cart_count, value: 2}
+          - {op: equals, path: cart_subtotal, value: 24000}
+          - {op: equals, path: delivery_fee, value: 3500}
+          - {op: equals, path: order_total, value: 30900}
+
+  - id: public_03_basket_preparation_and_substitution
+    tier: core
+    steps:
+      - do: reset_button.click
+      - do: add_salmon_button.click
+      - do: add_strawberry_button.click
+      - do: go_basket_button.click
+      - do: prep_sashimi_salmon_button.click
+        expect:
+          - {op: equals, path: cart_subtotal, value: 29100}
+          - {op: equals, path: last_action, value: prep_sashimi}
+      - do: substitute_strawberry_button.click
+        expect:
+          - {op: equals, path: cart_subtotal, value: 28500}
+          - {op: equals, path: order_total, value: 34400}
+          - {op: equals, path: last_action, value: substitute_strawberry}
+      - table: basket_grid
+        expect_row_count: 2
+        expect_rows:
+          - id: FCM-SAL-01
+            cells:
+              preparation: sashimi_ready
+              line_total: 21300
+
+  - id: public_04_coupon_wallet_rush_substitution_total
+    tier: service
+    steps:
+      - do: reset_button.click
+      - do: add_striploin_button.click
+        expect:
+          - {op: equals, path: restricted_count, value: 1}
+          - {op: equals, path: order_total, value: 38700}
+      - do: go_checkout_button.click
+      - do: coupon_code_input.fill
+        input: {value: vip7000}
+      - do: apply_coupon_button.click
+        expect:
+          - {op: equals, path: coupon_credit, value: 7000}
+          - {op: equals, path: coupon_call_count, value: 1}
+          - {op: equals, path: order_total, value: 31700}
+      - do: redeem_wallet_button.click
+        expect:
+          - {op: equals, path: wallet_balance, value: 10000}
+          - {op: equals, path: wallet_credit, value: 6000}
+          - {op: equals, path: order_total, value: 25700}
+      - do: enable_rush_button.click
+        expect:
+          - {op: equals, path: rush_surcharge, value: 3000}
+          - {op: equals, path: order_total, value: 28700}
+      - do: enable_substitution_button.click
+        expect:
+          - {op: equals, path: substitution_credit, value: 1000}
+          - {op: equals, path: order_total, value: 27700}
+
+  - id: public_05_minimum_order_rejected
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: add_kombucha_button.click
+      - do: go_checkout_button.click
+      - do: slot_early_button.click
+      - do: customer_name_input.fill
+        input: {value: "Jin Park"}
+      - do: place_order_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: order_placed, value: false}
+          - {op: equals, path: last_action, value: reject_minimum}
+
+  - id: public_06_place_order_with_slot_quote
+    tier: journey
+    steps:
+      - do: reset_button.click
+      - do: add_salmon_button.click
+      - do: add_rice_button.click
+      - do: go_checkout_button.click
+      - do: slot_green_button.click
+        expect:
+          - {op: equals, path: delivery_slot, value: green}
+          - {op: equals, path: slot_status, value: confirmed}
+          - {op: equals, path: slot_call_count, value: 1}
+      - do: customer_name_input.fill
+        input: {value: "Sora Han"}
+      - do: customer_phone_input.fill
+        input: {value: " 010-2222-3333 "}
+      - do: place_order_button.click
+        expect:
+          - {op: equals, path: order_placed, value: true}
+          - {op: equals, path: audit_count, value: 1}
+
+  - id: public_07_staff_cannot_manager_approve
+    tier: permission
+    steps:
+      - do: reset_button.click
+      - do: add_uni_button.click
+      - do: add_milk_button.click
+      - do: go_checkout_button.click
+      - do: slot_late_button.click
+      - do: customer_name_input.fill
+        input: {value: "Review Customer"}
+      - do: place_order_button.click
+      - do: go_orders_button.click
+      - do: role_staff_button.click
+      - do: request_review_button.click
+        expect:
+          - {op: equals, path: review_status, value: pending}
+          - {op: equals, path: compliance_call_count, value: 1}
+      - do: approve_review_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: last_action, value: deny_manager_approval}
+          - {op: equals, path: review_status, value: pending}

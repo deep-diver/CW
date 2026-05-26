@@ -1,0 +1,146 @@
+dsl_version: "3.0.0"
+visibility: private
+tier_weights:
+  smoke: 1
+  core: 2
+  validation: 3
+  service: 4
+  upload: 4
+  permission: 4
+  persistence: 5
+  journey: 6
+
+scenarios:
+  - id: private_01_ac_quote_and_acceptance_journey
+    tier: journey
+    steps:
+      - do: reset_button.click
+      - do: select_ac_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+      - do: customer_name_input.fill
+        input: {value: "Mina Park"}
+      - do: address_input.fill
+        input: {value: "88 Cedar House"}
+      - do: get_quote_button.click
+        expect:
+          - {op: equals, path: quote_amount, value: 18900}
+      - do: approve_quote_button.click
+      - do: book_visit_button.click
+      - do: go_visits_button.click
+      - do: role_pro_button.click
+      - do: pro_accept_button.click
+        expect:
+          - {op: equals, path: booking_status, value: accepted}
+
+  - id: private_02_address_normalization
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: go_booking_button.click
+      - do: address_input.fill
+        input: {value: "  9 Oak Terrace  "}
+        expect:
+          - {op: equals, path: address, value: "9 Oak Terrace"}
+
+# density-extension:start
+
+  - id: private_03_filter_roundtrip_keeps_full_catalog
+    tier: smoke
+    steps:
+      - do: reset_button.click
+      - do: filter_plumbing_button.click
+      - do: filter_all_button.click
+      - table: service_grid
+        expect_order: [HF-AC, HF-LIGHT, HF-LEAK, HF-ROOF]
+        expect_row_count: 4
+
+  - id: private_04_selection_survives_page_navigation
+    tier: core
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: go_jobs_button.click
+      - do: go_booking_button.click
+        expect:
+          - {op: equals, path: selected_service_name, value: "Burst pipe repair"}
+
+  - id: private_05_quote_call_count_increments_twice
+    tier: service
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - do: go_booking_button.click
+      - do: get_quote_button.click
+      - do: get_quote_button.click
+        expect:
+          - {op: equals, path: service_call_count, value: 2}
+
+  - id: private_06_missing_slot_records_blocked_booking
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: select_ac_button.click
+      - do: go_booking_button.click
+      - do: get_quote_button.click
+      - do: approve_quote_button.click
+      - do: book_visit_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: last_action, value: booking_blocked}
+
+  - id: private_07_homeowner_denial_count_for_pro_accept
+    tier: permission
+    steps:
+      - do: reset_button.click
+      - do: select_ac_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+      - do: get_quote_button.click
+      - do: approve_quote_button.click
+      - do: book_visit_button.click
+      - do: go_visits_button.click
+      - do: pro_accept_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: denied_count, value: 1}
+
+  - id: private_08_ac_visit_acceptance_table_state
+    tier: journey
+    steps:
+      - do: reset_button.click
+      - do: select_ac_button.click
+      - do: go_booking_button.click
+      - do: slot_today_button.click
+      - do: get_quote_button.click
+      - do: approve_quote_button.click
+      - do: book_visit_button.click
+      - do: go_visits_button.click
+      - do: role_pro_button.click
+      - do: pro_accept_button.click
+        expect:
+          - {op: equals, path: booking_status, value: accepted}
+
+  - id: private_09_address_and_customer_trim_together
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: go_booking_button.click
+      - do: customer_name_input.fill
+        input: {value: "  Priya Shah  "}
+      - do: address_input.fill
+        input: {value: "  14 Birch Lane  "}
+        expect:
+          - {op: equals, path: address, value: "14 Birch Lane"}
+          - {op: equals, path: customer_name, value: "Priya Shah"}
+
+  - id: private_10_selected_service_persists_without_booking
+    tier: persistence
+    steps:
+      - do: reset_button.click
+      - do: select_leak_button.click
+      - browser: reload
+        expect:
+          - {op: equals, path: selected_service_id, value: HF-LEAK}
+# density-extension:end

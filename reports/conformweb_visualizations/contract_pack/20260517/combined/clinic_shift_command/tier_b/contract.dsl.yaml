@@ -1,0 +1,871 @@
+dsl_version: "3.0.0"
+
+app:
+  id: clinic_shift_command
+  name: Clinic Shift Command
+  capability: ambulatory_clinic_operations
+  ui_ux_brief: |
+    Clinic Shift Command Tier B should look unmistakably more complex than
+    Tier A when viewed in a desktop screenshot. The product should read as a
+    real multi-role ambulatory operations command center handling live queue
+    pressure, room capacity, prior authorization, diagnostic orders, referral
+    packets, and nurse-charge escalations. Use a dense but calm clinical SaaS
+    layout with a command header, risk telemetry, multi-lane queue table,
+    selected patient workup, capacity/floor map, authorization ledger,
+    diagnostic order board, diagnostic release gate, referral upload panel, and
+    escalation/handoff packet surface. Keep the visual language professional
+    and healthcare-specific:
+    bright clinical canvas, navy/teal command structure, amber/red urgency
+    accents, crisp chips, compact tables, and clear role-aware controls.
+    Avoid landing-page hero styling, marketing copy, playful commerce cards,
+    generic analytics dashboards, and bare test harnesses. The UI should feel
+    polished enough to be deployed for a live clinic shift, and the increased
+    Tier B difficulty should be evident from the number of coordinated panels
+    and operational dependencies on screen.
+
+runtime:
+  target: web
+  start_url: /#/command
+
+  state_probe:
+    kind: javascript
+    expression: window.__DETOX_STATE__
+
+  pages:
+    command:
+      path: /#/command
+      purpose: Live triage queue, role console, risk telemetry, and selected patient snapshot.
+    chart:
+      path: /#/chart
+      purpose: Patient chart workspace for insurance, prior authorization, assessment, orders, and referral upload.
+    capacity:
+      path: /#/capacity
+      purpose: Room capacity board and diagnostic order tracking.
+    handoff:
+      path: /#/handoff
+      purpose: Escalations, referral packets, and charge-nurse shift handoff.
+
+  session:
+    role_path: active_role
+    roles: [coordinator, clinician, charge_nurse, billing]
+
+  persistence:
+    reload:
+      scope: local_storage
+      paths:
+        - current_page
+        - active_role
+        - patients
+        - visible_patients
+        - current_filter
+        - rooms
+        - selected_patient_id
+        - selected_patient_name
+        - selected_lane
+        - selected_acuity
+        - selected_patient_status
+        - selected_room_need
+        - selected_risk
+        - assigned_room_id
+        - assigned_room_name
+        - insurance_code
+        - insurance_status
+        - copay_due
+        - auth_required
+        - auth_key
+        - authorization_status
+        - service_call_count
+        - insurance_call_count
+        - auth_call_count
+        - pain_score
+        - disposition
+        - assessment_status
+        - order_status
+        - diagnostic_orders
+        - diagnostic_order_count
+        - released_order_count
+        - release_block_count
+        - referral_docs
+        - referral_doc_count
+        - last_referral_file
+        - escalation_tasks
+        - escalation_count
+        - closed_escalation_count
+        - handoff_packets
+        - handoff_packet_count
+        - handoff_status
+        - handoff_block_count
+        - validation_errors
+        - denied_count
+        - room_block_count
+        - last_action
+
+  services:
+    insurance_verify:
+      endpoint: /api/insurance
+      method: GET
+      responses:
+        - id: hmo_approved
+          match:
+            query:
+              code: HMO-A
+          status: 200
+          json: {status: approved, copay: 20}
+        - id: ppo_approved
+          match:
+            query:
+              code: PPO-B
+          status: 200
+          json: {status: approved, copay: 35}
+        - id: cash_self_pay
+          match:
+            query:
+              code: CASH
+          status: 200
+          json: {status: self_pay, copay: 120}
+        - id: plan_review
+          match:
+            query:
+              code: BADPLAN
+          status: 200
+          json: {status: needs_review, copay: 0}
+    prior_auth:
+      endpoint: /api/prior-auth
+      method: GET
+      responses:
+        - id: cardio_stat
+          match:
+            query:
+              auth: CARD-STAT
+          status: 200
+          json: {status: approved}
+        - id: ortho_approved
+          match:
+            query:
+              auth: ORTHO-77
+          status: 200
+          json: {status: approved}
+        - id: denied
+          match:
+            query:
+              auth: BAD-AUTH
+          status: 200
+          json: {status: denied}
+
+  tables:
+    patient_queue:
+      selector: '[data-testid="patient-queue"]'
+      row_selector: '[data-testid="patient-row"]'
+      row_id_attribute: data-patient-id
+      source_path: visible_patients
+      row_id_field: id
+      columns:
+        name: {selector: '[data-col="name"]', state_field: name}
+        lane: {selector: '[data-col="lane"]', state_field: lane}
+        acuity: {selector: '[data-col="acuity"]', state_field: acuity}
+        status: {selector: '[data-col="status"]', state_field: status}
+        wait_mins: {selector: '[data-col="wait_mins"]', state_field: wait_mins}
+        room_need: {selector: '[data-col="room_need"]', state_field: room_need}
+        risk: {selector: '[data-col="risk"]', state_field: risk}
+    room_board:
+      selector: '[data-testid="room-board"]'
+      row_selector: '[data-testid="room-row"]'
+      row_id_attribute: data-room-id
+      source_path: rooms
+      row_id_field: id
+      columns:
+        name: {selector: '[data-col="name"]', state_field: name}
+        zone: {selector: '[data-col="zone"]', state_field: zone}
+        status: {selector: '[data-col="status"]', state_field: status}
+        occupant: {selector: '[data-col="occupant"]', state_field: occupant}
+        equipment: {selector: '[data-col="equipment"]', state_field: equipment}
+    order_grid:
+      selector: '[data-testid="order-grid"]'
+      row_selector: '[data-testid="order-row"]'
+      row_id_attribute: data-order-id
+      source_path: diagnostic_orders
+      row_id_field: id
+      columns:
+        patient: {selector: '[data-col="patient"]', state_field: patient}
+        type: {selector: '[data-col="type"]', state_field: type}
+        priority: {selector: '[data-col="priority"]', state_field: priority}
+        status: {selector: '[data-col="status"]', state_field: status}
+    referral_grid:
+      selector: '[data-testid="referral-grid"]'
+      row_selector: '[data-testid="referral-row"]'
+      row_id_attribute: data-referral-id
+      source_path: referral_docs
+      row_id_field: id
+      columns:
+        document: {selector: '[data-col="document"]', state_field: document}
+        priority: {selector: '[data-col="priority"]', state_field: priority}
+        status: {selector: '[data-col="status"]', state_field: status}
+    escalation_grid:
+      selector: '[data-testid="escalation-grid"]'
+      row_selector: '[data-testid="escalation-row"]'
+      row_id_attribute: data-escalation-id
+      source_path: escalation_tasks
+      row_id_field: id
+      columns:
+        patient: {selector: '[data-col="patient"]', state_field: patient}
+        reason: {selector: '[data-col="reason"]', state_field: reason}
+        owner: {selector: '[data-col="owner"]', state_field: owner}
+        status: {selector: '[data-col="status"]', state_field: status}
+    handoff_packet_grid:
+      selector: '[data-testid="handoff-packet-grid"]'
+      row_selector: '[data-testid="handoff-packet-row"]'
+      row_id_attribute: data-packet-id
+      source_path: handoff_packets
+      row_id_field: id
+      columns:
+        patient: {selector: '[data-col="patient"]', state_field: patient}
+        referral_file: {selector: '[data-col="referral_file"]', state_field: referral_file}
+        status: {selector: '[data-col="status"]', state_field: status}
+
+state:
+  initial:
+    current_page: command
+    active_role: coordinator
+    patients:
+      - {id: CVC-206, name: "Ava Chen", lane: urgent, acuity: 1, status: waiting, wait_mins: 3, room_need: isolation, risk: red, complaint: "Chest pressure with fever", insurance_code: PPO-B, auth_required: true, auth_key: CARD-STAT}
+      - {id: CVC-205, name: "June Park", lane: lab, acuity: 2, status: waiting, wait_mins: 22, room_need: lab, risk: orange, complaint: "Fever panel follow-up", insurance_code: HMO-A, auth_required: false, auth_key: ""}
+      - {id: CVC-202, name: "Omar Haddad", lane: procedure, acuity: 2, status: waiting, wait_mins: 16, room_need: procedure, risk: orange, complaint: "Fracture reduction review", insurance_code: PPO-B, auth_required: true, auth_key: ORTHO-77}
+      - {id: CVC-204, name: "Paul Rivers", lane: imaging, acuity: 3, status: waiting, wait_mins: 34, room_need: imaging, risk: yellow, complaint: "CT authorization hold", insurance_code: BADPLAN, auth_required: true, auth_key: BAD-AUTH}
+      - {id: CVC-201, name: "Lina Torres", lane: primary, acuity: 3, status: waiting, wait_mins: 28, room_need: exam, risk: yellow, complaint: "Uncontrolled migraine", insurance_code: HMO-A, auth_required: false, auth_key: ""}
+      - {id: CVC-203, name: "Nia Brooks", lane: followup, acuity: 4, status: waiting, wait_mins: 47, room_need: exam, risk: green, complaint: "Post-op wound check", insurance_code: CASH, auth_required: false, auth_key: ""}
+    visible_patients:
+      - {id: CVC-206, name: "Ava Chen", lane: urgent, acuity: 1, status: waiting, wait_mins: 3, room_need: isolation, risk: red, complaint: "Chest pressure with fever", insurance_code: PPO-B, auth_required: true, auth_key: CARD-STAT}
+      - {id: CVC-205, name: "June Park", lane: lab, acuity: 2, status: waiting, wait_mins: 22, room_need: lab, risk: orange, complaint: "Fever panel follow-up", insurance_code: HMO-A, auth_required: false, auth_key: ""}
+      - {id: CVC-202, name: "Omar Haddad", lane: procedure, acuity: 2, status: waiting, wait_mins: 16, room_need: procedure, risk: orange, complaint: "Fracture reduction review", insurance_code: PPO-B, auth_required: true, auth_key: ORTHO-77}
+      - {id: CVC-204, name: "Paul Rivers", lane: imaging, acuity: 3, status: waiting, wait_mins: 34, room_need: imaging, risk: yellow, complaint: "CT authorization hold", insurance_code: BADPLAN, auth_required: true, auth_key: BAD-AUTH}
+      - {id: CVC-201, name: "Lina Torres", lane: primary, acuity: 3, status: waiting, wait_mins: 28, room_need: exam, risk: yellow, complaint: "Uncontrolled migraine", insurance_code: HMO-A, auth_required: false, auth_key: ""}
+      - {id: CVC-203, name: "Nia Brooks", lane: followup, acuity: 4, status: waiting, wait_mins: 47, room_need: exam, risk: green, complaint: "Post-op wound check", insurance_code: CASH, auth_required: false, auth_key: ""}
+    current_filter: all
+    rooms:
+      - {id: R-ISO2, name: "Isolation 2", zone: west, status: ready, occupant: "", equipment: negative-pressure}
+      - {id: R-PROC, name: "Procedure A", zone: procedure, status: ready, occupant: "", equipment: casting-cart}
+      - {id: R-LAB2, name: "Lab Draw 2", zone: diagnostics, status: ready, occupant: "", equipment: phlebotomy}
+      - {id: R-IMG, name: "Imaging Hold", zone: diagnostics, status: cleaning, occupant: "", equipment: wheelchair}
+      - {id: R-OBS, name: "Observation 1", zone: east, status: occupied, occupant: "Walk-in infusion", equipment: monitor}
+    selected_patient_id: ""
+    selected_patient_name: ""
+    selected_lane: ""
+    selected_acuity: 0
+    selected_patient_status: ""
+    selected_room_need: ""
+    selected_risk: ""
+    assigned_room_id: ""
+    assigned_room_name: ""
+    insurance_code: ""
+    insurance_status: idle
+    copay_due: 0
+    auth_required: false
+    auth_key: ""
+    authorization_status: idle
+    service_call_count: 0
+    insurance_call_count: 0
+    auth_call_count: 0
+    pain_score: ""
+    disposition: ""
+    assessment_status: idle
+    order_status: idle
+    diagnostic_orders: []
+    diagnostic_order_count: 0
+    released_order_count: 0
+    release_block_count: 0
+    referral_docs: []
+    referral_doc_count: 0
+    last_referral_file: ""
+    escalation_tasks: []
+    escalation_count: 0
+    closed_escalation_count: 0
+    handoff_packets: []
+    handoff_packet_count: 0
+    handoff_status: idle
+    handoff_block_count: 0
+    validation_errors: {}
+    denied_count: 0
+    room_block_count: 0
+    last_action: ready
+    __services.calls: []
+
+  schema:
+    current_page: {type: string, purpose: Active route page.}
+    active_role: {type: string, purpose: Current clinic role.}
+    patients: {type: array, purpose: Ordered master queue.}
+    visible_patients: {type: array, purpose: Current queue projection.}
+    current_filter: {type: string, purpose: Active queue filter.}
+    rooms: {type: array, purpose: Capacity board rooms.}
+    selected_patient_id: {type: string, purpose: Active patient id.}
+    selected_patient_name: {type: string, purpose: Active patient name.}
+    selected_lane: {type: string, purpose: Active patient lane.}
+    selected_acuity: {type: number, purpose: Active patient acuity.}
+    selected_patient_status: {type: string, purpose: Active patient status.}
+    selected_room_need: {type: string, purpose: Active patient room need.}
+    selected_risk: {type: string, purpose: Active patient risk band.}
+    assigned_room_id: {type: string, purpose: Assigned room id.}
+    assigned_room_name: {type: string, purpose: Assigned room name.}
+    insurance_code: {type: string, purpose: Insurance code.}
+    insurance_status: {type: string, purpose: idle, approved, self_pay, or needs_review.}
+    copay_due: {type: number, purpose: Copay from deterministic insurance service.}
+    auth_required: {type: boolean, purpose: Whether prior authorization is required.}
+    auth_key: {type: string, purpose: Prior authorization key.}
+    authorization_status: {type: string, purpose: idle, approved, denied, or not_required.}
+    service_call_count: {type: number, purpose: Total deterministic service calls.}
+    insurance_call_count: {type: number, purpose: Insurance service call count.}
+    auth_call_count: {type: number, purpose: Prior-auth service call count.}
+    pain_score: {type: string, purpose: Pain score input.}
+    disposition: {type: string, purpose: Clinician disposition input.}
+    assessment_status: {type: string, purpose: idle, incomplete, or recorded.}
+    order_status: {type: string, purpose: idle, blocked, ordered, or released.}
+    diagnostic_orders: {type: array, purpose: Diagnostic order rows.}
+    diagnostic_order_count: {type: number, purpose: Diagnostic order count.}
+    released_order_count: {type: number, purpose: Released diagnostic order count.}
+    release_block_count: {type: number, purpose: Diagnostic release rejection count.}
+    referral_docs: {type: array, purpose: Uploaded referral document rows.}
+    referral_doc_count: {type: number, purpose: Referral document count.}
+    last_referral_file: {type: string, purpose: Last uploaded referral file name.}
+    escalation_tasks: {type: array, purpose: Charge nurse escalation tasks.}
+    escalation_count: {type: number, purpose: Open escalation count created.}
+    closed_escalation_count: {type: number, purpose: Closed escalation count.}
+    handoff_packets: {type: array, purpose: Finalized nurse handoff packet rows.}
+    handoff_packet_count: {type: number, purpose: Finalized handoff packet count.}
+    handoff_status: {type: string, purpose: idle, blocked, or ready.}
+    handoff_block_count: {type: number, purpose: Blocked handoff finalization count.}
+    validation_errors: {type: object, purpose: Field-level validation errors.}
+    denied_count: {type: number, purpose: Role-denied action count.}
+    room_block_count: {type: number, purpose: Rejected room assignment count.}
+    last_action: {type: string, purpose: Last action marker.}
+    __services.calls: {type: array, purpose: Evaluator-provided service call ledger.}
+
+components:
+  reset_button:
+    kind: button
+    selector: '[data-testid="reset"]'
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_page, value: command}
+          - {op: equals, path: active_role, value: coordinator}
+          - {op: equals, path: current_filter, value: all}
+          - {op: equals_filter, path: visible_patients, source_path: patients, where: [], order_by: [{field: acuity, direction: asc}, {field: wait_mins, direction: desc}]}
+          - {op: equals, path: rooms, value: [{id: R-ISO2, name: "Isolation 2", zone: west, status: ready, occupant: "", equipment: negative-pressure}, {id: R-PROC, name: "Procedure A", zone: procedure, status: ready, occupant: "", equipment: casting-cart}, {id: R-LAB2, name: "Lab Draw 2", zone: diagnostics, status: ready, occupant: "", equipment: phlebotomy}, {id: R-IMG, name: "Imaging Hold", zone: diagnostics, status: cleaning, occupant: "", equipment: wheelchair}, {id: R-OBS, name: "Observation 1", zone: east, status: occupied, occupant: "Walk-in infusion", equipment: monitor}]}
+          - {op: equals, path: selected_patient_id, value: ""}
+          - {op: equals, path: selected_patient_name, value: ""}
+          - {op: equals, path: selected_lane, value: ""}
+          - {op: equals, path: selected_acuity, value: 0}
+          - {op: equals, path: selected_patient_status, value: ""}
+          - {op: equals, path: selected_room_need, value: ""}
+          - {op: equals, path: selected_risk, value: ""}
+          - {op: equals, path: assigned_room_id, value: ""}
+          - {op: equals, path: assigned_room_name, value: ""}
+          - {op: equals, path: insurance_code, value: ""}
+          - {op: equals, path: insurance_status, value: idle}
+          - {op: equals, path: copay_due, value: 0}
+          - {op: equals, path: auth_required, value: false}
+          - {op: equals, path: auth_key, value: ""}
+          - {op: equals, path: authorization_status, value: idle}
+          - {op: equals, path: service_call_count, value: 0}
+          - {op: equals, path: insurance_call_count, value: 0}
+          - {op: equals, path: auth_call_count, value: 0}
+          - {op: equals, path: pain_score, value: ""}
+          - {op: equals, path: disposition, value: ""}
+          - {op: equals, path: assessment_status, value: idle}
+          - {op: equals, path: order_status, value: idle}
+          - {op: equals, path: diagnostic_orders, value: []}
+          - {op: equals, path: diagnostic_order_count, value: 0}
+          - {op: equals, path: released_order_count, value: 0}
+          - {op: equals, path: release_block_count, value: 0}
+          - {op: equals, path: referral_docs, value: []}
+          - {op: equals, path: referral_doc_count, value: 0}
+          - {op: equals, path: last_referral_file, value: ""}
+          - {op: equals, path: escalation_tasks, value: []}
+          - {op: equals, path: escalation_count, value: 0}
+          - {op: equals, path: closed_escalation_count, value: 0}
+          - {op: equals, path: handoff_packets, value: []}
+          - {op: equals, path: handoff_packet_count, value: 0}
+          - {op: equals, path: handoff_status, value: idle}
+          - {op: equals, path: handoff_block_count, value: 0}
+          - {op: equals, path: validation_errors, value: {}}
+          - {op: equals, path: denied_count, value: 0}
+          - {op: equals, path: room_block_count, value: 0}
+          - {op: equals, path: last_action, value: reset}
+
+  go_command_button:
+    kind: button
+    selector: '[data-testid="go-command"]'
+    actions:
+      click:
+        navigate_to: command
+        effects:
+          - {op: equals, path: current_page, value: command}
+          - {op: equals, path: last_action, value: nav_command}
+  go_chart_button:
+    kind: button
+    selector: '[data-testid="go-chart"]'
+    actions:
+      click:
+        navigate_to: chart
+        effects:
+          - {op: equals, path: current_page, value: chart}
+          - {op: equals, path: last_action, value: nav_chart}
+  go_capacity_button:
+    kind: button
+    selector: '[data-testid="go-capacity"]'
+    actions:
+      click:
+        navigate_to: capacity
+        effects:
+          - {op: equals, path: current_page, value: capacity}
+          - {op: equals, path: last_action, value: nav_capacity}
+  go_handoff_button:
+    kind: button
+    selector: '[data-testid="go-handoff"]'
+    actions:
+      click:
+        navigate_to: handoff
+        effects:
+          - {op: equals, path: current_page, value: handoff}
+          - {op: equals, path: last_action, value: nav_handoff}
+
+  role_coordinator_button:
+    kind: button
+    selector: '[data-testid="role-coordinator"]'
+    actions:
+      click:
+        effects:
+          - {op: equals, path: active_role, value: coordinator}
+          - {op: equals, path: last_action, value: role_coordinator}
+  role_clinician_button:
+    kind: button
+    selector: '[data-testid="role-clinician"]'
+    actions:
+      click:
+        effects:
+          - {op: equals, path: active_role, value: clinician}
+          - {op: equals, path: last_action, value: role_clinician}
+  role_charge_nurse_button:
+    kind: button
+    selector: '[data-testid="role-charge-nurse"]'
+    actions:
+      click:
+        effects:
+          - {op: equals, path: active_role, value: charge_nurse}
+          - {op: equals, path: last_action, value: role_charge_nurse}
+  role_billing_button:
+    kind: button
+    selector: '[data-testid="role-billing"]'
+    actions:
+      click:
+        effects:
+          - {op: equals, path: active_role, value: billing}
+          - {op: equals, path: last_action, value: role_billing}
+
+  filter_all_button:
+    kind: button
+    selector: '[data-testid="filter-all"]'
+    page: command
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_filter, value: all}
+          - {op: equals_filter, path: visible_patients, source_path: patients, where: [], order_by: [{field: acuity, direction: asc}, {field: wait_mins, direction: desc}]}
+          - {op: equals, path: last_action, value: filter_all}
+  filter_critical_button:
+    kind: button
+    selector: '[data-testid="filter-critical"]'
+    page: command
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_filter, value: critical}
+          - {op: equals_filter, path: visible_patients, source_path: patients, where: [{op: relation, field: acuity, operator: "<=", value: 2}], order_by: [{field: acuity, direction: asc}, {field: wait_mins, direction: desc}]}
+          - {op: equals, path: last_action, value: filter_critical}
+  filter_procedure_button:
+    kind: button
+    selector: '[data-testid="filter-procedure"]'
+    page: command
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_filter, value: procedure}
+          - {op: equals_filter, path: visible_patients, source_path: patients, where: [{op: equals, field: lane, value: procedure}], order_by: [{field: acuity, direction: asc}, {field: wait_mins, direction: desc}]}
+          - {op: equals, path: last_action, value: filter_procedure}
+  filter_authorization_button:
+    kind: button
+    selector: '[data-testid="filter-authorization"]'
+    page: command
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_filter, value: authorization}
+          - {op: equals_filter, path: visible_patients, source_path: patients, where: [{op: equals, field: auth_required, value: true}], order_by: [{field: acuity, direction: asc}, {field: wait_mins, direction: desc}]}
+          - {op: equals, path: last_action, value: filter_authorization}
+
+  select_ava_button:
+    kind: button
+    selector: '[data-testid="select-CVC-206"]'
+    page: command
+    actions:
+      click:
+        navigate_to: chart
+        effects:
+          - {op: equals, path: selected_patient_id, value: CVC-206}
+          - {op: equals, path: selected_patient_name, value: "Ava Chen"}
+          - {op: equals, path: selected_lane, value: urgent}
+          - {op: equals, path: selected_acuity, value: 1}
+          - {op: equals, path: selected_patient_status, value: selected}
+          - {op: equals, path: selected_room_need, value: isolation}
+          - {op: equals, path: selected_risk, value: red}
+          - {op: equals, path: insurance_code, value: PPO-B}
+          - {op: equals, path: auth_required, value: true}
+          - {op: equals, path: auth_key, value: CARD-STAT}
+          - {op: equals, path: current_page, value: chart}
+          - {op: equals, path: last_action, value: select_patient}
+  select_omar_button:
+    kind: button
+    selector: '[data-testid="select-CVC-202"]'
+    page: command
+    actions:
+      click:
+        navigate_to: chart
+        effects:
+          - {op: equals, path: selected_patient_id, value: CVC-202}
+          - {op: equals, path: selected_patient_name, value: "Omar Haddad"}
+          - {op: equals, path: selected_lane, value: procedure}
+          - {op: equals, path: selected_acuity, value: 2}
+          - {op: equals, path: selected_patient_status, value: selected}
+          - {op: equals, path: selected_room_need, value: procedure}
+          - {op: equals, path: selected_risk, value: orange}
+          - {op: equals, path: insurance_code, value: PPO-B}
+          - {op: equals, path: auth_required, value: true}
+          - {op: equals, path: auth_key, value: ORTHO-77}
+          - {op: equals, path: current_page, value: chart}
+          - {op: equals, path: last_action, value: select_patient}
+  select_june_button:
+    kind: button
+    selector: '[data-testid="select-CVC-205"]'
+    page: command
+    actions:
+      click:
+        navigate_to: chart
+        effects:
+          - {op: equals, path: selected_patient_id, value: CVC-205}
+          - {op: equals, path: selected_patient_name, value: "June Park"}
+          - {op: equals, path: selected_lane, value: lab}
+          - {op: equals, path: selected_acuity, value: 2}
+          - {op: equals, path: selected_patient_status, value: selected}
+          - {op: equals, path: selected_room_need, value: lab}
+          - {op: equals, path: selected_risk, value: orange}
+          - {op: equals, path: insurance_code, value: HMO-A}
+          - {op: equals, path: auth_required, value: false}
+          - {op: equals, path: auth_key, value: ""}
+          - {op: equals, path: current_page, value: chart}
+          - {op: equals, path: last_action, value: select_patient}
+  select_paul_button:
+    kind: button
+    selector: '[data-testid="select-CVC-204"]'
+    page: command
+    actions:
+      click:
+        navigate_to: chart
+        effects:
+          - {op: equals, path: selected_patient_id, value: CVC-204}
+          - {op: equals, path: selected_patient_name, value: "Paul Rivers"}
+          - {op: equals, path: selected_lane, value: imaging}
+          - {op: equals, path: selected_acuity, value: 3}
+          - {op: equals, path: selected_patient_status, value: selected}
+          - {op: equals, path: selected_room_need, value: imaging}
+          - {op: equals, path: selected_risk, value: yellow}
+          - {op: equals, path: insurance_code, value: BADPLAN}
+          - {op: equals, path: auth_required, value: true}
+          - {op: equals, path: auth_key, value: BAD-AUTH}
+          - {op: equals, path: current_page, value: chart}
+          - {op: equals, path: last_action, value: select_patient}
+  select_nia_button:
+    kind: button
+    selector: '[data-testid="select-CVC-203"]'
+    page: command
+    actions:
+      click:
+        navigate_to: chart
+        effects:
+          - {op: equals, path: selected_patient_id, value: CVC-203}
+          - {op: equals, path: selected_patient_name, value: "Nia Brooks"}
+          - {op: equals, path: selected_lane, value: followup}
+          - {op: equals, path: selected_acuity, value: 4}
+          - {op: equals, path: selected_patient_status, value: selected}
+          - {op: equals, path: selected_room_need, value: exam}
+          - {op: equals, path: selected_risk, value: green}
+          - {op: equals, path: insurance_code, value: CASH}
+          - {op: equals, path: auth_required, value: false}
+          - {op: equals, path: auth_key, value: ""}
+          - {op: equals, path: current_page, value: chart}
+          - {op: equals, path: last_action, value: select_patient}
+
+  assign_isolation_button:
+    kind: button
+    selector: '[data-testid="assign-isolation"]'
+    page: chart
+    actions:
+      click:
+        allowed_roles: [charge_nurse]
+        preconditions:
+          - {op: not_one_of, path: selected_patient_id, values: [""]}
+        effects:
+          - {op: equals, path: assigned_room_id, value: R-ISO2}
+          - {op: equals, path: assigned_room_name, value: "Isolation 2"}
+          - {op: equals, path: selected_patient_status, value: roomed}
+          - {op: equals, path: rooms, value: [{id: R-ISO2, name: "Isolation 2", zone: west, status: occupied, occupant: "Ava Chen", equipment: negative-pressure}, {id: R-PROC, name: "Procedure A", zone: procedure, status: ready, occupant: "", equipment: casting-cart}, {id: R-LAB2, name: "Lab Draw 2", zone: diagnostics, status: ready, occupant: "", equipment: phlebotomy}, {id: R-IMG, name: "Imaging Hold", zone: diagnostics, status: cleaning, occupant: "", equipment: wheelchair}, {id: R-OBS, name: "Observation 1", zone: east, status: occupied, occupant: "Walk-in infusion", equipment: monitor}]}
+          - {op: equals, path: last_action, value: assign_isolation}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_capacity}
+  assign_procedure_button:
+    kind: button
+    selector: '[data-testid="assign-procedure"]'
+    page: chart
+    actions:
+      click:
+        allowed_roles: [coordinator, charge_nurse]
+        preconditions:
+          - {op: not_one_of, path: selected_patient_id, values: [""]}
+        effects:
+          - {op: equals, path: assigned_room_id, value: R-PROC}
+          - {op: equals, path: assigned_room_name, value: "Procedure A"}
+          - {op: equals, path: selected_patient_status, value: roomed}
+          - {op: equals, path: rooms, value: [{id: R-ISO2, name: "Isolation 2", zone: west, status: ready, occupant: "", equipment: negative-pressure}, {id: R-PROC, name: "Procedure A", zone: procedure, status: occupied, occupant: "Omar Haddad", equipment: casting-cart}, {id: R-LAB2, name: "Lab Draw 2", zone: diagnostics, status: ready, occupant: "", equipment: phlebotomy}, {id: R-IMG, name: "Imaging Hold", zone: diagnostics, status: cleaning, occupant: "", equipment: wheelchair}, {id: R-OBS, name: "Observation 1", zone: east, status: occupied, occupant: "Walk-in infusion", equipment: monitor}]}
+          - {op: equals, path: last_action, value: assign_procedure}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_capacity}
+  assign_imaging_button:
+    kind: button
+    selector: '[data-testid="assign-imaging"]'
+    page: chart
+    actions:
+      click:
+        allowed_roles: [coordinator, charge_nurse]
+        rejected_when:
+          - {op: not_one_of, path: selected_patient_id, values: [""]}
+        rejected_effects:
+          - {op: changed_by, path: room_block_count, by: 1}
+          - {op: equals, path: assigned_room_id, value: ""}
+          - {op: equals, path: assigned_room_name, value: ""}
+          - {op: equals, path: last_action, value: room_cleaning_block}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_capacity}
+
+  insurance_code_input:
+    kind: input
+    selector: '[data-testid="insurance-code"]'
+    page: chart
+    actions:
+      fill:
+        effects:
+          - {op: equals_normalized, path: insurance_code, value_from: input.value, normalizers: [trim, uppercase]}
+          - {op: equals, path: last_action, value: edit_insurance}
+  verify_insurance_button:
+    kind: button
+    selector: '[data-testid="verify-insurance"]'
+    page: chart
+    actions:
+      click:
+        preconditions:
+          - {op: not_one_of, path: selected_patient_id, values: [""]}
+          - {op: not_one_of, path: insurance_code, values: [""]}
+        effects:
+          - {op: changed_by, path: service_call_count, by: 1}
+          - {op: changed_by, path: insurance_call_count, by: 1}
+          - {op: one_of, path: insurance_status, values: [approved, self_pay, needs_review]}
+          - {op: equals, path: last_action, value: verify_insurance}
+
+  auth_key_input:
+    kind: input
+    selector: '[data-testid="auth-key"]'
+    page: chart
+    actions:
+      fill:
+        effects:
+          - {op: equals_normalized, path: auth_key, value_from: input.value, normalizers: [trim, uppercase]}
+          - {op: equals, path: last_action, value: edit_auth_key}
+  request_auth_button:
+    kind: button
+    selector: '[data-testid="request-auth"]'
+    page: chart
+    actions:
+      click:
+        allowed_roles: [billing]
+        preconditions:
+          - {op: not_one_of, path: selected_patient_id, values: [""]}
+        effects:
+          - {op: changed_by, path: service_call_count, by: 1}
+          - {op: changed_by, path: auth_call_count, by: 1}
+          - {op: one_of, path: authorization_status, values: [approved, denied, not_required]}
+          - {op: equals, path: last_action, value: request_auth}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_billing}
+
+  pain_score_input:
+    kind: input
+    selector: '[data-testid="pain-score"]'
+    page: chart
+    actions:
+      fill:
+        effects:
+          - {op: equals_normalized, path: pain_score, value_from: input.value, normalizers: [trim]}
+          - {op: removed_object_fields, path: validation_errors, fields: [assessment]}
+  disposition_input:
+    kind: input
+    selector: '[data-testid="disposition"]'
+    page: chart
+    actions:
+      fill:
+        effects:
+          - {op: equals_normalized, path: disposition, value_from: input.value, normalizers: [trim, collapse_whitespace]}
+          - {op: removed_object_fields, path: validation_errors, fields: [assessment]}
+  save_assessment_button:
+    kind: button
+    selector: '[data-testid="save-assessment"]'
+    page: chart
+    actions:
+      click:
+        allowed_roles: [clinician]
+        rejected_when:
+          - {op: one_of, path: pain_score, values: [""]}
+          - {op: one_of, path: disposition, values: [""]}
+        rejected_effects:
+          - {op: equals, path: assessment_status, value: incomplete}
+          - {op: updated_object_fields, path: validation_errors, updates: {assessment: "Pain score and disposition are required"}}
+          - {op: equals, path: last_action, value: reject_assessment}
+        effects:
+          - {op: equals, path: assessment_status, value: recorded}
+          - {op: equals, path: selected_patient_status, value: assessed}
+          - {op: equals, path: last_action, value: save_assessment}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_clinical}
+  place_lab_order_button:
+    kind: button
+    selector: '[data-testid="place-lab-order"]'
+    page: chart
+    actions:
+      click:
+        allowed_roles: [clinician]
+        rejected_when:
+          - {op: not_one_of, path: assessment_status, values: [recorded]}
+        rejected_effects:
+          - {op: equals, path: order_status, value: blocked}
+          - {op: equals, path: last_action, value: order_requires_assessment}
+        effects:
+          - {op: appended_object, path: diagnostic_orders, value: {id: O-1, patient: {from_path: selected_patient_name}, type: CBC, priority: stat, status: ordered}}
+          - {op: changed_by, path: diagnostic_order_count, by: 1}
+          - {op: equals, path: order_status, value: ordered}
+          - {op: equals, path: last_action, value: place_lab_order}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_clinical}
+  release_diagnostics_button:
+    kind: button
+    selector: '[data-testid="release-diagnostics"]'
+    page: chart
+    actions:
+      click:
+        allowed_roles: [clinician]
+        preconditions:
+          - {op: one_of, path: order_status, values: [ordered]}
+          - {op: one_of, path: insurance_status, values: [approved, self_pay]}
+          - {op: one_of, path: authorization_status, values: [approved, not_required]}
+        rejected_when:
+          - {op: not_one_of, path: authorization_status, values: [approved, not_required]}
+        rejected_effects:
+          - {op: changed_by, path: release_block_count, by: 1}
+          - {op: equals, path: last_action, value: release_blocked}
+        effects:
+          - {op: updated_first_where, path: diagnostic_orders, where: [{op: equals, field: id, value: O-1}], updates: {status: released}}
+          - {op: changed_by, path: released_order_count, by: 1}
+          - {op: equals, path: order_status, value: released}
+          - {op: equals, path: selected_patient_status, value: diagnostic_ready}
+          - {op: equals, path: last_action, value: release_diagnostics}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_clinical}
+
+  referral_upload_input:
+    kind: input
+    selector: '[data-testid="referral-upload"]'
+    page: chart
+    actions:
+      upload:
+        file_schema:
+          format: csv
+          columns:
+            - {name: id, type: string}
+            - {name: document, type: string}
+            - {name: priority, type: string}
+            - {name: status, type: string}
+        effects:
+          - {op: equals, path: referral_docs, value_from: input.rows}
+          - {op: equals_length, path: referral_doc_count, source_path: referral_docs}
+          - {op: equals, path: last_referral_file, value_from: input.file.name}
+          - {op: equals, path: last_action, value: upload_referrals}
+
+  escalate_delay_button:
+    kind: button
+    selector: '[data-testid="escalate-delay"]'
+    page: chart
+    actions:
+      click:
+        allowed_roles: [charge_nurse]
+        preconditions:
+          - {op: not_one_of, path: selected_patient_id, values: [""]}
+        effects:
+          - {op: appended_object, path: escalation_tasks, value: {id: E-1, patient: {from_path: selected_patient_name}, reason: delayed_room, owner: charge_nurse, status: open}}
+          - {op: changed_by, path: escalation_count, by: 1}
+          - {op: equals, path: last_action, value: escalate_delay}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_capacity}
+  close_escalation_button:
+    kind: button
+    selector: '[data-testid="close-escalation"]'
+    page: handoff
+    actions:
+      click:
+        allowed_roles: [charge_nurse]
+        preconditions:
+          - {op: relation, path: escalation_count, operator: ">", value: 0}
+        effects:
+          - {op: updated_first_where, path: escalation_tasks, where: [{op: equals, field: id, value: E-1}], updates: {status: closed}}
+          - {op: changed_by, path: closed_escalation_count, by: 1}
+          - {op: equals, path: last_action, value: close_escalation}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_capacity}
+  finalize_handoff_button:
+    kind: button
+    selector: '[data-testid="finalize-handoff"]'
+    page: handoff
+    actions:
+      click:
+        allowed_roles: [charge_nurse]
+        preconditions:
+          - {op: one_of, path: order_status, values: [released]}
+          - {op: relation, path: referral_doc_count, operator: ">", value: 0}
+          - {op: one_of, path: closed_escalation_count, values: [1]}
+        rejected_when:
+          - {op: not_one_of, path: closed_escalation_count, values: [1]}
+        rejected_effects:
+          - {op: changed_by, path: handoff_block_count, by: 1}
+          - {op: equals, path: handoff_status, value: blocked}
+          - {op: equals, path: last_action, value: handoff_blocked}
+        effects:
+          - {op: appended_object, path: handoff_packets, value: {id: H-1, patient: {from_path: selected_patient_name}, referral_file: {from_path: last_referral_file}, status: ready}}
+          - {op: changed_by, path: handoff_packet_count, by: 1}
+          - {op: equals, path: handoff_status, value: ready}
+          - {op: equals, path: last_action, value: finalize_handoff}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_capacity}

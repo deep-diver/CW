@@ -1,0 +1,2 @@
+reports/conformweb_visualizations/data/raw_steps.csv filter=lfs diff=lfs merge=lfs -text
+reports/conformweb_visualizations/data/raw_scenarios.csv filter=lfs diff=lfs merge=lfs -text

@@ -1,0 +1,1013 @@
+dsl_version: "3.0.0"
+
+app:
+  id: media_campaign_launch_desk_tier_d
+  name: Media Campaign Launch Desk Tier D
+  capability: global_premiere_embargo_command
+  ui_ux_brief: |
+    Media Campaign Launch Desk Tier D should look like a cinematic global
+    premiere command center for a high-stakes franchise release. It must not
+    resemble the Tier C media-mix planning room: the product surface should be
+    about embargo discipline, asset lineage, market blackout windows, partner
+    trafficking delivery, measurement beacon arming, sentiment risk, finance
+    escrow, multi-role sign-off, and launch sealing. A desktop screenshot should
+    immediately read as harder than Tier C: a dense film-slate header, global
+    market clock rail, asset vault, blackout matrix, partner delivery manifest,
+    beacon arming console, sentiment watch tape, escrow ledger, computed launch
+    readiness blockers, executive seal controls, launch ledger, and audit trail
+    should all be visible. Use a polished midnight cinema operations palette
+    with white slate strips, electric cyan timing rails, red embargo warnings,
+    gold finance locks, green clearance seals, dense tables, clock chips, and
+    map-like market tiles. Avoid broadcast waveforms, generic dashboards,
+    marketing hero pages, or the Tier C audience/mix/deal/experiment language.
+
+runtime:
+  target: web
+  start_url: /#/slate
+  state_probe:
+    kind: javascript
+    expression: window.__DETOX_STATE__
+  pages:
+    slate:
+      path: /#/slate
+      purpose: Premiere asset vault, embargo-risk filters, release-code entry, and selected asset slate.
+    markets:
+      path: /#/markets
+      purpose: Market blackout upload, local-window lock, and embargo matrix.
+    traffic:
+      path: /#/traffic
+      purpose: Partner placement manifest, QA remediation, delivery lock, and delivery acknowledgement.
+    signals:
+      path: /#/signals
+      purpose: Measurement beacons, attribution health, sentiment watch, and finance escrow controls.
+    seal:
+      path: /#/seal
+      purpose: Launch readiness blockers, role sign-offs, final seal ledger, and audit trail.
+  session:
+    role_path: active_role
+    roles: [producer, legal, ops, measurement, finance, executive]
+  persistence:
+    reload:
+      scope: local_storage
+      paths:
+        - current_page
+        - active_role
+        - assets
+        - visible_assets
+        - current_filter
+        - selected_asset_id
+        - selected_asset_title
+        - selected_format
+        - selected_region
+        - selected_embargo
+        - selected_clearance
+        - selected_risk
+        - selected_version
+        - release_code
+        - watermark_key
+        - embargo_status
+        - legal_clearance_status
+        - legal_clearance_score
+        - rights_call_count
+        - attribution_call_count
+        - service_call_count
+        - window_rows
+        - window_count
+        - open_blackout_count
+        - window_status
+        - window_lock_count
+        - last_window_file
+        - placement_rows
+        - placement_count
+        - qa_fail_count
+        - delivery_status
+        - delivery_lock_count
+        - delivery_ack_status
+        - delivery_ack_count
+        - last_traffic_file
+        - beacon_rows
+        - beacon_count
+        - beacon_status
+        - beacon_arm_count
+        - attribution_status
+        - attribution_score
+        - sentiment_rows
+        - sentiment_count
+        - negative_sentiment_count
+        - sentiment_status
+        - sentiment_clear_count
+        - last_sentiment_file
+        - escrow_rows
+        - escrow_count
+        - unpaid_invoice_count
+        - escrow_status
+        - escrow_lock_count
+        - last_escrow_file
+        - legal_signoff_status
+        - ops_signoff_status
+        - measurement_signoff_status
+        - finance_signoff_status
+        - executive_signoff_status
+        - signoff_count
+        - readiness_score
+        - open_blockers
+        - blocker_rows
+        - launch_rows
+        - launch_count
+        - global_launch_status
+        - launch_seal_score
+        - open_launch_blockers
+        - launch_seal_count
+        - audit_log
+        - audit_count
+        - validation_errors
+        - denied_count
+        - last_action
+
+  services:
+    rights_clearance:
+      endpoint: /api/premiere-rights
+      method: GET
+      responses:
+        - id: red_horizon_clear
+          match: {query: {asset: A-RED}}
+          status: 200
+          json: {status: cleared, score: 96}
+        - id: social_watch_clear
+          match: {query: {asset: A-SOC}}
+          status: 200
+          json: {status: cleared, score: 91}
+        - id: premiere_bumper_clear
+          match: {query: {asset: A-PRE}}
+          status: 200
+          json: {status: cleared, score: 88}
+    attribution_health:
+      endpoint: /api/attribution-health
+      method: GET
+      responses:
+        - id: global_ready
+          match: {query: {suite: global}}
+          status: 200
+          json: {status: healthy, score: 94}
+
+  tables:
+    asset_grid:
+      selector: '[data-testid="asset-grid"]'
+      row_selector: '[data-testid="asset-row"]'
+      row_id_attribute: data-asset-id
+      source_path: visible_assets
+      row_id_field: id
+      columns:
+        title: {selector: '[data-col="title"]', state_field: title}
+        format: {selector: '[data-col="format"]', state_field: format}
+        region: {selector: '[data-col="region"]', state_field: region}
+        embargo: {selector: '[data-col="embargo"]', state_field: embargo}
+        clearance: {selector: '[data-col="clearance"]', state_field: clearance}
+        risk: {selector: '[data-col="risk"]', state_field: risk}
+        version: {selector: '[data-col="version"]', state_field: version}
+    window_grid:
+      selector: '[data-testid="window-grid"]'
+      row_selector: '[data-testid="window-row"]'
+      row_id_attribute: data-window-id
+      source_path: window_rows
+      row_id_field: id
+      columns:
+        market: {selector: '[data-col="market"]', state_field: market}
+        local_time: {selector: '[data-col="local_time"]', state_field: local_time}
+        blackout: {selector: '[data-col="blackout"]', state_field: blackout}
+        owner: {selector: '[data-col="owner"]', state_field: owner}
+        status: {selector: '[data-col="status"]', state_field: status}
+    traffic_grid:
+      selector: '[data-testid="traffic-grid"]'
+      row_selector: '[data-testid="traffic-row"]'
+      row_id_attribute: data-placement-id
+      source_path: placement_rows
+      row_id_field: id
+      columns:
+        partner: {selector: '[data-col="partner"]', state_field: partner}
+        market: {selector: '[data-col="market"]', state_field: market}
+        format: {selector: '[data-col="format"]', state_field: format}
+        spend: {selector: '[data-col="spend"]', state_field: spend}
+        qa: {selector: '[data-col="qa"]', state_field: qa}
+        status: {selector: '[data-col="status"]', state_field: status}
+    beacon_grid:
+      selector: '[data-testid="beacon-grid"]'
+      row_selector: '[data-testid="beacon-row"]'
+      row_id_attribute: data-beacon-id
+      source_path: beacon_rows
+      row_id_field: id
+      columns:
+        surface: {selector: '[data-col="surface"]', state_field: surface}
+        event: {selector: '[data-col="event"]', state_field: event}
+        owner: {selector: '[data-col="owner"]', state_field: owner}
+        status: {selector: '[data-col="status"]', state_field: status}
+    sentiment_grid:
+      selector: '[data-testid="sentiment-grid"]'
+      row_selector: '[data-testid="sentiment-row"]'
+      row_id_attribute: data-sentiment-id
+      source_path: sentiment_rows
+      row_id_field: id
+      columns:
+        market: {selector: '[data-col="market"]', state_field: market}
+        volume: {selector: '[data-col="volume"]', state_field: volume}
+        polarity: {selector: '[data-col="polarity"]', state_field: polarity}
+        status: {selector: '[data-col="status"]', state_field: status}
+    escrow_grid:
+      selector: '[data-testid="escrow-grid"]'
+      row_selector: '[data-testid="escrow-row"]'
+      row_id_attribute: data-escrow-id
+      source_path: escrow_rows
+      row_id_field: id
+      columns:
+        market: {selector: '[data-col="market"]', state_field: market}
+        budget: {selector: '[data-col="budget"]', state_field: budget}
+        invoice: {selector: '[data-col="invoice"]', state_field: invoice}
+        status: {selector: '[data-col="status"]', state_field: status}
+    blocker_grid:
+      selector: '[data-testid="blocker-grid"]'
+      row_selector: '[data-testid="blocker-row"]'
+      row_id_attribute: data-blocker-id
+      source_path: blocker_rows
+      row_id_field: id
+      columns:
+        label: {selector: '[data-col="label"]', state_field: label}
+        owner: {selector: '[data-col="owner"]', state_field: owner}
+        status: {selector: '[data-col="status"]', state_field: status}
+    launch_grid:
+      selector: '[data-testid="launch-grid"]'
+      row_selector: '[data-testid="launch-row"]'
+      row_id_attribute: data-launch-id
+      source_path: launch_rows
+      row_id_field: id
+      columns:
+        slate: {selector: '[data-col="slate"]', state_field: slate}
+        markets: {selector: '[data-col="markets"]', state_field: markets}
+        status: {selector: '[data-col="status"]', state_field: status}
+        seal: {selector: '[data-col="seal"]', state_field: seal}
+    audit_grid:
+      selector: '[data-testid="audit-grid"]'
+      row_selector: '[data-testid="audit-row"]'
+      row_id_attribute: data-audit-id
+      source_path: audit_log
+      row_id_field: id
+      columns:
+        event: {selector: '[data-col="event"]', state_field: event}
+        actor: {selector: '[data-col="actor"]', state_field: actor}
+        status: {selector: '[data-col="status"]', state_field: status}
+
+state:
+  initial:
+    current_page: slate
+    active_role: producer
+    assets:
+      - {id: A-PRE, title: "Premiere Livestream Bumper", format: live, region: EMEA, embargo: "T-01:30", clearance: review, risk: critical, version: v5}
+      - {id: A-RED, title: "Red Horizon Trailer", format: trailer, region: global, embargo: "T-06:00", clearance: review, risk: high, version: v3}
+      - {id: A-SOC, title: "Social Vertical Teasers", format: social, region: APAC, embargo: "T-02:00", clearance: review, risk: high, version: v7}
+      - {id: A-POD, title: "Cast Podcast Cutdown", format: audio, region: NA, embargo: "T-04:00", clearance: cleared, risk: medium, version: v2}
+      - {id: A-OOH, title: "Out of Home Reveal", format: outdoor, region: LATAM, embargo: "T-03:30", clearance: cleared, risk: medium, version: v4}
+      - {id: A-PR, title: "Press Kit Stills", format: stills, region: global, embargo: "T-08:00", clearance: cleared, risk: low, version: v1}
+    visible_assets:
+      - {id: A-PRE, title: "Premiere Livestream Bumper", format: live, region: EMEA, embargo: "T-01:30", clearance: review, risk: critical, version: v5}
+      - {id: A-RED, title: "Red Horizon Trailer", format: trailer, region: global, embargo: "T-06:00", clearance: review, risk: high, version: v3}
+      - {id: A-SOC, title: "Social Vertical Teasers", format: social, region: APAC, embargo: "T-02:00", clearance: review, risk: high, version: v7}
+      - {id: A-POD, title: "Cast Podcast Cutdown", format: audio, region: NA, embargo: "T-04:00", clearance: cleared, risk: medium, version: v2}
+      - {id: A-OOH, title: "Out of Home Reveal", format: outdoor, region: LATAM, embargo: "T-03:30", clearance: cleared, risk: medium, version: v4}
+      - {id: A-PR, title: "Press Kit Stills", format: stills, region: global, embargo: "T-08:00", clearance: cleared, risk: low, version: v1}
+    current_filter: all
+    selected_asset_id: ""
+    selected_asset_title: ""
+    selected_format: ""
+    selected_region: ""
+    selected_embargo: ""
+    selected_clearance: ""
+    selected_risk: ""
+    selected_version: ""
+    release_code: ""
+    watermark_key: ""
+    embargo_status: idle
+    legal_clearance_status: idle
+    legal_clearance_score: 0
+    rights_call_count: 0
+    attribution_call_count: 0
+    service_call_count: 0
+    window_rows: []
+    window_count: 0
+    open_blackout_count: 0
+    window_status: idle
+    window_lock_count: 0
+    last_window_file: ""
+    placement_rows: []
+    placement_count: 0
+    qa_fail_count: 0
+    delivery_status: idle
+    delivery_lock_count: 0
+    delivery_ack_status: idle
+    delivery_ack_count: 0
+    last_traffic_file: ""
+    beacon_rows: []
+    beacon_count: 0
+    beacon_status: idle
+    beacon_arm_count: 0
+    attribution_status: idle
+    attribution_score: 0
+    sentiment_rows: []
+    sentiment_count: 0
+    negative_sentiment_count: 0
+    sentiment_status: idle
+    sentiment_clear_count: 0
+    last_sentiment_file: ""
+    escrow_rows: []
+    escrow_count: 0
+    unpaid_invoice_count: 0
+    escrow_status: idle
+    escrow_lock_count: 0
+    last_escrow_file: ""
+    legal_signoff_status: idle
+    ops_signoff_status: idle
+    measurement_signoff_status: idle
+    finance_signoff_status: idle
+    executive_signoff_status: idle
+    signoff_count: 0
+    readiness_score: 0
+    open_blockers: 10
+    blocker_rows:
+      - {id: B-ASSET, label: Asset locked to release code, owner: producer, status: open}
+      - {id: B-LEGAL, label: Legal clearance and sign-off, owner: legal, status: open}
+      - {id: B-WINDOWS, label: Market blackout windows locked, owner: ops, status: open}
+      - {id: B-DELIVERY, label: Partner delivery locked and acknowledged, owner: ops, status: open}
+      - {id: B-BEACONS, label: Measurement beacons armed, owner: measurement, status: open}
+      - {id: B-ATTRIBUTION, label: Attribution health green, owner: measurement, status: open}
+      - {id: B-SENTIMENT, label: Sentiment watch cleared, owner: measurement, status: open}
+      - {id: B-ESCROW, label: Finance escrow locked, owner: finance, status: open}
+      - {id: B-SIGNOFFS, label: Four operator sign-offs captured, owner: executive, status: open}
+      - {id: B-EXECUTIVE, label: Executive seal sign-off captured, owner: executive, status: open}
+    launch_rows: []
+    launch_count: 0
+    global_launch_status: idle
+    launch_seal_score: 0
+    open_launch_blockers: 6
+    launch_seal_count: 0
+    audit_log: []
+    audit_count: 0
+    validation_errors: {}
+    denied_count: 0
+    last_action: ready
+    __services.calls: []
+  schema:
+    current_page: {type: string, purpose: Active route page.}
+    active_role: {type: string, purpose: Current premiere command role.}
+    assets: {type: array, purpose: Master release asset vault.}
+    visible_assets: {type: array, purpose: Filtered asset projection.}
+    current_filter: {type: string, purpose: Active asset filter.}
+    selected_asset_id: {type: string, purpose: Selected asset id.}
+    selected_asset_title: {type: string, purpose: Selected asset title.}
+    selected_format: {type: string, purpose: Selected asset format.}
+    selected_region: {type: string, purpose: Selected asset release region.}
+    selected_embargo: {type: string, purpose: Selected embargo clock.}
+    selected_clearance: {type: string, purpose: Selected legal clearance status.}
+    selected_risk: {type: string, purpose: Selected risk band.}
+    selected_version: {type: string, purpose: Selected asset version.}
+    release_code: {type: string, purpose: Normalized release code.}
+    watermark_key: {type: string, purpose: Normalized watermark key.}
+    embargo_status: {type: string, purpose: idle, locked, or blocked.}
+    legal_clearance_status: {type: string, purpose: idle, cleared, denied, or review.}
+    legal_clearance_score: {type: number, purpose: Rights clearance score.}
+    rights_call_count: {type: number, purpose: Rights service count.}
+    attribution_call_count: {type: number, purpose: Attribution service count.}
+    service_call_count: {type: number, purpose: Total deterministic service count.}
+    window_rows: {type: array, purpose: Uploaded market window rows.}
+    window_count: {type: number, purpose: Number of market window rows.}
+    open_blackout_count: {type: number, purpose: Count of open blackout rows.}
+    window_status: {type: string, purpose: idle, review, locked, or blocked.}
+    window_lock_count: {type: number, purpose: Successful market lock count.}
+    last_window_file: {type: string, purpose: Last market window CSV filename.}
+    placement_rows: {type: array, purpose: Uploaded partner placement rows.}
+    placement_count: {type: number, purpose: Number of placement rows.}
+    qa_fail_count: {type: number, purpose: Count of failed QA placement rows.}
+    delivery_status: {type: string, purpose: idle, review, locked, or blocked.}
+    delivery_lock_count: {type: number, purpose: Successful delivery lock count.}
+    delivery_ack_status: {type: string, purpose: idle, acknowledged, or blocked.}
+    delivery_ack_count: {type: number, purpose: Partner delivery acknowledgement count.}
+    last_traffic_file: {type: string, purpose: Last traffic CSV filename.}
+    beacon_rows: {type: array, purpose: Measurement beacon rows.}
+    beacon_count: {type: number, purpose: Measurement beacon row count.}
+    beacon_status: {type: string, purpose: idle, review, armed, or blocked.}
+    beacon_arm_count: {type: number, purpose: Successful beacon arm count.}
+    attribution_status: {type: string, purpose: idle, healthy, warning, or blocked.}
+    attribution_score: {type: number, purpose: Attribution health score.}
+    sentiment_rows: {type: array, purpose: Uploaded sentiment watch rows.}
+    sentiment_count: {type: number, purpose: Sentiment row count.}
+    negative_sentiment_count: {type: number, purpose: Negative sentiment row count.}
+    sentiment_status: {type: string, purpose: idle, review, cleared, or blocked.}
+    sentiment_clear_count: {type: number, purpose: Successful sentiment clear count.}
+    last_sentiment_file: {type: string, purpose: Last sentiment CSV filename.}
+    escrow_rows: {type: array, purpose: Finance escrow rows.}
+    escrow_count: {type: number, purpose: Escrow row count.}
+    unpaid_invoice_count: {type: number, purpose: Unpaid invoice count.}
+    escrow_status: {type: string, purpose: idle, review, locked, or blocked.}
+    escrow_lock_count: {type: number, purpose: Successful escrow lock count.}
+    last_escrow_file: {type: string, purpose: Last escrow CSV filename.}
+    legal_signoff_status: {type: string, purpose: idle or signed.}
+    ops_signoff_status: {type: string, purpose: idle or signed.}
+    measurement_signoff_status: {type: string, purpose: idle or signed.}
+    finance_signoff_status: {type: string, purpose: idle or signed.}
+    executive_signoff_status: {type: string, purpose: idle or signed.}
+    signoff_count: {type: number, purpose: Total captured sign-offs.}
+    readiness_score: {type: number, purpose: Computed 0-100 score from ten readiness blockers.}
+    open_blockers: {type: number, purpose: Count of open readiness blockers.}
+    blocker_rows: {type: array, purpose: Readiness blocker ledger rows.}
+    launch_rows: {type: array, purpose: Sealed launch ledger rows.}
+    launch_count: {type: number, purpose: Number of sealed launches.}
+    global_launch_status: {type: string, purpose: idle, blocked, open, or sealed.}
+    launch_seal_score: {type: number, purpose: Computed seal score from final launch blockers.}
+    open_launch_blockers: {type: number, purpose: Count of launch seal blockers.}
+    launch_seal_count: {type: number, purpose: Completed launch seals.}
+    audit_log: {type: array, purpose: Executive audit events.}
+    audit_count: {type: number, purpose: Audit row count.}
+    validation_errors: {type: object, purpose: Validation error object.}
+    denied_count: {type: number, purpose: Role denied action count.}
+    last_action: {type: string, purpose: Last action marker.}
+    __services.calls: {type: array, purpose: Evaluator service call ledger.}
+
+components:
+  reset_button:
+    kind: button
+    selector: '[data-testid="reset"]'
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_page, value: slate}
+          - {op: equals, path: active_role, value: producer}
+          - {op: equals, path: current_filter, value: all}
+          - {op: equals, path: visible_assets, value: [
+              {id: A-PRE, title: "Premiere Livestream Bumper", format: live, region: EMEA, embargo: "T-01:30", clearance: review, risk: critical, version: v5},
+              {id: A-RED, title: "Red Horizon Trailer", format: trailer, region: global, embargo: "T-06:00", clearance: review, risk: high, version: v3},
+              {id: A-SOC, title: "Social Vertical Teasers", format: social, region: APAC, embargo: "T-02:00", clearance: review, risk: high, version: v7},
+              {id: A-POD, title: "Cast Podcast Cutdown", format: audio, region: NA, embargo: "T-04:00", clearance: cleared, risk: medium, version: v2},
+              {id: A-OOH, title: "Out of Home Reveal", format: outdoor, region: LATAM, embargo: "T-03:30", clearance: cleared, risk: medium, version: v4},
+              {id: A-PR, title: "Press Kit Stills", format: stills, region: global, embargo: "T-08:00", clearance: cleared, risk: low, version: v1}
+            ]}
+          - {op: equals, path: selected_asset_id, value: ""}
+          - {op: equals, path: release_code, value: ""}
+          - {op: equals, path: watermark_key, value: ""}
+          - {op: equals, path: embargo_status, value: idle}
+          - {op: equals, path: legal_clearance_status, value: idle}
+          - {op: equals, path: service_call_count, value: 0}
+          - {op: equals, path: window_rows, value: []}
+          - {op: equals, path: placement_rows, value: []}
+          - {op: equals, path: beacon_rows, value: []}
+          - {op: equals, path: sentiment_rows, value: []}
+          - {op: equals, path: escrow_rows, value: []}
+          - {op: equals, path: launch_rows, value: []}
+          - {op: equals, path: audit_log, value: []}
+          - {op: equals, path: readiness_score, value: 0}
+          - {op: equals, path: open_blockers, value: 10}
+          - {op: equals, path: global_launch_status, value: idle}
+          - {op: equals, path: launch_seal_score, value: 0}
+          - {op: equals, path: open_launch_blockers, value: 6}
+          - {op: equals, path: denied_count, value: 0}
+          - {op: equals, path: validation_errors, value: {}}
+          - {op: equals, path: last_action, value: reset}
+
+  go_slate_button: {kind: button, selector: '[data-testid="go-slate"]', actions: {click: {navigate_to: slate, effects: [{op: equals, path: current_page, value: slate}, {op: equals, path: last_action, value: nav_slate}]}}}
+  go_markets_button: {kind: button, selector: '[data-testid="go-markets"]', actions: {click: {navigate_to: markets, effects: [{op: equals, path: current_page, value: markets}, {op: equals, path: last_action, value: nav_markets}]}}}
+  go_traffic_button: {kind: button, selector: '[data-testid="go-traffic"]', actions: {click: {navigate_to: traffic, effects: [{op: equals, path: current_page, value: traffic}, {op: equals, path: last_action, value: nav_traffic}]}}}
+  go_signals_button: {kind: button, selector: '[data-testid="go-signals"]', actions: {click: {navigate_to: signals, effects: [{op: equals, path: current_page, value: signals}, {op: equals, path: last_action, value: nav_signals}]}}}
+  go_seal_button: {kind: button, selector: '[data-testid="go-seal"]', actions: {click: {navigate_to: seal, effects: [{op: equals, path: current_page, value: seal}, {op: equals, path: last_action, value: nav_seal}]}}}
+
+  role_producer_button: {kind: button, selector: '[data-testid="role-producer"]', actions: {click: {effects: [{op: equals, path: active_role, value: producer}, {op: equals, path: last_action, value: role_producer}]}}}
+  role_legal_button: {kind: button, selector: '[data-testid="role-legal"]', actions: {click: {effects: [{op: equals, path: active_role, value: legal}, {op: equals, path: last_action, value: role_legal}]}}}
+  role_ops_button: {kind: button, selector: '[data-testid="role-ops"]', actions: {click: {effects: [{op: equals, path: active_role, value: ops}, {op: equals, path: last_action, value: role_ops}]}}}
+  role_measurement_button: {kind: button, selector: '[data-testid="role-measurement"]', actions: {click: {effects: [{op: equals, path: active_role, value: measurement}, {op: equals, path: last_action, value: role_measurement}]}}}
+  role_finance_button: {kind: button, selector: '[data-testid="role-finance"]', actions: {click: {effects: [{op: equals, path: active_role, value: finance}, {op: equals, path: last_action, value: role_finance}]}}}
+  role_executive_button: {kind: button, selector: '[data-testid="role-executive"]', actions: {click: {effects: [{op: equals, path: active_role, value: executive}, {op: equals, path: last_action, value: role_executive}]}}}
+
+  filter_all_button:
+    kind: button
+    selector: '[data-testid="filter-all"]'
+    page: slate
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_filter, value: all}
+          - {op: equals, path: visible_assets, value: [
+              {id: A-PRE, title: "Premiere Livestream Bumper", format: live, region: EMEA, embargo: "T-01:30", clearance: review, risk: critical, version: v5},
+              {id: A-RED, title: "Red Horizon Trailer", format: trailer, region: global, embargo: "T-06:00", clearance: review, risk: high, version: v3},
+              {id: A-SOC, title: "Social Vertical Teasers", format: social, region: APAC, embargo: "T-02:00", clearance: review, risk: high, version: v7},
+              {id: A-POD, title: "Cast Podcast Cutdown", format: audio, region: NA, embargo: "T-04:00", clearance: cleared, risk: medium, version: v2},
+              {id: A-OOH, title: "Out of Home Reveal", format: outdoor, region: LATAM, embargo: "T-03:30", clearance: cleared, risk: medium, version: v4},
+              {id: A-PR, title: "Press Kit Stills", format: stills, region: global, embargo: "T-08:00", clearance: cleared, risk: low, version: v1}
+            ]}
+          - {op: equals, path: last_action, value: filter_all}
+  filter_embargo_risk_button:
+    kind: button
+    selector: '[data-testid="filter-embargo-risk"]'
+    page: slate
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_filter, value: embargo_risk}
+          - {op: equals_filter, path: visible_assets, source_path: assets, where: [{op: one_of, field: risk, values: [critical, high]}], order_by: [{field: embargo, direction: asc}]}
+          - {op: equals, path: last_action, value: filter_embargo_risk}
+  filter_uncleared_button:
+    kind: button
+    selector: '[data-testid="filter-uncleared"]'
+    page: slate
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_filter, value: uncleared}
+          - {op: equals_filter, path: visible_assets, source_path: assets, where: [{op: equals, field: clearance, value: review}], order_by: [{field: embargo, direction: asc}]}
+          - {op: equals, path: last_action, value: filter_uncleared}
+
+  select_premiere_button:
+    kind: button
+    selector: '[data-testid="select-A-PRE"]'
+    page: slate
+    actions:
+      click:
+        navigate_to: markets
+        effects:
+          - {op: equals, path: selected_asset_id, value: A-PRE}
+          - {op: equals, path: selected_asset_title, value: "Premiere Livestream Bumper"}
+          - {op: equals, path: selected_format, value: live}
+          - {op: equals, path: selected_region, value: EMEA}
+          - {op: equals, path: selected_embargo, value: "T-01:30"}
+          - {op: equals, path: selected_clearance, value: review}
+          - {op: equals, path: selected_risk, value: critical}
+          - {op: equals, path: selected_version, value: v5}
+          - {op: equals, path: current_page, value: markets}
+          - {op: equals, path: last_action, value: select_asset}
+  select_trailer_button:
+    kind: button
+    selector: '[data-testid="select-A-RED"]'
+    page: slate
+    actions:
+      click:
+        navigate_to: markets
+        effects:
+          - {op: equals, path: selected_asset_id, value: A-RED}
+          - {op: equals, path: selected_asset_title, value: "Red Horizon Trailer"}
+          - {op: equals, path: selected_format, value: trailer}
+          - {op: equals, path: selected_region, value: global}
+          - {op: equals, path: selected_embargo, value: "T-06:00"}
+          - {op: equals, path: selected_clearance, value: review}
+          - {op: equals, path: selected_risk, value: high}
+          - {op: equals, path: selected_version, value: v3}
+          - {op: equals, path: current_page, value: markets}
+          - {op: equals, path: last_action, value: select_asset}
+  select_social_button:
+    kind: button
+    selector: '[data-testid="select-A-SOC"]'
+    page: slate
+    actions:
+      click:
+        navigate_to: markets
+        effects:
+          - {op: equals, path: selected_asset_id, value: A-SOC}
+          - {op: equals, path: selected_asset_title, value: "Social Vertical Teasers"}
+          - {op: equals, path: selected_format, value: social}
+          - {op: equals, path: selected_region, value: APAC}
+          - {op: equals, path: selected_embargo, value: "T-02:00"}
+          - {op: equals, path: selected_clearance, value: review}
+          - {op: equals, path: selected_risk, value: high}
+          - {op: equals, path: selected_version, value: v7}
+          - {op: equals, path: current_page, value: markets}
+          - {op: equals, path: last_action, value: select_asset}
+
+  release_code_input:
+    kind: input
+    selector: '[data-testid="release-code"]'
+    page: slate
+    actions:
+      fill:
+        effects:
+          - {op: equals_normalized, path: release_code, value_from: input.value, normalizers: [trim, uppercase]}
+          - {op: removed_object_fields, path: validation_errors, fields: [release_code]}
+  watermark_key_input:
+    kind: input
+    selector: '[data-testid="watermark-key"]'
+    page: slate
+    actions:
+      fill:
+        effects:
+          - {op: equals_normalized, path: watermark_key, value_from: input.value, normalizers: [trim, collapse_whitespace, uppercase]}
+          - {op: removed_object_fields, path: validation_errors, fields: [watermark_key]}
+  request_legal_clearance_button:
+    kind: button
+    selector: '[data-testid="request-legal-clearance"]'
+    page: slate
+    actions:
+      click:
+        allowed_roles: [legal]
+        preconditions:
+          - {op: not_one_of, path: selected_asset_id, values: [""]}
+        effects:
+          - {op: changed_by, path: service_call_count, by: 1}
+          - {op: changed_by, path: rights_call_count, by: 1}
+          - {op: one_of, path: legal_clearance_status, values: [cleared, review]}
+          - {op: relation, path: legal_clearance_score, operator: ">", value: 0}
+          - {op: equals, path: selected_clearance, value: cleared}
+          - {op: equals, path: last_action, value: request_legal_clearance}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_legal}
+  lock_asset_button:
+    kind: button
+    selector: '[data-testid="lock-asset"]'
+    page: slate
+    actions:
+      click:
+        allowed_roles: [producer]
+        rejected_when:
+          - {op: one_of, path: release_code, values: [""]}
+          - {op: one_of, path: watermark_key, values: [""]}
+        rejected_effects:
+          - {op: equals, path: embargo_status, value: blocked}
+          - {op: updated_object_fields, path: validation_errors, updates: {asset_lock: "Legal clearance, release code, and watermark are required"}}
+          - {op: equals, path: last_action, value: asset_lock_blocked}
+        effects:
+          - {op: equals, path: embargo_status, value: locked}
+          - {op: equals, path: last_action, value: lock_asset}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_producer}
+
+  window_upload_input:
+    kind: input
+    selector: '[data-testid="window-upload"]'
+    page: markets
+    actions:
+      upload:
+        file_schema:
+          format: csv
+          columns:
+            - {name: id, type: string}
+            - {name: market, type: string}
+            - {name: local_time, type: string}
+            - {name: blackout, type: string}
+            - {name: owner, type: string}
+            - {name: status, type: string}
+        effects:
+          - {op: equals, path: window_rows, value_from: input.rows}
+          - {op: equals_length, path: window_count, source_path: window_rows}
+          - {op: equals_count_where, path: open_blackout_count, source_path: window_rows, where: [{op: equals, field: status, value: open}]}
+          - {op: equals, path: last_window_file, value_from: input.file.name}
+          - {op: equals, path: window_status, value: review}
+          - {op: equals, path: last_action, value: upload_windows}
+  lock_windows_button:
+    kind: button
+    selector: '[data-testid="lock-windows"]'
+    page: markets
+    actions:
+      click:
+        allowed_roles: [ops]
+        preconditions:
+          - {op: relation, path: window_count, operator: ">", value: 0}
+          - {op: one_of, path: open_blackout_count, values: [0]}
+        rejected_when:
+          - {op: relation, path: open_blackout_count, operator: ">", value: 0}
+        rejected_effects:
+          - {op: equals, path: window_status, value: blocked}
+          - {op: equals, path: last_action, value: windows_blocked}
+        effects:
+          - {op: equals, path: window_status, value: locked}
+          - {op: changed_by, path: window_lock_count, by: 1}
+          - {op: equals, path: last_action, value: lock_windows}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_ops}
+
+  traffic_upload_input:
+    kind: input
+    selector: '[data-testid="traffic-upload"]'
+    page: traffic
+    actions:
+      upload:
+        file_schema:
+          format: csv
+          columns:
+            - {name: id, type: string}
+            - {name: partner, type: string}
+            - {name: market, type: string}
+            - {name: format, type: string}
+            - {name: spend, type: number}
+            - {name: qa, type: string}
+            - {name: status, type: string}
+        effects:
+          - {op: equals, path: placement_rows, value_from: input.rows}
+          - {op: equals_length, path: placement_count, source_path: placement_rows}
+          - {op: equals_count_where, path: qa_fail_count, source_path: placement_rows, where: [{op: equals, field: qa, value: fail}]}
+          - {op: equals, path: last_traffic_file, value_from: input.file.name}
+          - {op: equals, path: delivery_status, value: review}
+          - {op: equals, path: last_action, value: upload_traffic}
+  lock_delivery_button:
+    kind: button
+    selector: '[data-testid="lock-delivery"]'
+    page: traffic
+    actions:
+      click:
+        allowed_roles: [ops]
+        preconditions:
+          - {op: relation, path: placement_count, operator: ">", value: 0}
+          - {op: one_of, path: qa_fail_count, values: [0]}
+        rejected_when:
+          - {op: relation, path: qa_fail_count, operator: ">", value: 0}
+        rejected_effects:
+          - {op: equals, path: delivery_status, value: blocked}
+          - {op: equals, path: last_action, value: delivery_blocked}
+        effects:
+          - {op: equals, path: delivery_status, value: locked}
+          - {op: changed_by, path: delivery_lock_count, by: 1}
+          - {op: equals, path: last_action, value: lock_delivery}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_ops}
+  acknowledge_delivery_button:
+    kind: button
+    selector: '[data-testid="ack-delivery"]'
+    page: traffic
+    actions:
+      click:
+        allowed_roles: [ops]
+        rejected_when:
+          - {op: not_one_of, path: delivery_status, values: [locked]}
+        rejected_effects:
+          - {op: equals, path: delivery_ack_status, value: blocked}
+          - {op: equals, path: last_action, value: ack_delivery_blocked}
+        effects:
+          - {op: equals, path: delivery_ack_status, value: acknowledged}
+          - {op: changed_by, path: delivery_ack_count, by: 1}
+          - {op: equals, path: last_action, value: acknowledge_delivery}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_ops}
+
+  beacon_upload_input:
+    kind: input
+    selector: '[data-testid="beacon-upload"]'
+    page: signals
+    actions:
+      upload:
+        file_schema:
+          format: csv
+          columns:
+            - {name: id, type: string}
+            - {name: surface, type: string}
+            - {name: event, type: string}
+            - {name: owner, type: string}
+            - {name: status, type: string}
+        effects:
+          - {op: equals, path: beacon_rows, value_from: input.rows}
+          - {op: equals_length, path: beacon_count, source_path: beacon_rows}
+          - {op: equals, path: beacon_status, value: review}
+          - {op: equals, path: last_action, value: upload_beacons}
+  arm_beacons_button:
+    kind: button
+    selector: '[data-testid="arm-beacons"]'
+    page: signals
+    actions:
+      click:
+        allowed_roles: [measurement]
+        rejected_when:
+          - {op: not_one_of, path: beacon_count, values: [2, 3, 4, 5]}
+        rejected_effects:
+          - {op: equals, path: beacon_status, value: blocked}
+          - {op: equals, path: last_action, value: beacon_blocked}
+        effects:
+          - {op: equals, path: beacon_status, value: armed}
+          - {op: changed_by, path: beacon_arm_count, by: 1}
+          - {op: equals, path: last_action, value: arm_beacons}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_measurement}
+  run_attribution_button:
+    kind: button
+    selector: '[data-testid="run-attribution"]'
+    page: signals
+    actions:
+      click:
+        allowed_roles: [measurement]
+        effects:
+          - {op: changed_by, path: service_call_count, by: 1}
+          - {op: changed_by, path: attribution_call_count, by: 1}
+          - {op: equals, path: attribution_status, value: healthy}
+          - {op: relation, path: attribution_score, operator: ">", value: 80}
+          - {op: equals, path: last_action, value: run_attribution}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_measurement}
+  sentiment_upload_input:
+    kind: input
+    selector: '[data-testid="sentiment-upload"]'
+    page: signals
+    actions:
+      upload:
+        file_schema:
+          format: csv
+          columns:
+            - {name: id, type: string}
+            - {name: market, type: string}
+            - {name: volume, type: number}
+            - {name: polarity, type: string}
+            - {name: status, type: string}
+        effects:
+          - {op: equals, path: sentiment_rows, value_from: input.rows}
+          - {op: equals_length, path: sentiment_count, source_path: sentiment_rows}
+          - {op: equals_count_where, path: negative_sentiment_count, source_path: sentiment_rows, where: [{op: equals, field: polarity, value: negative}]}
+          - {op: equals, path: sentiment_status, value: review}
+          - {op: equals, path: last_sentiment_file, value_from: input.file.name}
+          - {op: equals, path: last_action, value: upload_sentiment}
+  clear_sentiment_button:
+    kind: button
+    selector: '[data-testid="clear-sentiment"]'
+    page: signals
+    actions:
+      click:
+        allowed_roles: [measurement]
+        rejected_when:
+          - {op: relation, path: negative_sentiment_count, operator: ">", value: 0}
+        rejected_effects:
+          - {op: equals, path: sentiment_status, value: blocked}
+          - {op: equals, path: last_action, value: sentiment_blocked}
+        effects:
+          - {op: equals, path: sentiment_status, value: cleared}
+          - {op: changed_by, path: sentiment_clear_count, by: 1}
+          - {op: equals, path: last_action, value: clear_sentiment}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_measurement}
+  escrow_upload_input:
+    kind: input
+    selector: '[data-testid="escrow-upload"]'
+    page: signals
+    actions:
+      upload:
+        file_schema:
+          format: csv
+          columns:
+            - {name: id, type: string}
+            - {name: market, type: string}
+            - {name: budget, type: number}
+            - {name: invoice, type: string}
+            - {name: status, type: string}
+        effects:
+          - {op: equals, path: escrow_rows, value_from: input.rows}
+          - {op: equals_length, path: escrow_count, source_path: escrow_rows}
+          - {op: equals_count_where, path: unpaid_invoice_count, source_path: escrow_rows, where: [{op: equals, field: invoice, value: unpaid}]}
+          - {op: equals, path: escrow_status, value: review}
+          - {op: equals, path: last_escrow_file, value_from: input.file.name}
+          - {op: equals, path: last_action, value: upload_escrow}
+  lock_escrow_button:
+    kind: button
+    selector: '[data-testid="lock-escrow"]'
+    page: signals
+    actions:
+      click:
+        allowed_roles: [finance]
+        rejected_when:
+          - {op: relation, path: unpaid_invoice_count, operator: ">", value: 0}
+        rejected_effects:
+          - {op: equals, path: escrow_status, value: blocked}
+          - {op: equals, path: last_action, value: escrow_blocked}
+        effects:
+          - {op: equals, path: escrow_status, value: locked}
+          - {op: changed_by, path: escrow_lock_count, by: 1}
+          - {op: equals, path: last_action, value: lock_escrow}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_finance}
+
+  legal_signoff_button:
+    kind: button
+    selector: '[data-testid="legal-signoff"]'
+    page: seal
+    actions:
+      click:
+        allowed_roles: [legal]
+        rejected_when:
+          - {op: not_one_of, path: embargo_status, values: [locked]}
+          - {op: not_one_of, path: legal_clearance_status, values: [cleared]}
+        rejected_effects:
+          - {op: equals, path: legal_signoff_status, value: idle}
+          - {op: equals, path: last_action, value: signoff_blocked}
+        effects:
+          - {op: equals, path: legal_signoff_status, value: signed}
+          - {op: changed_by, path: signoff_count, by: 1}
+          - {op: equals, path: last_action, value: legal_signoff}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_legal}
+  ops_signoff_button:
+    kind: button
+    selector: '[data-testid="ops-signoff"]'
+    page: seal
+    actions:
+      click:
+        allowed_roles: [ops]
+        rejected_when:
+          - {op: not_one_of, path: window_status, values: [locked]}
+          - {op: not_one_of, path: delivery_status, values: [locked]}
+          - {op: not_one_of, path: delivery_ack_status, values: [acknowledged]}
+        rejected_effects:
+          - {op: equals, path: ops_signoff_status, value: idle}
+          - {op: equals, path: last_action, value: signoff_blocked}
+        effects:
+          - {op: equals, path: ops_signoff_status, value: signed}
+          - {op: changed_by, path: signoff_count, by: 1}
+          - {op: equals, path: last_action, value: ops_signoff}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_ops}
+  measurement_signoff_button:
+    kind: button
+    selector: '[data-testid="measurement-signoff"]'
+    page: seal
+    actions:
+      click:
+        allowed_roles: [measurement]
+        rejected_when:
+          - {op: not_one_of, path: beacon_status, values: [armed]}
+          - {op: not_one_of, path: attribution_status, values: [healthy]}
+          - {op: not_one_of, path: sentiment_status, values: [cleared]}
+        rejected_effects:
+          - {op: equals, path: measurement_signoff_status, value: idle}
+          - {op: equals, path: last_action, value: signoff_blocked}
+        effects:
+          - {op: equals, path: measurement_signoff_status, value: signed}
+          - {op: changed_by, path: signoff_count, by: 1}
+          - {op: equals, path: last_action, value: measurement_signoff}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_measurement}
+  finance_signoff_button:
+    kind: button
+    selector: '[data-testid="finance-signoff"]'
+    page: seal
+    actions:
+      click:
+        allowed_roles: [finance]
+        rejected_when:
+          - {op: not_one_of, path: escrow_status, values: [locked]}
+        rejected_effects:
+          - {op: equals, path: finance_signoff_status, value: idle}
+          - {op: equals, path: last_action, value: signoff_blocked}
+        effects:
+          - {op: equals, path: finance_signoff_status, value: signed}
+          - {op: changed_by, path: signoff_count, by: 1}
+          - {op: equals, path: last_action, value: finance_signoff}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_finance}
+  executive_signoff_button:
+    kind: button
+    selector: '[data-testid="executive-signoff"]'
+    page: seal
+    actions:
+      click:
+        allowed_roles: [executive]
+        rejected_when:
+          - {op: not_one_of, path: legal_signoff_status, values: [signed]}
+          - {op: not_one_of, path: ops_signoff_status, values: [signed]}
+          - {op: not_one_of, path: measurement_signoff_status, values: [signed]}
+          - {op: not_one_of, path: finance_signoff_status, values: [signed]}
+        rejected_effects:
+          - {op: equals, path: executive_signoff_status, value: idle}
+          - {op: equals, path: last_action, value: executive_signoff_blocked}
+        effects:
+          - {op: equals, path: executive_signoff_status, value: signed}
+          - {op: changed_by, path: signoff_count, by: 1}
+          - {op: equals, path: last_action, value: executive_signoff}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_executive}
+  finalize_launch_button:
+    kind: button
+    selector: '[data-testid="finalize-launch"]'
+    page: seal
+    actions:
+      click:
+        allowed_roles: [executive]
+        preconditions:
+          - {op: equals, path: readiness_score, value: 100}
+          - {op: equals, path: open_blockers, value: 0}
+          - {op: equals, path: executive_signoff_status, value: signed}
+        rejected_when:
+          - {op: not_one_of, path: executive_signoff_status, values: [signed]}
+          - {op: relation, path: open_blockers, operator: ">", value: 0}
+        rejected_effects:
+          - {op: equals, path: global_launch_status, value: blocked}
+          - {op: equals, path: last_action, value: launch_blocked}
+        effects:
+          - {op: equals, path: global_launch_status, value: sealed}
+          - {op: equals, path: launch_seal_score, value: 100}
+          - {op: equals, path: open_launch_blockers, value: 0}
+          - {op: appended_object, path: launch_rows, value: {id: L-1, slate: {from_path: selected_asset_title}, markets: global, status: sealed, seal: green}}
+          - {op: changed_by, path: launch_count, by: 1}
+          - {op: changed_by, path: launch_seal_count, by: 1}
+          - {op: appended_object, path: audit_log, value: {id: AU-1, event: global_launch_sealed, actor: {from_path: active_role}, status: sealed}}
+          - {op: changed_by, path: audit_count, by: 1}
+          - {op: equals, path: last_action, value: finalize_launch}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_executive}

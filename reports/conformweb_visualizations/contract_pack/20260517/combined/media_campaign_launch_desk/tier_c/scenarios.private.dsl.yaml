@@ -1,0 +1,468 @@
+dsl_version: "3.0.0"
+visibility: private
+tier_weights:
+  smoke: 1
+  core: 2
+  service: 3
+  validation: 3
+  upload: 4
+  permission: 4
+  persistence: 5
+  journey: 6
+
+scenarios:
+  - id: private_01_filter_premium_video_projection
+    tier: smoke
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: filter_premium_video_button.click
+        expect:
+          - {op: equals, path: current_filter, value: premium_video}
+          - {op: equals, path: last_action, value: filter_premium_video}
+      - table: audience_grid
+        expect_order: [AUD-FAMILY, AUD-LUX]
+        expect_row_count: 2
+        expect_rows:
+          - id: AUD-FAMILY
+            cells: {name: Family Weekend Streamers, market: suburban, intent: medium}
+
+  - id: private_02_select_family_and_build_mix
+    tier: core
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: filter_premium_video_button.click
+      - do: select_family_button.click
+        expect:
+          - {op: equals, path: selected_audience_id, value: AUD-FAMILY}
+          - {op: equals, path: selected_market, value: suburban}
+          - {op: equals, path: current_page, value: mix}
+      - do: create_mix_button.click
+        expect:
+          - {op: equals, path: mix_count, value: 3}
+          - {op: equals, path: allocation_total, value: 100}
+
+  - id: private_03_repeated_forecast_calls_increment_service_counter
+    tier: service
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: select_urban_button.click
+      - do: create_mix_button.click
+      - do: run_forecast_button.click
+      - do: run_forecast_button.click
+        expect:
+          - {op: equals, path: forecast_status, value: forecasted}
+          - {op: equals, path: reach_forecast, value: 612000}
+          - {op: equals, path: service_call_count, value: 2}
+
+  - id: private_04_header_only_inventory_upload_stays_empty
+    tier: upload
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: go_deals_button.click
+      - do: inventory_upload_input.upload
+        input:
+          file:
+            name: header-only.csv
+            mime_type: text/csv
+            content: |
+              id,partner,channel,market,impressions,safety
+          rows: []
+        expect:
+          - {op: equals, path: inventory_count, value: 0}
+          - {op: equals, path: last_inventory_file, value: header-only.csv}
+          - {op: equals, path: deal_status, value: loaded}
+      - table: inventory_grid
+        expect_order: []
+        expect_row_count: 0
+
+  - id: private_05_three_partner_inventory_validates_as_buyer
+    tier: permission
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: go_deals_button.click
+      - do: inventory_upload_input.upload
+        input:
+          file:
+            name: three-partner.csv
+            mime_type: text/csv
+            content: |
+              id,partner,channel,market,impressions,safety
+              INV-CTV,Northstar CTV,CTV,metro,410000,clean
+              INV-SOC,CreatorGraph Social,Paid Social,digital,360000,clean
+              INV-RET,CartLoop Retail,Retail Media,shopper,280000,clean
+          rows:
+            - {id: INV-CTV, partner: Northstar CTV, channel: CTV, market: metro, impressions: 410000, safety: clean}
+            - {id: INV-SOC, partner: CreatorGraph Social, channel: Paid Social, market: digital, impressions: 360000, safety: clean}
+            - {id: INV-RET, partner: CartLoop Retail, channel: Retail Media, market: shopper, impressions: 280000, safety: clean}
+      - do: role_buyer_button.click
+      - do: buyer_validate_deals_button.click
+        expect:
+          - {op: equals, path: inventory_count, value: 3}
+          - {op: equals, path: deal_status, value: validated}
+          - {op: equals, path: brand_safety_score, value: 94}
+      - table: inventory_grid
+        expect_order: [INV-CTV, INV-SOC, INV-RET]
+
+  - id: private_06_reupload_after_validation_resets_deal_review
+    tier: upload
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: go_deals_button.click
+      - do: inventory_upload_input.upload
+        input:
+          file:
+            name: valid-first.csv
+            mime_type: text/csv
+            content: |
+              id,partner,channel,market,impressions,safety
+              INV-CTV,Northstar CTV,CTV,metro,410000,clean
+          rows:
+            - {id: INV-CTV, partner: Northstar CTV, channel: CTV, market: metro, impressions: 410000, safety: clean}
+      - do: role_buyer_button.click
+      - do: buyer_validate_deals_button.click
+      - do: inventory_upload_input.upload
+        input:
+          file:
+            name: valid-second.csv
+            mime_type: text/csv
+            content: |
+              id,partner,channel,market,impressions,safety
+              INV-SOC,CreatorGraph Social,Paid Social,digital,360000,clean
+          rows:
+            - {id: INV-SOC, partner: CreatorGraph Social, channel: Paid Social, market: digital, impressions: 360000, safety: clean}
+        expect:
+          - {op: equals, path: inventory_count, value: 1}
+          - {op: equals, path: deal_status, value: loaded}
+          - {op: equals, path: brand_safety_status, value: review}
+          - {op: equals, path: brand_safety_score, value: 0}
+
+  - id: private_07_finance_lock_persists_budget_key
+    tier: persistence
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: select_urban_button.click
+      - do: create_mix_button.click
+      - do: run_forecast_button.click
+      - do: role_finance_button.click
+      - do: finance_lock_budget_button.click
+      - browser: reload
+        expect_page: mix
+        expect:
+          - {op: equals, path: current_page, value: mix}
+          - {op: equals, path: active_role, value: finance}
+          - {op: equals, path: budget_status, value: locked}
+          - {op: equals, path: approved_budget, value: 125000}
+          - {op: equals, path: budget_key, value: FY27-AURORA-125K}
+
+  - id: private_08_strategist_cannot_export_guardrails
+    tier: permission
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: go_activate_button.click
+      - do: export_guardrails_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: guardrail_count, value: 0}
+          - {op: equals, path: denied_count, value: 1}
+          - {op: equals, path: last_action, value: unauthorized_guardrails}
+
+  - id: private_09_beacon_activation_requires_analyst_role
+    tier: permission
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: select_urban_button.click
+      - do: create_mix_button.click
+      - do: run_forecast_button.click
+      - do: go_experiments_button.click
+      - do: role_analyst_button.click
+      - do: build_holdout_button.click
+      - do: role_buyer_button.click
+      - do: activate_beacons_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: active_role, value: buyer}
+          - {op: equals, path: beacon_status, value: idle}
+          - {op: equals, path: denied_count, value: 1}
+          - {op: equals, path: last_action, value: unauthorized_analyst}
+
+  - id: private_10_luxury_audience_forecast_uses_same_mix_shell
+    tier: core
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: filter_high_intent_button.click
+      - do: select_luxury_button.click
+      - do: create_mix_button.click
+      - do: run_forecast_button.click
+        expect:
+          - {op: equals, path: selected_audience_id, value: AUD-LUX}
+          - {op: equals, path: selected_cpm, value: 31}
+          - {op: equals, path: mix_count, value: 3}
+          - {op: equals, path: forecast_status, value: forecasted}
+
+  - id: private_11_holdout_then_reload_keeps_cells_and_role
+    tier: persistence
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: select_urban_button.click
+      - do: create_mix_button.click
+      - do: run_forecast_button.click
+      - do: go_experiments_button.click
+      - do: role_analyst_button.click
+      - do: build_holdout_button.click
+      - browser: reload
+        expect_page: experiments
+        expect:
+          - {op: equals, path: active_role, value: analyst}
+          - {op: equals, path: holdout_status, value: balanced}
+          - {op: equals, path: lift_model_status, value: configured}
+          - {op: equals, path: experiment_count, value: 2}
+
+  - id: private_12_activation_guardrails_persist_without_launch
+    tier: persistence
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: go_activate_button.click
+      - do: role_buyer_button.click
+      - do: export_guardrails_button.click
+      - browser: reload
+        expect_page: activate
+        expect:
+          - {op: equals, path: active_role, value: buyer}
+          - {op: equals, path: guardrail_count, value: 3}
+          - {op: equals, path: pacing_status, value: monitoring}
+          - {op: equals, path: activation_status, value: idle}
+      - table: guardrail_grid
+        expect_order: [GRD-CPM, GRD-FREQ, GRD-PACE]
+
+  - id: private_13_director_launch_survives_reload
+    tier: journey
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: select_urban_button.click
+      - do: create_mix_button.click
+      - do: run_forecast_button.click
+      - do: role_finance_button.click
+      - do: finance_lock_budget_button.click
+      - do: go_deals_button.click
+      - do: inventory_upload_input.upload
+        input:
+          file:
+            name: private-launch.csv
+            mime_type: text/csv
+            content: |
+              id,partner,channel,market,impressions,safety
+              INV-CTV,Northstar CTV,CTV,metro,410000,clean
+          rows:
+            - {id: INV-CTV, partner: Northstar CTV, channel: CTV, market: metro, impressions: 410000, safety: clean}
+      - do: role_buyer_button.click
+      - do: buyer_validate_deals_button.click
+      - do: go_experiments_button.click
+      - do: role_analyst_button.click
+      - do: build_holdout_button.click
+      - do: activate_beacons_button.click
+      - do: go_activate_button.click
+      - do: role_buyer_button.click
+      - do: export_guardrails_button.click
+      - do: role_director_button.click
+      - do: director_launch_button.click
+      - browser: reload
+        expect_page: activate
+        expect:
+          - {op: equals, path: activation_status, value: live}
+          - {op: equals, path: readiness_score, value: 100}
+          - {op: equals, path: activation_count, value: 1}
+      - table: activation_grid
+        expect_order: [ACT-001]
+
+  - id: private_14_reset_after_activation_clears_audit_and_service_counts
+    tier: persistence
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: select_urban_button.click
+      - do: create_mix_button.click
+      - do: run_forecast_button.click
+      - do: role_finance_button.click
+      - do: finance_lock_budget_button.click
+      - do: go_deals_button.click
+      - do: inventory_upload_input.upload
+        input:
+          file:
+            name: reset-after-launch.csv
+            mime_type: text/csv
+            content: |
+              id,partner,channel,market,impressions,safety
+              INV-CTV,Northstar CTV,CTV,metro,410000,clean
+          rows:
+            - {id: INV-CTV, partner: Northstar CTV, channel: CTV, market: metro, impressions: 410000, safety: clean}
+      - do: role_buyer_button.click
+      - do: buyer_validate_deals_button.click
+      - do: go_experiments_button.click
+      - do: role_analyst_button.click
+      - do: build_holdout_button.click
+      - do: activate_beacons_button.click
+      - do: go_activate_button.click
+      - do: role_buyer_button.click
+      - do: export_guardrails_button.click
+      - do: role_director_button.click
+      - do: director_launch_button.click
+      - do: reset_button.click
+        expect:
+          - {op: equals, path: current_page, value: audiences}
+          - {op: equals, path: activation_status, value: idle}
+          - {op: equals, path: audit_count, value: 0}
+          - {op: equals, path: service_call_count, value: 0}
+
+  - id: private_15_back_navigation_from_activate_to_experiments
+    tier: persistence
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: go_deals_button.click
+      - do: go_experiments_button.click
+      - do: go_activate_button.click
+      - browser: back
+        expect_page: experiments
+        expect:
+          - {op: equals, path: current_page, value: experiments}
+      - browser: back
+        expect_page: deals
+        expect:
+          - {op: equals, path: current_page, value: deals}
+
+  - id: private_16_budget_then_deal_then_beacon_audit_order
+    tier: journey
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: select_urban_button.click
+      - do: create_mix_button.click
+      - do: run_forecast_button.click
+      - do: role_finance_button.click
+      - do: finance_lock_budget_button.click
+      - do: go_deals_button.click
+      - do: inventory_upload_input.upload
+        input:
+          file:
+            name: audit-three.csv
+            mime_type: text/csv
+            content: |
+              id,partner,channel,market,impressions,safety
+              INV-CTV,Northstar CTV,CTV,metro,410000,clean
+          rows:
+            - {id: INV-CTV, partner: Northstar CTV, channel: CTV, market: metro, impressions: 410000, safety: clean}
+      - do: role_buyer_button.click
+      - do: buyer_validate_deals_button.click
+      - do: go_experiments_button.click
+      - do: role_analyst_button.click
+      - do: build_holdout_button.click
+      - do: activate_beacons_button.click
+      - table: audit_grid
+        expect_order: [AUD-BUDGET, AUD-DEALS, AUD-BEACON]
+        expect_rows:
+          - id: AUD-BEACON
+            cells: {event: measurement_beacon, actor: analyst, status: live}
+
+  - id: private_17_select_luxury_then_reset_returns_all_audiences
+    tier: core
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: filter_high_intent_button.click
+      - do: select_luxury_button.click
+      - do: reset_button.click
+        expect:
+          - {op: equals, path: current_page, value: audiences}
+          - {op: equals, path: current_filter, value: all}
+          - {op: equals, path: selected_audience_id, value: ""}
+      - table: audience_grid
+        expect_order: [AUD-URBAN, AUD-FAMILY, AUD-GAMER, AUD-LUX, AUD-RETAIL]
+
+  - id: private_18_inventory_reload_after_validation_keeps_approval
+    tier: persistence
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: go_deals_button.click
+      - do: inventory_upload_input.upload
+        input:
+          file:
+            name: approved-inventory.csv
+            mime_type: text/csv
+            content: |
+              id,partner,channel,market,impressions,safety
+              INV-CTV,Northstar CTV,CTV,metro,410000,clean
+          rows:
+            - {id: INV-CTV, partner: Northstar CTV, channel: CTV, market: metro, impressions: 410000, safety: clean}
+      - do: role_buyer_button.click
+      - do: buyer_validate_deals_button.click
+      - browser: reload
+        expect_page: deals
+        expect:
+          - {op: equals, path: active_role, value: buyer}
+          - {op: equals, path: deal_status, value: validated}
+          - {op: equals, path: brand_safety_status, value: approved}
+          - {op: equals, path: brand_safety_score, value: 94}
+
+  - id: private_19_director_launch_blocked_without_guardrails
+    tier: validation
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: select_urban_button.click
+      - do: create_mix_button.click
+      - do: run_forecast_button.click
+      - do: role_finance_button.click
+      - do: finance_lock_budget_button.click
+      - do: go_deals_button.click
+      - do: inventory_upload_input.upload
+        input:
+          file:
+            name: no-guardrails.csv
+            mime_type: text/csv
+            content: |
+              id,partner,channel,market,impressions,safety
+              INV-CTV,Northstar CTV,CTV,metro,410000,clean
+          rows:
+            - {id: INV-CTV, partner: Northstar CTV, channel: CTV, market: metro, impressions: 410000, safety: clean}
+      - do: role_buyer_button.click
+      - do: buyer_validate_deals_button.click
+      - do: go_experiments_button.click
+      - do: role_analyst_button.click
+      - do: build_holdout_button.click
+      - do: activate_beacons_button.click
+      - do: go_activate_button.click
+      - do: role_director_button.click
+      - do: launch_preflight_button.click
+        expect:
+          - {op: equals, path: activation_status, value: blocked}
+          - {op: equals, path: activation_count, value: 0}
+          - {op: equals, path: validation_errors, value: {launch: guardrails_required}}
+          - {op: equals, path: last_action, value: launch_blocked}
+
+  - id: private_20_family_selection_survives_back_from_mix
+    tier: persistence
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: filter_premium_video_button.click
+      - do: select_family_button.click
+      - browser: back
+        expect_page: audiences
+        expect:
+          - {op: equals, path: current_page, value: audiences}
+          - {op: equals, path: selected_audience_id, value: AUD-FAMILY}
+          - {op: equals, path: current_filter, value: premium_video}

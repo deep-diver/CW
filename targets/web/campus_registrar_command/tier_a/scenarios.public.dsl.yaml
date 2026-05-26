@@ -1,0 +1,196 @@
+dsl_version: "3.0.0"
+visibility: public
+tier_weights:
+  smoke: 1
+  core: 2
+  validation: 3
+  service: 4
+  permission: 4
+  persistence: 5
+  journey: 6
+
+scenarios:
+  - id: public_01_filter_cs_catalog
+    tier: smoke
+    steps:
+      - do: reset_button.click
+      - do: filter_cs_button.click
+        expect:
+          - {op: equals, path: selected_department, value: cs}
+      - table: course_grid
+        expect_order: [CS-201]
+        expect_row_count: 1
+        expect_rows:
+          - id: CS-201
+            cells: {code: "CS 201", title: "Data Structures", department: cs}
+
+  - id: public_02_select_cs_and_add_to_plan
+    tier: core
+    steps:
+      - do: reset_button.click
+      - do: select_cs_button.click
+      - do: go_planner_button.click
+      - do: add_to_plan_button.click
+        expect:
+          - {op: equals, path: selected_course_title, value: "Data Structures"}
+          - {op: equals, path: plan_count, value: 1}
+          - {op: equals, path: enrollment_status, value: planned}
+
+  - id: public_03_student_profile_normalization
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: go_planner_button.click
+      - do: student_name_input.fill
+        input: {value: "  Lina   Torres  "}
+      - do: student_id_input.fill
+        input: {value: "  st-2048  "}
+        expect:
+          - {op: equals, path: student_name, value: "Lina Torres"}
+          - {op: equals, path: student_id, value: ST-2048}
+
+  - id: public_04_check_eligibility_service
+    tier: service
+    steps:
+      - do: reset_button.click
+      - do: select_cs_button.click
+      - do: go_planner_button.click
+      - do: check_eligibility_button.click
+        expect:
+          - {op: equals, path: eligibility_status, value: eligible}
+          - {op: equals, path: service_call_count, value: 1}
+
+  - id: public_05_enrollment_requires_eligibility
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: select_cs_button.click
+      - do: go_planner_button.click
+      - do: enroll_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: enrollment_status, value: blocked}
+          - {op: equals, path: last_action, value: enrollment_blocked}
+
+  - id: public_06_enroll_cs_creates_ledger
+    tier: journey
+    steps:
+      - do: reset_button.click
+      - do: select_cs_button.click
+      - do: go_planner_button.click
+      - do: add_to_plan_button.click
+      - do: check_eligibility_button.click
+      - do: enroll_button.click
+        expect:
+          - {op: equals, path: enrollment_status, value: enrolled}
+          - {op: equals, path: enrolled_count, value: 1}
+          - {op: equals, path: credit_total, value: 4}
+      - table: enrollment_grid
+        expect_order: [ENR-001]
+        expect_row_count: 1
+        expect_rows:
+          - id: ENR-001
+            cells: {code: "CS 201", title: "Data Structures", credits: "4", status: enrolled}
+
+  - id: public_07_advisor_override_is_role_gated
+    tier: permission
+    steps:
+      - do: reset_button.click
+      - do: select_math_button.click
+      - do: go_planner_button.click
+      - do: mark_math_review_button.click
+      - do: go_audit_button.click
+      - do: advisor_override_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: denied_count, value: 1}
+      - do: role_advisor_button.click
+      - do: advisor_override_button.click
+        expect:
+          - {op: equals, path: approval_status, value: advisor_approved}
+          - {op: equals, path: eligibility_status, value: eligible}
+
+  - id: public_08_waitlist_full_design_course
+    tier: core
+    steps:
+      - do: reset_button.click
+      - do: select_design_button.click
+      - do: go_planner_button.click
+      - do: mark_design_full_button.click
+      - do: go_audit_button.click
+      - do: join_waitlist_button.click
+        expect:
+          - {op: equals, path: enrollment_status, value: waitlisted}
+          - {op: equals, path: waitlist_count, value: 1}
+      - table: waitlist_grid
+        expect_order: [WAIT-001]
+        expect_row_count: 1
+        expect_rows:
+          - id: WAIT-001
+            cells: {code: "DES 150", title: "Studio Foundations", position: "3", status: active}
+
+  - id: public_09_reload_preserves_enrollment
+    tier: persistence
+    steps:
+      - do: reset_button.click
+      - do: select_cs_button.click
+      - do: go_planner_button.click
+      - do: check_eligibility_button.click
+      - do: enroll_button.click
+      - browser: reload
+        expect:
+          - {op: equals, path: enrollment_status, value: enrolled}
+          - {op: equals, path: enrolled_count, value: 1}
+          - {op: equals, path: credit_total, value: 4}
+
+  - id: public_10_filter_all_restores_catalog_order
+    tier: smoke
+    steps:
+      - do: reset_button.click
+      - do: filter_cs_button.click
+      - do: filter_all_button.click
+      - table: course_grid
+        expect_order: [CS-201, DES-150, HIST-110, MATH-240]
+        expect_row_count: 4
+
+  - id: public_11_select_history_sets_context
+    tier: core
+    steps:
+      - do: reset_button.click
+      - do: select_hist_button.click
+        expect:
+          - {op: equals, path: selected_course_id, value: HIST-110}
+          - {op: equals, path: selected_course_credits, value: 3}
+
+  - id: public_12_reset_clears_plan_and_credit
+    tier: validation
+    steps:
+      - do: reset_button.click
+      - do: select_cs_button.click
+      - do: go_planner_button.click
+      - do: check_eligibility_button.click
+      - do: enroll_button.click
+      - do: reset_button.click
+        expect:
+          - {op: equals, path: selected_course_id, value: ""}
+          - {op: equals, path: enrolled_count, value: 0}
+          - {op: equals, path: credit_total, value: 0}
+
+  - id: public_13_role_student_roundtrip
+    tier: permission
+    steps:
+      - do: reset_button.click
+      - do: role_advisor_button.click
+      - do: role_student_button.click
+        expect:
+          - {op: equals, path: active_role, value: student}
+          - {op: equals, path: last_action, value: role_student}
+
+  - id: public_14_advisor_role_persists_reload
+    tier: persistence
+    steps:
+      - do: reset_button.click
+      - do: role_advisor_button.click
+      - browser: reload
+        expect:
+          - {op: equals, path: active_role, value: advisor}

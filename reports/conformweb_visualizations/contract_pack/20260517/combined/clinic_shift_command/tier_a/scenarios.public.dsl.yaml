@@ -1,0 +1,128 @@
+dsl_version: "3.0.0"
+visibility: public
+tier_weights:
+  smoke: 1
+  core: 2
+  validation: 3
+  service: 4
+  permission: 4
+  persistence: 5
+  journey: 6
+
+scenarios:
+  - id: public_01_filter_urgent_queue
+    tier: smoke
+    steps:
+      - do: reset_button.click
+      - do: filter_urgent_button.click
+        expect:
+          - {op: equals, path: current_lane, value: urgent}
+          - {op: equals, path: last_action, value: filter_urgent}
+      - table: patient_queue
+        expect_order: [CVC-102, CVC-105]
+        expect_row_count: 2
+        expect_rows:
+          - id: CVC-102
+            cells:
+              name: Leo Ortiz
+              lane: urgent
+              acuity: 1
+          - id: CVC-105
+            cells:
+              name: Theo Moon
+              lane: urgent
+              acuity: 2
+
+  - id: public_02_select_leo_assign_ready_room
+    tier: core
+    steps:
+      - do: reset_button.click
+      - do: select_leo_button.click
+        expect:
+          - {op: equals, path: selected_patient_id, value: CVC-102}
+          - {op: equals, path: selected_patient_name, value: "Leo Ortiz"}
+          - {op: equals, path: selected_acuity, value: 1}
+          - {op: equals, path: current_page, value: chart}
+      - do: assign_exam1_button.click
+        expect:
+          - {op: equals, path: assigned_room_id, value: R-EXAM1}
+          - {op: equals, path: assigned_room_name, value: "Exam 1"}
+          - {op: equals, path: selected_patient_status, value: roomed}
+
+  - id: public_03_insurance_hmo_approved
+    tier: service
+    steps:
+      - do: reset_button.click
+      - do: select_leo_button.click
+      - do: insurance_code_input.fill
+        input: {value: " hmo-a "}
+        expect:
+          - {op: equals, path: insurance_code, value: HMO-A}
+      - do: verify_insurance_button.click
+        expect:
+          - {op: equals, path: insurance_status, value: approved}
+          - {op: equals, path: copay_due, value: 20}
+          - {op: equals, path: service_call_count, value: 1}
+          - {op: equals, path: insurance_call_count, value: 1}
+
+  - id: public_04_coordinator_cannot_save_vitals
+    tier: permission
+    steps:
+      - do: reset_button.click
+      - do: select_mina_button.click
+      - do: temperature_input.fill
+        input: {value: "37.8"}
+      - do: systolic_input.fill
+        input: {value: "128"}
+      - do: save_vitals_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: vitals_status, value: idle}
+          - {op: equals, path: denied_count, value: 1}
+          - {op: equals, path: last_action, value: unauthorized_clinical}
+
+  - id: public_05_clinician_records_and_discharges
+    tier: journey
+    steps:
+      - do: reset_button.click
+      - do: select_leo_button.click
+      - do: assign_exam1_button.click
+      - do: verify_insurance_button.click
+      - do: role_clinician_button.click
+      - do: temperature_input.fill
+        input: {value: "36.9"}
+      - do: systolic_input.fill
+        input: {value: "122"}
+      - do: save_vitals_button.click
+        expect:
+          - {op: equals, path: vitals_status, value: recorded}
+          - {op: equals, path: selected_patient_status, value: assessed}
+      - do: discharge_button.click
+        expect:
+          - {op: equals, path: discharge_status, value: complete}
+          - {op: equals, path: selected_patient_status, value: discharged}
+          - {op: equals, path: last_action, value: discharge_patient}
+
+  - id: public_06_clinician_creates_handoff_task
+    tier: core
+    steps:
+      - do: reset_button.click
+      - do: select_grace_button.click
+      - do: role_clinician_button.click
+      - do: chart_note_input.fill
+        input: {value: "Recheck ankle swelling after imaging."}
+        expect:
+          - {op: equals, path: chart_note, value: "Recheck ankle swelling after imaging."}
+      - do: create_handoff_button.click
+        expect:
+          - {op: equals, path: handoff_count, value: 1}
+          - {op: equals, path: last_action, value: create_handoff}
+      - do: go_rooms_button.click
+      - table: handoff_grid
+        expect_order: [H-1]
+        expect_row_count: 1
+        expect_rows:
+          - id: H-1
+            cells:
+              patient: Grace Lim
+              status: open

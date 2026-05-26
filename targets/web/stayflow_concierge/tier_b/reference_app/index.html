@@ -1,0 +1,1455 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>StayFlow Concierge Tier B</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17212f;
+      --muted: #667085;
+      --line: #d9e1ea;
+      --panel: #ffffff;
+      --canvas: #f3f6f8;
+      --nav: #122033;
+      --teal: #007d76;
+      --amber: #c98116;
+      --red: #b42318;
+      --green: #087443;
+      --blue: #175cd3;
+      --shadow: 0 16px 38px rgba(16, 24, 40, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--canvas);
+      color: var(--ink);
+      letter-spacing: 0;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+    }
+
+    .shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 236px minmax(0, 1fr);
+    }
+
+    .sidebar {
+      background: var(--nav);
+      color: #eef4ff;
+      padding: 22px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      min-height: 48px;
+    }
+
+    .brand-mark {
+      width: 36px;
+      height: 36px;
+      border-radius: 7px;
+      background:
+        linear-gradient(135deg, #25c0a2 0%, #25c0a2 45%, #f3b14d 46%, #f3b14d 100%);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+    }
+
+    .brand-title {
+      font-weight: 800;
+      font-size: 17px;
+      line-height: 1.1;
+    }
+
+    .brand-subtitle {
+      color: #a9b8cc;
+      font-size: 12px;
+      margin-top: 3px;
+    }
+
+    .nav-group {
+      display: grid;
+      gap: 8px;
+    }
+
+    .nav-button,
+    .role-button {
+      width: 100%;
+      min-height: 42px;
+      border-radius: 7px;
+      background: transparent;
+      color: #d9e6f7;
+      text-align: left;
+      padding: 0 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-button.active,
+    .role-button.active {
+      background: #edf6ff;
+      color: var(--nav);
+      font-weight: 750;
+    }
+
+    .role-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .role-button {
+      justify-content: center;
+      text-align: center;
+      min-height: 38px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .sidebar-card {
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 8px;
+      padding: 12px;
+      color: #c8d7ea;
+      font-size: 12px;
+      line-height: 1.5;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .reset-button {
+      margin-top: auto;
+      min-height: 42px;
+      border-radius: 7px;
+      color: #fff;
+      background: #9e2f1f;
+      font-weight: 750;
+    }
+
+    .main {
+      min-width: 0;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    .topbar {
+      height: 72px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      position: sticky;
+      top: 0;
+      z-index: 4;
+    }
+
+    .topbar h1 {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.2;
+    }
+
+    .topbar small {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+    }
+
+    .status-strip {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .pill {
+      min-height: 30px;
+      border-radius: 999px;
+      padding: 6px 10px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: #344054;
+      font-size: 12px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .content {
+      padding: 28px;
+      display: grid;
+      gap: 22px;
+    }
+
+    .hero {
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      display: grid;
+      grid-template-columns: minmax(0, 1.3fr) 380px;
+      overflow: hidden;
+      min-height: 220px;
+    }
+
+    .hero-copy {
+      padding: 26px;
+      display: grid;
+      gap: 18px;
+      align-content: center;
+    }
+
+    .hero-copy h2 {
+      margin: 0;
+      font-size: 30px;
+      line-height: 1.08;
+    }
+
+    .hero-copy p {
+      margin: 0;
+      color: var(--muted);
+      max-width: 720px;
+      line-height: 1.55;
+    }
+
+    .route-map {
+      border-left: 1px solid var(--line);
+      background:
+        linear-gradient(90deg, rgba(18, 32, 51, 0.03) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(18, 32, 51, 0.03) 1px, transparent 1px),
+        #f7fbff;
+      background-size: 26px 26px;
+      padding: 24px;
+      position: relative;
+      min-height: 220px;
+    }
+
+    .route-line {
+      position: absolute;
+      left: 58px;
+      right: 52px;
+      top: 108px;
+      height: 3px;
+      background: #95b7d8;
+    }
+
+    .city-pin {
+      position: absolute;
+      width: 88px;
+      min-height: 70px;
+      border-radius: 8px;
+      background: #fff;
+      border: 1px solid var(--line);
+      box-shadow: 0 10px 22px rgba(16, 24, 40, 0.12);
+      padding: 9px;
+      display: grid;
+      gap: 5px;
+      justify-items: start;
+    }
+
+    .city-pin b {
+      font-size: 13px;
+    }
+
+    .city-pin span {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .city-pin:before {
+      content: "";
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--teal);
+      border: 3px solid #ffffff;
+      box-shadow: 0 0 0 1px rgba(0, 125, 118, 0.35);
+    }
+
+    .pin-busan { left: 28px; top: 68px; }
+    .pin-seoul { left: 146px; top: 116px; }
+    .pin-kyoto { right: 24px; top: 62px; }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 360px;
+      gap: 22px;
+      align-items: start;
+    }
+
+    .page-panel,
+    .side-panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 10px 24px rgba(16, 24, 40, 0.08);
+    }
+
+    .page-panel {
+      min-height: 650px;
+      overflow: hidden;
+    }
+
+    .panel-header {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .panel-header h3 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .panel-header p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .panel-body {
+      padding: 20px;
+      display: grid;
+      gap: 20px;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .button {
+      min-height: 38px;
+      border-radius: 7px;
+      padding: 0 13px;
+      color: #fff;
+      background: var(--nav);
+      font-weight: 750;
+    }
+
+    .button.secondary {
+      color: #344054;
+      background: #fff;
+      border: 1px solid var(--line);
+    }
+
+    .button.teal {
+      background: var(--teal);
+    }
+
+    .button.amber {
+      background: var(--amber);
+    }
+
+    .button.danger {
+      background: var(--red);
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .stay-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      overflow: hidden;
+      display: grid;
+      min-height: 180px;
+    }
+
+    .stay-photo {
+      height: 72px;
+      background:
+        linear-gradient(135deg, rgba(0, 125, 118, 0.88), rgba(23, 92, 211, 0.72)),
+        repeating-linear-gradient(45deg, transparent 0 10px, rgba(255, 255, 255, 0.12) 10px 20px);
+    }
+
+    .stay-card:nth-child(2) .stay-photo {
+      background:
+        linear-gradient(135deg, rgba(23, 92, 211, 0.84), rgba(201, 129, 22, 0.72)),
+        repeating-linear-gradient(90deg, transparent 0 12px, rgba(255, 255, 255, 0.12) 12px 24px);
+    }
+
+    .stay-card:nth-child(3) .stay-photo {
+      background:
+        linear-gradient(135deg, rgba(201, 129, 22, 0.86), rgba(0, 125, 118, 0.72)),
+        repeating-linear-gradient(135deg, transparent 0 9px, rgba(255, 255, 255, 0.14) 9px 18px);
+    }
+
+    .stay-meta {
+      padding: 13px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .stay-meta h4 {
+      margin: 0;
+      font-size: 14px;
+    }
+
+    .stay-meta span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .data-table th,
+    .data-table td {
+      border-bottom: 1px solid var(--line);
+      padding: 11px 12px;
+      text-align: left;
+      font-size: 13px;
+      vertical-align: top;
+    }
+
+    .data-table th {
+      background: #f8fafc;
+      color: #475467;
+      font-weight: 750;
+    }
+
+    .data-table tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .forms {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .field label {
+      font-weight: 750;
+      font-size: 12px;
+      color: #475467;
+    }
+
+    .field input {
+      min-height: 42px;
+      border-radius: 7px;
+      border: 1px solid var(--line);
+      padding: 0 12px;
+      color: var(--ink);
+      background: #fff;
+    }
+
+    .upload-box {
+      border: 1px dashed #98a2b3;
+      border-radius: 8px;
+      padding: 18px;
+      background: #fbfdff;
+      display: grid;
+      gap: 10px;
+    }
+
+    .upload-box input {
+      border: 0;
+      padding: 0;
+      min-height: 28px;
+    }
+
+    .side-panel {
+      position: sticky;
+      top: 94px;
+      overflow: hidden;
+    }
+
+    .side-section {
+      padding: 17px;
+      border-bottom: 1px solid var(--line);
+      display: grid;
+      gap: 12px;
+    }
+
+    .side-section:last-child {
+      border-bottom: 0;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .metric {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+      background: #fbfdff;
+    }
+
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      margin-bottom: 5px;
+    }
+
+    .metric b {
+      font-size: 18px;
+    }
+
+    .quote-total {
+      border-radius: 8px;
+      background: var(--nav);
+      color: #fff;
+      padding: 16px;
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .quote-total span {
+      color: #b8c7da;
+      font-size: 12px;
+    }
+
+    .quote-total b {
+      font-size: 28px;
+    }
+
+    .timeline {
+      display: grid;
+      gap: 9px;
+    }
+
+    .timeline-item {
+      display: grid;
+      grid-template-columns: 24px minmax(0, 1fr) auto;
+      gap: 9px;
+      align-items: center;
+      font-size: 13px;
+      color: #475467;
+    }
+
+    .dot {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #e6eef7;
+      display: grid;
+      place-items: center;
+      color: var(--nav);
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .dot.done {
+      background: #d1fadf;
+      color: var(--green);
+    }
+
+    .error-box {
+      border: 1px solid #fecdca;
+      color: var(--red);
+      background: #fff5f5;
+      border-radius: 8px;
+      padding: 11px 12px;
+      font-size: 13px;
+    }
+
+    .success-box {
+      border: 1px solid #abefc6;
+      color: var(--green);
+      background: #f6fef9;
+      border-radius: 8px;
+      padding: 11px 12px;
+      font-size: 13px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 1180px) {
+      .shell {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: relative;
+        height: auto;
+      }
+
+      .hero,
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+
+      .route-map,
+      .side-panel {
+        position: relative;
+        top: auto;
+      }
+
+      .cards,
+      .forms {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark"></div>
+        <div>
+          <div class="brand-title">StayFlow</div>
+          <div class="brand-subtitle">Concierge Desk</div>
+        </div>
+      </div>
+      <div class="nav-group">
+        <button class="nav-button" data-testid="go-builder" type="button">Builder <span>01</span></button>
+        <button class="nav-button" data-testid="go-travelers" type="button">Travelers <span>02</span></button>
+        <button class="nav-button" data-testid="go-quote" type="button">Quote <span>03</span></button>
+        <button class="nav-button" data-testid="go-ops" type="button">Ops <span>04</span></button>
+      </div>
+      <div>
+        <div class="brand-subtitle">Session role</div>
+        <div class="role-grid" style="margin-top:8px">
+          <button class="role-button" data-testid="role-guest" type="button">Guest</button>
+          <button class="role-button" data-testid="role-agent" type="button">Agent</button>
+        </div>
+      </div>
+      <div class="sidebar-card">
+        Tier B adds multi-city route ordering, per-leg add-ons, live quote and promo services, manifest upload, role-gated checklist, and persistence checks.
+      </div>
+      <button class="reset-button" data-testid="reset" type="button">Reset workspace</button>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <h1>Multi-city concierge workspace</h1>
+          <small id="page-subtitle">Build a staged itinerary across Busan, Seoul, and Kyoto.</small>
+        </div>
+        <div class="status-strip">
+          <span class="pill" id="role-pill">Role guest</span>
+          <span class="pill" id="route-pill">Route none</span>
+          <span class="pill" id="status-pill">Status idle</span>
+          <span class="pill" id="quote-pill">Quote idle</span>
+        </div>
+      </header>
+
+      <section class="content">
+        <section class="hero">
+          <div class="hero-copy">
+            <div>
+              <h2>Concierge-grade itinerary control for premium multi-stop trips.</h2>
+              <p>Tier B exercises ordered legs, pricing cascades, service-backed quote IDs, promo validation, traveler manifest intake, browser persistence, and agent-only release controls.</p>
+            </div>
+            <div class="toolbar">
+              <button class="button secondary" data-testid="filter-all" type="button">All stays</button>
+              <button class="button secondary" data-testid="filter-busan" type="button">Busan</button>
+              <button class="button secondary" data-testid="filter-seoul" type="button">Seoul</button>
+            </div>
+          </div>
+          <div class="route-map" aria-hidden="true">
+            <div class="route-line"></div>
+            <div class="city-pin pin-busan"><b>Busan</b><span>Harbor capsule</span></div>
+            <div class="city-pin pin-seoul"><b>Seoul</b><span>Han River loft</span></div>
+            <div class="city-pin pin-kyoto"><b>Kyoto</b><span>Machiya garden</span></div>
+          </div>
+        </section>
+
+        <section class="workspace">
+          <section class="page-panel">
+            <div class="page-panel-view" id="builder-page">
+              <div class="panel-header">
+                <div>
+                  <h3>Itinerary Builder</h3>
+                  <p>Catalog filters and ordered route assembly.</p>
+                </div>
+                <div class="toolbar">
+                  <button class="button teal" data-testid="add-busan-leg" type="button">Add Busan</button>
+                  <button class="button teal" data-testid="add-seoul-leg" type="button">Add Seoul</button>
+                  <button class="button teal" data-testid="add-kyoto-leg" type="button">Add Kyoto</button>
+                  <button class="button danger" data-testid="remove-seoul-leg" type="button">Remove Seoul</button>
+                </div>
+              </div>
+              <div class="panel-body">
+                <div class="cards" id="stay-cards"></div>
+                <table class="data-table" data-testid="stay-grid">
+                  <thead>
+                    <tr>
+                      <th>Stay</th>
+                      <th>City</th>
+                      <th>Nights</th>
+                      <th>Base</th>
+                    </tr>
+                  </thead>
+                  <tbody id="stay-grid-body"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="page-panel-view hidden" id="travelers-page">
+              <div class="panel-header">
+                <div>
+                  <h3>Traveler Manifest</h3>
+                  <p>Primary guest, arrival details, and CSV traveler intake.</p>
+                </div>
+                <button class="button teal" data-testid="validate-trip" type="button">Validate trip</button>
+              </div>
+              <div class="panel-body">
+                <div class="forms">
+                  <div class="field">
+                    <label for="primary-name">Primary guest</label>
+                    <input id="primary-name" data-testid="primary-guest-name" placeholder="Guest name">
+                  </div>
+                  <div class="field">
+                    <label for="primary-email">Email</label>
+                    <input id="primary-email" data-testid="primary-guest-email" placeholder="guest@example.com">
+                  </div>
+                  <div class="field">
+                    <label for="arrival-time">Arrival note</label>
+                    <input id="arrival-time" data-testid="arrival-time" placeholder="18:30 KTX 17">
+                  </div>
+                </div>
+                <div id="error-region"></div>
+                <div class="upload-box">
+                  <strong>Upload traveler manifest CSV</strong>
+                  <span class="brand-subtitle">Required columns: id, name, type, meal, mobility</span>
+                  <input data-testid="traveler-upload" type="file" accept=".csv,text/csv">
+                </div>
+                <table class="data-table" data-testid="traveler-grid">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Type</th>
+                      <th>Meal</th>
+                      <th>Mobility</th>
+                    </tr>
+                  </thead>
+                  <tbody id="traveler-grid-body"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="page-panel-view hidden" id="quote-page">
+              <div class="panel-header">
+                <div>
+                  <h3>Live Quote</h3>
+                  <p>Deterministic quote and promo service checks.</p>
+                </div>
+                <div class="toolbar">
+                  <button class="button teal" data-testid="request-quote" type="button">Request quote</button>
+                  <button class="button amber" data-testid="hold-booking" type="button">Hold booking</button>
+                  <button class="button danger" data-testid="expire-quote" type="button">Expire quote</button>
+                </div>
+              </div>
+              <div class="panel-body">
+                <div class="forms">
+                  <div class="field">
+                    <label for="promo-code">Promo code</label>
+                    <input id="promo-code" data-testid="promo-code" placeholder="MULTI120 or GRAND200">
+                  </div>
+                  <div class="field" style="align-self:end">
+                    <button class="button amber" data-testid="apply-promo" type="button">Apply promo</button>
+                  </div>
+                </div>
+                <div class="quote-total">
+                  <div>
+                    <span>Total due</span>
+                    <b id="quote-total">$0</b>
+                  </div>
+                  <div style="text-align:right">
+                    <span>Quote</span>
+                    <b id="quote-id" style="font-size:18px">none</b>
+                  </div>
+                </div>
+                <div class="metric-grid">
+                  <div class="metric"><span>Subtotal</span><b id="metric-subtotal">0</b></div>
+                  <div class="metric"><span>Add-ons</span><b id="metric-addons">0</b></div>
+                  <div class="metric"><span>Service fee</span><b id="metric-fee">0</b></div>
+                  <div class="metric"><span>Promo credit</span><b id="metric-promo">0</b></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="page-panel-view hidden" id="ops-page">
+              <div class="panel-header">
+                <div>
+                  <h3>Release Command</h3>
+                  <p>Agent-only checklist and final confirmation controls.</p>
+                </div>
+                <button class="button teal" data-testid="confirm-booking" type="button">Confirm booking</button>
+              </div>
+              <div class="panel-body">
+                <div class="toolbar">
+                  <button class="button secondary" data-testid="check-itinerary" type="button">Check itinerary</button>
+                  <button class="button secondary" data-testid="check-manifest" type="button">Check manifest</button>
+                  <button class="button secondary" data-testid="check-deposit" type="button">Check deposit</button>
+                </div>
+                <div class="timeline" id="ops-timeline"></div>
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Audit</th>
+                      <th>Role</th>
+                      <th>Route</th>
+                    </tr>
+                  </thead>
+                  <tbody id="audit-body"></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <aside class="side-panel">
+            <div class="side-section">
+              <div class="quote-total">
+                <div>
+                  <span>Workspace total</span>
+                  <b id="side-total">$0</b>
+                </div>
+                <div style="text-align:right">
+                  <span>Legs</span>
+                  <b id="side-legs" style="font-size:18px">0</b>
+                </div>
+              </div>
+              <div class="timeline" id="route-timeline"></div>
+            </div>
+            <div class="side-section">
+              <strong>Concierge add-ons</strong>
+              <div class="toolbar">
+                <button class="button secondary" data-testid="add-busan-breakfast" type="button">Busan breakfast</button>
+                <button class="button secondary" data-testid="add-seoul-pickup" type="button">Seoul pickup</button>
+                <button class="button secondary" data-testid="add-kyoto-flexible" type="button">Kyoto flexible</button>
+              </div>
+            </div>
+            <div class="side-section">
+              <strong>Itinerary ledger</strong>
+              <table class="data-table" data-testid="itinerary-grid">
+                <thead>
+                  <tr>
+                    <th>City</th>
+                    <th>Stay</th>
+                    <th>Add-on</th>
+                    <th>Total</th>
+                  </tr>
+                </thead>
+                <tbody id="itinerary-grid-body"></tbody>
+              </table>
+            </div>
+          </aside>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "stayflow-concierge-tier-b-state";
+    const catalog = [
+      { id: "ST-BUSAN-HARBOR", city: "Busan", name: "Harbor Capsule Hotel", nights: 2, base: 320, available: true },
+      { id: "ST-SEOUL-LOFT", city: "Seoul", name: "Han River Loft", nights: 2, base: 480, available: true },
+      { id: "ST-KYOTO-MACHIYA", city: "Kyoto", name: "Machiya Garden House", nights: 2, base: 620, available: true }
+    ];
+
+    function freshState() {
+      return {
+        current_page: "builder",
+        active_role: "guest",
+        stay_catalog: clone(catalog),
+        visible_stays: clone(catalog),
+        current_city_filter: "all",
+        itinerary_legs: [],
+        leg_count: 0,
+        trip_route_key: "",
+        trip_subtotal: 0,
+        addon_total: 0,
+        service_fee: 0,
+        promo_code: "",
+        promo_credit: 0,
+        total_due: 0,
+        promo_status: "idle",
+        quote_status: "idle",
+        quote_id: "",
+        quote_risk: "none",
+        quote_call_count: 0,
+        promo_call_count: 0,
+        service_call_count: 0,
+        primary_guest_name: "",
+        primary_guest_email: "",
+        arrival_time: "",
+        travelers: [],
+        traveler_count: 0,
+        child_count: 0,
+        mobility_count: 0,
+        last_file: "",
+        field_errors: {},
+        error_count: 0,
+        booking_status: "idle",
+        itinerary_checked: false,
+        manifest_checked: false,
+        deposit_checked: false,
+        checklist_completed_count: 0,
+        booking_audit: [],
+        audit_count: 0,
+        denied_count: 0,
+        last_action: "ready",
+        __services: { calls: [] }
+      };
+    }
+
+    let state = loadState();
+    window.__DETOX_STATE__ = state;
+
+    function clone(value) {
+      return JSON.parse(JSON.stringify(value));
+    }
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return freshState();
+        return { ...freshState(), ...JSON.parse(raw), __services: { calls: [] } };
+      } catch {
+        return freshState();
+      }
+    }
+
+    function persist() {
+      const toSave = { ...state };
+      delete toSave.__services;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+    }
+
+    function setPage(page) {
+      state.current_page = page;
+      state.last_action = `nav_${page}`;
+      if (location.hash !== `#/${page}`) {
+        location.hash = `/${page}`;
+      }
+      persist();
+      render();
+    }
+
+    function syncPageFromHash() {
+      const page = (location.hash || "#/builder").replace("#/", "");
+      if (["builder", "travelers", "quote", "ops"].includes(page)) {
+        state.current_page = page;
+      } else {
+        state.current_page = "builder";
+        location.hash = "/builder";
+      }
+      persist();
+      render();
+    }
+
+    function recompute() {
+      state.leg_count = state.itinerary_legs.length;
+      state.trip_subtotal = state.itinerary_legs.reduce((sum, leg) => sum + Number(leg.base || 0), 0);
+      state.addon_total = state.itinerary_legs.reduce((sum, leg) => sum + Number(leg.addon || 0), 0);
+      if (state.trip_subtotal >= 1100) state.service_fee = 112;
+      else if (state.trip_subtotal >= 700) state.service_fee = 78;
+      else if (state.trip_subtotal >= 600) state.service_fee = 64;
+      else if (state.trip_subtotal > 0) state.service_fee = 44;
+      else state.service_fee = 0;
+      state.total_due = state.trip_subtotal + state.addon_total + state.service_fee - state.promo_credit;
+      state.traveler_count = state.travelers.length;
+      state.child_count = state.travelers.filter((row) => row.type === "child").length;
+      state.mobility_count = state.travelers.filter((row) => row.mobility === "yes").length;
+      state.error_count = Object.keys(state.field_errors || {}).length;
+      state.audit_count = state.booking_audit.length;
+    }
+
+    function deriveRouteKey() {
+      return state.itinerary_legs.map((leg) => leg.city.toUpperCase()).join("_");
+    }
+
+    function resetPromoAndQuoteForRouteChange() {
+      state.promo_credit = 0;
+      state.promo_status = "idle";
+      state.quote_status = "draft_changed";
+      state.booking_status = "drafting";
+    }
+
+    function saveRender() {
+      recompute();
+      state.__services = { calls: [] };
+      window.__DETOX_STATE__ = state;
+      persist();
+      render();
+    }
+
+    function filterStays(city) {
+      state.current_city_filter = city;
+      const filtered = state.stay_catalog.filter((stay) => stay.available && (city === "all" || stay.city === city));
+      state.visible_stays = filtered.sort((a, b) => a.base - b.base);
+      state.last_action = city === "all" ? "filter_all" : `filter_${city.toLowerCase()}`;
+      saveRender();
+    }
+
+    function addBusanLeg() {
+      if (state.leg_count !== 0) return;
+      state.itinerary_legs.push({
+        id: "LEG-BUSAN", city: "Busan", stay: "Harbor Capsule Hotel", nights: 2,
+        base: 320, addon: 0, leg_total: 320, breakfast: false, pickup: false, flexible: false
+      });
+      state.trip_route_key = "BUSAN";
+      resetPromoAndQuoteForRouteChange();
+      state.last_action = "add_busan_leg";
+      saveRender();
+    }
+
+    function addSeoulLeg() {
+      if (state.trip_route_key !== "BUSAN") return;
+      state.itinerary_legs.push({
+        id: "LEG-SEOUL", city: "Seoul", stay: "Han River Loft", nights: 2,
+        base: 480, addon: 0, leg_total: 480, breakfast: false, pickup: false, flexible: false
+      });
+      state.trip_route_key = "BUSAN_SEOUL";
+      resetPromoAndQuoteForRouteChange();
+      state.last_action = "add_seoul_leg";
+      saveRender();
+    }
+
+    function addKyotoLeg() {
+      if (state.trip_route_key !== "BUSAN_SEOUL") return;
+      state.itinerary_legs.push({
+        id: "LEG-KYOTO", city: "Kyoto", stay: "Machiya Garden House", nights: 2,
+        base: 620, addon: 0, leg_total: 620, breakfast: false, pickup: false, flexible: false
+      });
+      state.trip_route_key = "BUSAN_SEOUL_KYOTO";
+      resetPromoAndQuoteForRouteChange();
+      state.last_action = "add_kyoto_leg";
+      saveRender();
+    }
+
+    function removeSeoulLeg() {
+      if (state.trip_route_key !== "BUSAN_SEOUL_KYOTO") return;
+      const index = state.itinerary_legs.findIndex((leg) => leg.id === "LEG-SEOUL");
+      if (index >= 0) state.itinerary_legs.splice(index, 1);
+      state.trip_route_key = "BUSAN_KYOTO";
+      resetPromoAndQuoteForRouteChange();
+      state.last_action = "remove_seoul_leg";
+      saveRender();
+    }
+
+    function updateLeg(id, updates) {
+      const leg = state.itinerary_legs.find((item) => item.id === id);
+      if (!leg) return;
+      Object.assign(leg, updates);
+      state.quote_status = "draft_changed";
+      saveRender();
+    }
+
+    function addBusanBreakfast() {
+      if (state.trip_route_key !== "BUSAN_SEOUL") return;
+      updateLeg("LEG-BUSAN", { breakfast: true, addon: 42, leg_total: 362 });
+      state.last_action = "add_busan_breakfast";
+      saveRender();
+    }
+
+    function addSeoulPickup() {
+      if (state.trip_route_key !== "BUSAN_SEOUL") return;
+      updateLeg("LEG-SEOUL", { pickup: true, addon: 55, leg_total: 535 });
+      state.last_action = "add_seoul_pickup";
+      saveRender();
+    }
+
+    function addKyotoFlexible() {
+      if (state.trip_route_key !== "BUSAN_SEOUL_KYOTO") return;
+      updateLeg("LEG-KYOTO", { flexible: true, addon: 70, leg_total: 690 });
+      state.last_action = "add_kyoto_flexible";
+      saveRender();
+    }
+
+    function localQuote(route) {
+      if (route === "BUSAN") return { quote_id: "Q-B-320", status: "ready", risk: "simple" };
+      if (route === "BUSAN_SEOUL") return { quote_id: "Q-BS-884", status: "ready", risk: "balanced" };
+      if (route === "BUSAN_SEOUL_KYOTO") return { quote_id: "Q-BSK-991", status: "ready", risk: "complex" };
+      return { quote_id: "", status: "rejected", risk: "rejected" };
+    }
+
+    function localPromo(code, route) {
+      if (code === "MULTI120" && route === "BUSAN_SEOUL") return { valid: true, credit: 120, status: "applied" };
+      if (code === "GRAND200" && route === "BUSAN_SEOUL_KYOTO") return { valid: true, credit: 200, status: "applied" };
+      return { valid: false, credit: 0, status: "rejected" };
+    }
+
+    function requestQuote() {
+      if (state.leg_count <= 0) return;
+      fetch(`/api/tier-b-quote?route=${encodeURIComponent(state.trip_route_key)}`).catch(() => {});
+      const quote = localQuote(state.trip_route_key);
+      state.service_call_count += 1;
+      state.quote_call_count += 1;
+      state.quote_status = quote.status;
+      state.quote_id = quote.quote_id;
+      state.quote_risk = quote.risk;
+      state.booking_status = "quoted";
+      state.last_action = "request_quote";
+      saveRender();
+    }
+
+    function applyPromo() {
+      if (state.quote_status !== "ready" || !state.promo_code) return;
+      fetch(`/api/tier-b-promo?code=${encodeURIComponent(state.promo_code)}&route=${encodeURIComponent(state.trip_route_key)}`).catch(() => {});
+      const promo = localPromo(state.promo_code, state.trip_route_key);
+      state.service_call_count += 1;
+      state.promo_call_count += 1;
+      state.promo_credit = promo.credit;
+      state.promo_status = promo.status;
+      state.last_action = "apply_promo";
+      saveRender();
+    }
+
+    function parseCsv(text) {
+      const lines = text.trim().split(/\r?\n/).filter(Boolean);
+      if (!lines.length) return [];
+      const headers = lines[0].split(",").map((header) => header.trim());
+      return lines.slice(1).map((line) => {
+        const cells = line.split(",").map((cell) => cell.trim());
+        const row = {};
+        headers.forEach((header, index) => {
+          row[header] = cells[index] || "";
+        });
+        return row;
+      });
+    }
+
+    function removeErrors(fields) {
+      const next = { ...(state.field_errors || {}) };
+      fields.forEach((field) => delete next[field]);
+      state.field_errors = next;
+      recompute();
+    }
+
+    function validateTrip() {
+      if (!state.arrival_time) {
+        state.field_errors = { ...(state.field_errors || {}), arrival_time: "Arrival time required" };
+        state.booking_status = "validation_failed";
+        state.last_action = "reject_arrival_time";
+        saveRender();
+        return;
+      }
+      if (!state.primary_guest_name || !state.primary_guest_email || state.traveler_count <= 0 || state.leg_count <= 0) {
+        state.field_errors = { ...(state.field_errors || {}), form: "Trip, guest, and manifest are required" };
+        state.booking_status = "validation_failed";
+        state.last_action = "reject_form";
+        saveRender();
+        return;
+      }
+      state.field_errors = {};
+      state.booking_status = "guest_validated";
+      state.last_action = "validate_trip";
+      saveRender();
+    }
+
+    function holdBooking() {
+      if (state.booking_status !== "guest_validated" || state.quote_status !== "ready") return;
+      state.booking_status = "held";
+      state.booking_audit.push({
+        id: state.booking_audit.length + 1,
+        event: "hold",
+        role: state.active_role,
+        route: state.trip_route_key
+      });
+      state.last_action = "hold_booking";
+      saveRender();
+    }
+
+    function checkItem(field, actionName, deniedAction) {
+      if (state.active_role !== "agent") {
+        state.denied_count += 1;
+        state.last_action = deniedAction;
+        saveRender();
+        return;
+      }
+      if (state[field] === false) {
+        state[field] = true;
+        state.checklist_completed_count += 1;
+        state.last_action = actionName;
+        saveRender();
+      }
+    }
+
+    function confirmBooking() {
+      if (state.active_role !== "agent") {
+        state.denied_count += 1;
+        state.last_action = "deny_confirm_booking";
+        saveRender();
+        return;
+      }
+      if (state.booking_status !== "held" || state.checklist_completed_count !== 3) return;
+      state.booking_status = "confirmed";
+      state.booking_audit.push({
+        id: state.booking_audit.length + 1,
+        event: "confirm",
+        role: state.active_role,
+        route: state.trip_route_key
+      });
+      state.last_action = "confirm_booking";
+      saveRender();
+    }
+
+    function expireQuote() {
+      state.quote_status = "expired";
+      state.booking_status = "quote_expired";
+      state.promo_credit = 0;
+      state.promo_status = "idle";
+      state.last_action = "expire_quote";
+      saveRender();
+    }
+
+    function resetWorkspace() {
+      localStorage.removeItem(STORAGE_KEY);
+      state = freshState();
+      state.last_action = "reset";
+      window.__DETOX_STATE__ = state;
+      if (location.hash !== "#/builder") {
+        location.hash = "/builder";
+      }
+      persist();
+      render();
+    }
+
+    function money(value) {
+      return `$${Number(value || 0).toLocaleString("en-US")}`;
+    }
+
+    function addonLabel(leg) {
+      const labels = [];
+      if (leg.breakfast) labels.push("42");
+      if (leg.pickup) labels.push("55");
+      if (leg.flexible) labels.push("70");
+      return labels.length ? labels.join("+") : "0";
+    }
+
+    function renderRows(root, rows) {
+      root.innerHTML = rows.join("");
+    }
+
+    function render() {
+      recompute();
+      window.__DETOX_STATE__ = state;
+      document.querySelectorAll(".page-panel-view").forEach((panel) => panel.classList.add("hidden"));
+      document.getElementById(`${state.current_page}-page`).classList.remove("hidden");
+      document.querySelectorAll(".nav-button").forEach((button) => button.classList.toggle("active", button.dataset.testid === `go-${state.current_page}`));
+      document.querySelectorAll(".role-button").forEach((button) => button.classList.toggle("active", button.dataset.testid === `role-${state.active_role}`));
+
+      const subtitle = {
+        builder: "Build a staged itinerary across Busan, Seoul, and Kyoto.",
+        travelers: "Capture guests, arrival notes, and special assistance needs.",
+        quote: "Request deterministic quote IDs and validate route-bound promo codes.",
+        ops: "Switch to agent mode, complete checks, and release the booking."
+      };
+      document.getElementById("page-subtitle").textContent = subtitle[state.current_page];
+      document.getElementById("role-pill").textContent = `Role ${state.active_role}`;
+      document.getElementById("route-pill").textContent = `Route ${state.trip_route_key || "none"}`;
+      document.getElementById("status-pill").textContent = `Status ${state.booking_status}`;
+      document.getElementById("quote-pill").textContent = `Quote ${state.quote_status}`;
+
+      const cards = state.visible_stays.map((stay) => `
+        <article class="stay-card">
+          <div class="stay-photo"></div>
+          <div class="stay-meta">
+            <h4>${stay.name}</h4>
+            <span>${stay.city} · ${stay.nights} nights</span>
+            <strong>${money(stay.base)}</strong>
+          </div>
+        </article>
+      `);
+      renderRows(document.getElementById("stay-cards"), cards);
+
+      renderRows(document.getElementById("stay-grid-body"), state.visible_stays.map((stay) => `
+        <tr data-testid="stay-row" data-stay-id="${stay.id}">
+          <td data-col="name">${stay.name}</td>
+          <td data-col="city">${stay.city}</td>
+          <td data-col="nights">${stay.nights}</td>
+          <td data-col="base">${stay.base}</td>
+        </tr>
+      `));
+
+      renderRows(document.getElementById("itinerary-grid-body"), state.itinerary_legs.map((leg) => `
+        <tr data-testid="itinerary-row" data-leg-id="${leg.id}">
+          <td data-col="city">${leg.city}</td>
+          <td data-col="stay">${leg.stay}</td>
+          <td data-col="addon">${leg.addon}</td>
+          <td data-col="leg_total">${leg.leg_total}</td>
+        </tr>
+      `));
+
+      renderRows(document.getElementById("traveler-grid-body"), state.travelers.map((traveler) => `
+        <tr data-testid="traveler-row" data-traveler-id="${traveler.id}">
+          <td data-col="name">${traveler.name}</td>
+          <td data-col="type">${traveler.type}</td>
+          <td data-col="meal">${traveler.meal}</td>
+          <td data-col="mobility">${traveler.mobility}</td>
+        </tr>
+      `));
+
+      document.getElementById("primary-name").value = state.primary_guest_name;
+      document.getElementById("primary-email").value = state.primary_guest_email;
+      document.getElementById("arrival-time").value = state.arrival_time;
+      document.getElementById("promo-code").value = state.promo_code;
+
+      const errorRegion = document.getElementById("error-region");
+      if (state.error_count > 0) {
+        errorRegion.innerHTML = `<div class="error-box">${Object.values(state.field_errors).join(" · ")}</div>`;
+      } else if (state.booking_status === "guest_validated") {
+        errorRegion.innerHTML = `<div class="success-box">Traveler and arrival details are validated.</div>`;
+      } else {
+        errorRegion.innerHTML = "";
+      }
+
+      document.getElementById("quote-total").textContent = money(state.total_due);
+      document.getElementById("quote-id").textContent = state.quote_id || "none";
+      document.getElementById("metric-subtotal").textContent = state.trip_subtotal;
+      document.getElementById("metric-addons").textContent = state.addon_total;
+      document.getElementById("metric-fee").textContent = state.service_fee;
+      document.getElementById("metric-promo").textContent = state.promo_credit;
+      document.getElementById("side-total").textContent = money(state.total_due);
+      document.getElementById("side-legs").textContent = String(state.leg_count);
+
+      const routeItems = state.itinerary_legs.length
+        ? state.itinerary_legs.map((leg, index) => `
+            <div class="timeline-item">
+              <span class="dot done">${index + 1}</span>
+              <span>${leg.city} · ${leg.stay}</span>
+              <strong>${money(leg.leg_total)}</strong>
+            </div>
+          `)
+        : [`<div class="timeline-item"><span class="dot">0</span><span>No legs selected</span><strong>${money(0)}</strong></div>`];
+      renderRows(document.getElementById("route-timeline"), routeItems);
+
+      const ops = [
+        ["itinerary_checked", "Itinerary reviewed"],
+        ["manifest_checked", "Manifest reviewed"],
+        ["deposit_checked", "Deposit verified"]
+      ].map(([field, label], index) => `
+        <div class="timeline-item">
+          <span class="dot ${state[field] ? "done" : ""}">${index + 1}</span>
+          <span>${label}</span>
+          <strong>${state[field] ? "done" : "open"}</strong>
+        </div>
+      `);
+      renderRows(document.getElementById("ops-timeline"), ops);
+
+      renderRows(document.getElementById("audit-body"), state.booking_audit.map((item) => `
+        <tr>
+          <td>${item.event}</td>
+          <td>${item.role}</td>
+          <td>${item.route}</td>
+        </tr>
+      `));
+    }
+
+    document.querySelector('[data-testid="reset"]').addEventListener("click", resetWorkspace);
+    document.querySelector('[data-testid="go-builder"]').addEventListener("click", () => setPage("builder"));
+    document.querySelector('[data-testid="go-travelers"]').addEventListener("click", () => setPage("travelers"));
+    document.querySelector('[data-testid="go-quote"]').addEventListener("click", () => setPage("quote"));
+    document.querySelector('[data-testid="go-ops"]').addEventListener("click", () => setPage("ops"));
+    document.querySelector('[data-testid="role-guest"]').addEventListener("click", () => { state.active_role = "guest"; state.last_action = "role_guest"; saveRender(); });
+    document.querySelector('[data-testid="role-agent"]').addEventListener("click", () => { state.active_role = "agent"; state.last_action = "role_agent"; saveRender(); });
+    document.querySelector('[data-testid="filter-all"]').addEventListener("click", () => filterStays("all"));
+    document.querySelector('[data-testid="filter-busan"]').addEventListener("click", () => filterStays("Busan"));
+    document.querySelector('[data-testid="filter-seoul"]').addEventListener("click", () => filterStays("Seoul"));
+    document.querySelector('[data-testid="add-busan-leg"]').addEventListener("click", addBusanLeg);
+    document.querySelector('[data-testid="add-seoul-leg"]').addEventListener("click", addSeoulLeg);
+    document.querySelector('[data-testid="add-kyoto-leg"]').addEventListener("click", addKyotoLeg);
+    document.querySelector('[data-testid="remove-seoul-leg"]').addEventListener("click", removeSeoulLeg);
+    document.querySelector('[data-testid="add-busan-breakfast"]').addEventListener("click", addBusanBreakfast);
+    document.querySelector('[data-testid="add-seoul-pickup"]').addEventListener("click", addSeoulPickup);
+    document.querySelector('[data-testid="add-kyoto-flexible"]').addEventListener("click", addKyotoFlexible);
+    document.querySelector('[data-testid="request-quote"]').addEventListener("click", requestQuote);
+    document.querySelector('[data-testid="apply-promo"]').addEventListener("click", applyPromo);
+    document.querySelector('[data-testid="expire-quote"]').addEventListener("click", expireQuote);
+    document.querySelector('[data-testid="validate-trip"]').addEventListener("click", validateTrip);
+    document.querySelector('[data-testid="hold-booking"]').addEventListener("click", holdBooking);
+    document.querySelector('[data-testid="check-itinerary"]').addEventListener("click", () => checkItem("itinerary_checked", "check_itinerary", "deny_check_itinerary"));
+    document.querySelector('[data-testid="check-manifest"]').addEventListener("click", () => checkItem("manifest_checked", "check_manifest", "deny_check_manifest"));
+    document.querySelector('[data-testid="check-deposit"]').addEventListener("click", () => checkItem("deposit_checked", "check_deposit", "deny_check_deposit"));
+    document.querySelector('[data-testid="confirm-booking"]').addEventListener("click", confirmBooking);
+
+    document.querySelector('[data-testid="promo-code"]').addEventListener("input", (event) => {
+      state.promo_code = event.target.value.trim().toUpperCase();
+      state.last_action = "edit_promo";
+      saveRender();
+    });
+    document.querySelector('[data-testid="primary-guest-name"]').addEventListener("input", (event) => {
+      state.primary_guest_name = event.target.value;
+      removeErrors(["name", "form"]);
+      state.last_action = "edit_primary_guest_name";
+      saveRender();
+    });
+    document.querySelector('[data-testid="primary-guest-email"]').addEventListener("input", (event) => {
+      state.primary_guest_email = event.target.value.trim().toLowerCase();
+      removeErrors(["email", "form"]);
+      state.last_action = "edit_primary_guest_email";
+      saveRender();
+    });
+    document.querySelector('[data-testid="arrival-time"]').addEventListener("input", (event) => {
+      state.arrival_time = event.target.value.trim().replace(/\s+/g, " ");
+      removeErrors(["arrival_time", "form"]);
+      state.last_action = "edit_arrival_time";
+      saveRender();
+    });
+    document.querySelector('[data-testid="traveler-upload"]').addEventListener("change", async (event) => {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      const text = await file.text();
+      state.travelers = parseCsv(text);
+      state.last_file = file.name;
+      removeErrors(["travelers", "form"]);
+      state.last_action = "upload_travelers";
+      saveRender();
+    });
+
+    window.addEventListener("hashchange", syncPageFromHash);
+    if (!location.hash) {
+      location.hash = "/builder";
+    }
+    syncPageFromHash();
+  </script>
+</body>
+</html>

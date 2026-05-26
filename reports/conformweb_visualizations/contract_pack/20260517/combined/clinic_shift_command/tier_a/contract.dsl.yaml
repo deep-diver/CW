@@ -1,0 +1,608 @@
+dsl_version: "3.0.0"
+
+app:
+  id: clinic_shift_command
+  name: Clinic Shift Command
+  capability: ambulatory_clinic_operations
+  ui_ux_brief: |
+    Clinic Shift Command Tier A should look and feel like production software
+    used by a real ambulatory clinic operations team during a live shift. The
+    first screen should read as a clinical command center, not a grocery store,
+    hotel booking site, generic dashboard, or test harness. Use a clean
+    healthcare operations visual language: a bright clinical canvas, restrained
+    navy/teal structure, high-contrast acuity indicators, room-status chips,
+    compact queue tables, patient chart panels, and a shift handoff rail. The
+    interface must prioritize fast scanning, clear patient identity, triage
+    urgency, room readiness, role-aware controls, and calm clinical confidence.
+    Avoid decorative marketing hero sections, oversized explanatory text,
+    playful commerce cards, or dark cyberpunk styling. The UI should be
+    responsive, credible, and polished enough that a screenshot looks like an
+    internal SaaS product deployed in a clinic.
+
+runtime:
+  target: web
+  start_url: /#/queue
+
+  state_probe:
+    kind: javascript
+    expression: window.__DETOX_STATE__
+
+  pages:
+    queue:
+      path: /#/queue
+      purpose: Triage queue, patient filters, acuity indicators, and room readiness overview.
+    chart:
+      path: /#/chart
+      purpose: Selected patient chart, insurance verification, vitals, and discharge controls.
+    rooms:
+      path: /#/rooms
+      purpose: Exam room board and open shift handoff tasks.
+
+  session:
+    role_path: active_role
+    roles: [coordinator, clinician]
+
+  persistence:
+    reload:
+      scope: local_storage
+      paths:
+        - current_page
+        - active_role
+        - patients
+        - visible_patients
+        - current_lane
+        - rooms
+        - selected_patient_id
+        - selected_patient_name
+        - selected_lane
+        - selected_acuity
+        - selected_patient_status
+        - assigned_room_id
+        - assigned_room_name
+        - insurance_code
+        - insurance_status
+        - copay_due
+        - service_call_count
+        - insurance_call_count
+        - temperature
+        - systolic
+        - vitals_status
+        - chart_note
+        - validation_errors
+        - handoff_tasks
+        - handoff_count
+        - discharge_status
+        - denied_count
+        - last_action
+
+  services:
+    insurance_verify:
+      endpoint: /api/insurance
+      method: GET
+      responses:
+        - id: hmo_approved
+          match:
+            query:
+              code: HMO-A
+          status: 200
+          json:
+            status: approved
+            copay: 20
+        - id: cash_self_pay
+          match:
+            query:
+              code: CASH
+          status: 200
+          json:
+            status: self_pay
+            copay: 80
+        - id: plan_review
+          match:
+            query:
+              code: BADPLAN
+          status: 200
+          json:
+            status: needs_review
+            copay: 0
+
+  tables:
+    patient_queue:
+      selector: '[data-testid="patient-queue"]'
+      row_selector: '[data-testid="patient-row"]'
+      row_id_attribute: data-patient-id
+      source_path: visible_patients
+      row_id_field: id
+      columns:
+        name:
+          selector: '[data-col="name"]'
+          state_field: name
+        lane:
+          selector: '[data-col="lane"]'
+          state_field: lane
+        acuity:
+          selector: '[data-col="acuity"]'
+          state_field: acuity
+        status:
+          selector: '[data-col="status"]'
+          state_field: status
+        wait_mins:
+          selector: '[data-col="wait_mins"]'
+          state_field: wait_mins
+    room_board:
+      selector: '[data-testid="room-board"]'
+      row_selector: '[data-testid="room-row"]'
+      row_id_attribute: data-room-id
+      source_path: rooms
+      row_id_field: id
+      columns:
+        name:
+          selector: '[data-col="name"]'
+          state_field: name
+        zone:
+          selector: '[data-col="zone"]'
+          state_field: zone
+        status:
+          selector: '[data-col="status"]'
+          state_field: status
+        occupant:
+          selector: '[data-col="occupant"]'
+          state_field: occupant
+    handoff_grid:
+      selector: '[data-testid="handoff-grid"]'
+      row_selector: '[data-testid="handoff-row"]'
+      row_id_attribute: data-task-id
+      source_path: handoff_tasks
+      row_id_field: id
+      columns:
+        patient:
+          selector: '[data-col="patient"]'
+          state_field: patient
+        note:
+          selector: '[data-col="note"]'
+          state_field: note
+        status:
+          selector: '[data-col="status"]'
+          state_field: status
+
+state:
+  initial:
+    current_page: queue
+    active_role: coordinator
+    patients:
+      - {id: CVC-102, name: "Leo Ortiz", lane: urgent, acuity: 1, status: waiting, wait_mins: 4, complaint: "Chest tightness", insurance_code: HMO-A}
+      - {id: CVC-103, name: "Grace Lim", lane: imaging, acuity: 2, status: waiting, wait_mins: 12, complaint: "Ankle injury", insurance_code: CASH}
+      - {id: CVC-105, name: "Theo Moon", lane: urgent, acuity: 2, status: waiting, wait_mins: 9, complaint: "Asthma follow-up", insurance_code: BADPLAN}
+      - {id: CVC-101, name: "Mina Han", lane: primary, acuity: 3, status: waiting, wait_mins: 18, complaint: "Fever and cough", insurance_code: HMO-A}
+      - {id: CVC-104, name: "Noor Patel", lane: primary, acuity: 4, status: waiting, wait_mins: 35, complaint: "Rash review", insurance_code: CASH}
+    visible_patients:
+      - {id: CVC-102, name: "Leo Ortiz", lane: urgent, acuity: 1, status: waiting, wait_mins: 4, complaint: "Chest tightness", insurance_code: HMO-A}
+      - {id: CVC-103, name: "Grace Lim", lane: imaging, acuity: 2, status: waiting, wait_mins: 12, complaint: "Ankle injury", insurance_code: CASH}
+      - {id: CVC-105, name: "Theo Moon", lane: urgent, acuity: 2, status: waiting, wait_mins: 9, complaint: "Asthma follow-up", insurance_code: BADPLAN}
+      - {id: CVC-101, name: "Mina Han", lane: primary, acuity: 3, status: waiting, wait_mins: 18, complaint: "Fever and cough", insurance_code: HMO-A}
+      - {id: CVC-104, name: "Noor Patel", lane: primary, acuity: 4, status: waiting, wait_mins: 35, complaint: "Rash review", insurance_code: CASH}
+    current_lane: all
+    rooms:
+      - {id: R-EXAM1, name: "Exam 1", zone: east, status: ready, occupant: ""}
+      - {id: R-EXAM2, name: "Exam 2", zone: east, status: cleaning, occupant: ""}
+      - {id: R-LAB, name: "Lab Bay", zone: diagnostics, status: ready, occupant: ""}
+      - {id: R-ISO, name: "Isolation", zone: west, status: occupied, occupant: "Walk-in hold"}
+    selected_patient_id: ""
+    selected_patient_name: ""
+    selected_lane: ""
+    selected_acuity: 0
+    selected_patient_status: ""
+    assigned_room_id: ""
+    assigned_room_name: ""
+    insurance_code: ""
+    insurance_status: idle
+    copay_due: 0
+    service_call_count: 0
+    insurance_call_count: 0
+    temperature: ""
+    systolic: ""
+    vitals_status: idle
+    chart_note: ""
+    validation_errors: {}
+    handoff_tasks: []
+    handoff_count: 0
+    discharge_status: idle
+    denied_count: 0
+    last_action: ready
+    __services.calls: []
+
+  schema:
+    current_page: {type: string, purpose: Active route page.}
+    active_role: {type: string, purpose: Current clinic role, either coordinator or clinician.}
+    patients: {type: array, purpose: Ordered master triage queue.}
+    visible_patients: {type: array, purpose: Current filtered patient queue projection.}
+    current_lane: {type: string, purpose: Active queue lane filter.}
+    rooms: {type: array, purpose: Exam room board projection.}
+    selected_patient_id: {type: string, purpose: Active patient id.}
+    selected_patient_name: {type: string, purpose: Active patient display name.}
+    selected_lane: {type: string, purpose: Active patient care lane.}
+    selected_acuity: {type: number, purpose: Active patient acuity value.}
+    selected_patient_status: {type: string, purpose: Active patient workflow status.}
+    assigned_room_id: {type: string, purpose: Assigned room id for the active patient.}
+    assigned_room_name: {type: string, purpose: Assigned room display name.}
+    insurance_code: {type: string, purpose: Insurance code entered or loaded for the active patient.}
+    insurance_status: {type: string, purpose: idle, approved, self_pay, or needs_review.}
+    copay_due: {type: number, purpose: Copay amount from the deterministic insurance service.}
+    service_call_count: {type: number, purpose: Total deterministic service calls.}
+    insurance_call_count: {type: number, purpose: Insurance verification service call count.}
+    temperature: {type: string, purpose: Active patient temperature input.}
+    systolic: {type: string, purpose: Active patient systolic blood pressure input.}
+    vitals_status: {type: string, purpose: idle, incomplete, or recorded.}
+    chart_note: {type: string, purpose: Current clinician handoff note draft.}
+    validation_errors: {type: object, purpose: Field-level clinical validation errors.}
+    handoff_tasks: {type: array, purpose: Shift handoff tasks created from chart notes.}
+    handoff_count: {type: number, purpose: Number of handoff tasks.}
+    discharge_status: {type: string, purpose: idle or complete.}
+    denied_count: {type: number, purpose: Count of role-denied clinical actions.}
+    last_action: {type: string, purpose: Last public action id.}
+    __services.calls: {type: array, purpose: Evaluator-provided service call ledger.}
+
+components:
+  reset_button:
+    kind: button
+    selector: '[data-testid="reset"]'
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_page, value: queue}
+          - {op: equals, path: active_role, value: coordinator}
+          - {op: equals, path: current_lane, value: all}
+          - op: equals
+            path: visible_patients
+            value:
+              - {id: CVC-102, name: "Leo Ortiz", lane: urgent, acuity: 1, status: waiting, wait_mins: 4, complaint: "Chest tightness", insurance_code: HMO-A}
+              - {id: CVC-103, name: "Grace Lim", lane: imaging, acuity: 2, status: waiting, wait_mins: 12, complaint: "Ankle injury", insurance_code: CASH}
+              - {id: CVC-105, name: "Theo Moon", lane: urgent, acuity: 2, status: waiting, wait_mins: 9, complaint: "Asthma follow-up", insurance_code: BADPLAN}
+              - {id: CVC-101, name: "Mina Han", lane: primary, acuity: 3, status: waiting, wait_mins: 18, complaint: "Fever and cough", insurance_code: HMO-A}
+              - {id: CVC-104, name: "Noor Patel", lane: primary, acuity: 4, status: waiting, wait_mins: 35, complaint: "Rash review", insurance_code: CASH}
+          - {op: equals, path: selected_patient_id, value: ""}
+          - {op: equals, path: selected_patient_name, value: ""}
+          - {op: equals, path: selected_lane, value: ""}
+          - {op: equals, path: selected_acuity, value: 0}
+          - {op: equals, path: selected_patient_status, value: ""}
+          - {op: equals, path: assigned_room_id, value: ""}
+          - {op: equals, path: assigned_room_name, value: ""}
+          - {op: equals, path: insurance_code, value: ""}
+          - {op: equals, path: insurance_status, value: idle}
+          - {op: equals, path: copay_due, value: 0}
+          - {op: equals, path: service_call_count, value: 0}
+          - {op: equals, path: insurance_call_count, value: 0}
+          - {op: equals, path: temperature, value: ""}
+          - {op: equals, path: systolic, value: ""}
+          - {op: equals, path: vitals_status, value: idle}
+          - {op: equals, path: chart_note, value: ""}
+          - {op: equals, path: validation_errors, value: {}}
+          - {op: equals, path: handoff_tasks, value: []}
+          - {op: equals, path: handoff_count, value: 0}
+          - {op: equals, path: discharge_status, value: idle}
+          - {op: equals, path: denied_count, value: 0}
+          - {op: equals, path: last_action, value: reset}
+
+  go_queue_button:
+    kind: button
+    selector: '[data-testid="go-queue"]'
+    actions:
+      click:
+        navigate_to: queue
+        effects:
+          - {op: equals, path: current_page, value: queue}
+          - {op: equals, path: last_action, value: nav_queue}
+
+  go_chart_button:
+    kind: button
+    selector: '[data-testid="go-chart"]'
+    actions:
+      click:
+        navigate_to: chart
+        effects:
+          - {op: equals, path: current_page, value: chart}
+          - {op: equals, path: last_action, value: nav_chart}
+
+  go_rooms_button:
+    kind: button
+    selector: '[data-testid="go-rooms"]'
+    actions:
+      click:
+        navigate_to: rooms
+        effects:
+          - {op: equals, path: current_page, value: rooms}
+          - {op: equals, path: last_action, value: nav_rooms}
+
+  role_coordinator_button:
+    kind: button
+    selector: '[data-testid="role-coordinator"]'
+    actions:
+      click:
+        effects:
+          - {op: equals, path: active_role, value: coordinator}
+          - {op: equals, path: last_action, value: role_coordinator}
+
+  role_clinician_button:
+    kind: button
+    selector: '[data-testid="role-clinician"]'
+    actions:
+      click:
+        effects:
+          - {op: equals, path: active_role, value: clinician}
+          - {op: equals, path: last_action, value: role_clinician}
+
+  filter_all_button:
+    kind: button
+    selector: '[data-testid="filter-all"]'
+    page: queue
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_lane, value: all}
+          - {op: equals_filter, path: visible_patients, source_path: patients, where: [], order_by: [{field: acuity, direction: asc}, {field: wait_mins, direction: desc}]}
+          - {op: equals, path: last_action, value: filter_all}
+
+  filter_urgent_button:
+    kind: button
+    selector: '[data-testid="filter-urgent"]'
+    page: queue
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_lane, value: urgent}
+          - {op: equals_filter, path: visible_patients, source_path: patients, where: [{op: equals, field: lane, value: urgent}], order_by: [{field: acuity, direction: asc}, {field: wait_mins, direction: desc}]}
+          - {op: equals, path: last_action, value: filter_urgent}
+
+  filter_primary_button:
+    kind: button
+    selector: '[data-testid="filter-primary"]'
+    page: queue
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_lane, value: primary}
+          - {op: equals_filter, path: visible_patients, source_path: patients, where: [{op: equals, field: lane, value: primary}], order_by: [{field: acuity, direction: asc}, {field: wait_mins, direction: desc}]}
+          - {op: equals, path: last_action, value: filter_primary}
+
+  filter_imaging_button:
+    kind: button
+    selector: '[data-testid="filter-imaging"]'
+    page: queue
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_lane, value: imaging}
+          - {op: equals_filter, path: visible_patients, source_path: patients, where: [{op: equals, field: lane, value: imaging}], order_by: [{field: acuity, direction: asc}, {field: wait_mins, direction: desc}]}
+          - {op: equals, path: last_action, value: filter_imaging}
+
+  select_leo_button:
+    kind: button
+    selector: '[data-testid="select-CVC-102"]'
+    page: queue
+    actions:
+      click:
+        navigate_to: chart
+        effects:
+          - {op: equals, path: selected_patient_id, value: CVC-102}
+          - {op: equals, path: selected_patient_name, value: "Leo Ortiz"}
+          - {op: equals, path: selected_lane, value: urgent}
+          - {op: equals, path: selected_acuity, value: 1}
+          - {op: equals, path: selected_patient_status, value: selected}
+          - {op: equals, path: insurance_code, value: HMO-A}
+          - {op: equals, path: current_page, value: chart}
+          - {op: equals, path: last_action, value: select_patient}
+
+  select_grace_button:
+    kind: button
+    selector: '[data-testid="select-CVC-103"]'
+    page: queue
+    actions:
+      click:
+        navigate_to: chart
+        effects:
+          - {op: equals, path: selected_patient_id, value: CVC-103}
+          - {op: equals, path: selected_patient_name, value: "Grace Lim"}
+          - {op: equals, path: selected_lane, value: imaging}
+          - {op: equals, path: selected_acuity, value: 2}
+          - {op: equals, path: selected_patient_status, value: selected}
+          - {op: equals, path: insurance_code, value: CASH}
+          - {op: equals, path: current_page, value: chart}
+          - {op: equals, path: last_action, value: select_patient}
+
+  select_mina_button:
+    kind: button
+    selector: '[data-testid="select-CVC-101"]'
+    page: queue
+    actions:
+      click:
+        navigate_to: chart
+        effects:
+          - {op: equals, path: selected_patient_id, value: CVC-101}
+          - {op: equals, path: selected_patient_name, value: "Mina Han"}
+          - {op: equals, path: selected_lane, value: primary}
+          - {op: equals, path: selected_acuity, value: 3}
+          - {op: equals, path: selected_patient_status, value: selected}
+          - {op: equals, path: insurance_code, value: HMO-A}
+          - {op: equals, path: current_page, value: chart}
+          - {op: equals, path: last_action, value: select_patient}
+
+  select_theo_button:
+    kind: button
+    selector: '[data-testid="select-CVC-105"]'
+    page: queue
+    actions:
+      click:
+        navigate_to: chart
+        effects:
+          - {op: equals, path: selected_patient_id, value: CVC-105}
+          - {op: equals, path: selected_patient_name, value: "Theo Moon"}
+          - {op: equals, path: selected_lane, value: urgent}
+          - {op: equals, path: selected_acuity, value: 2}
+          - {op: equals, path: selected_patient_status, value: selected}
+          - {op: equals, path: insurance_code, value: BADPLAN}
+          - {op: equals, path: current_page, value: chart}
+          - {op: equals, path: last_action, value: select_patient}
+
+  assign_exam1_button:
+    kind: button
+    selector: '[data-testid="assign-exam1"]'
+    page: chart
+    actions:
+      click:
+        allowed_roles: [coordinator]
+        preconditions:
+          - {op: not_one_of, path: selected_patient_id, values: [""]}
+        effects:
+          - {op: equals, path: assigned_room_id, value: R-EXAM1}
+          - {op: equals, path: assigned_room_name, value: "Exam 1"}
+          - {op: equals, path: selected_patient_status, value: roomed}
+          - {op: equals, path: last_action, value: assign_room}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_assign}
+
+  assign_lab_button:
+    kind: button
+    selector: '[data-testid="assign-lab"]'
+    page: chart
+    actions:
+      click:
+        allowed_roles: [coordinator]
+        preconditions:
+          - {op: not_one_of, path: selected_patient_id, values: [""]}
+        effects:
+          - {op: equals, path: assigned_room_id, value: R-LAB}
+          - {op: equals, path: assigned_room_name, value: "Lab Bay"}
+          - {op: equals, path: selected_patient_status, value: roomed}
+          - {op: equals, path: last_action, value: assign_room}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_assign}
+
+  assign_exam2_button:
+    kind: button
+    selector: '[data-testid="assign-exam2"]'
+    page: chart
+    actions:
+      click:
+        allowed_roles: [coordinator]
+        rejected_when:
+          - {op: not_one_of, path: selected_patient_id, values: [""]}
+        rejected_effects:
+          - {op: equals, path: assigned_room_id, value: ""}
+          - {op: equals, path: assigned_room_name, value: ""}
+          - {op: equals, path: last_action, value: room_unavailable}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_assign}
+
+  insurance_code_input:
+    kind: input
+    selector: '[data-testid="insurance-code"]'
+    page: chart
+    actions:
+      fill:
+        effects:
+          - {op: equals_normalized, path: insurance_code, value_from: input.value, normalizers: [trim, uppercase]}
+          - {op: equals, path: last_action, value: edit_insurance}
+
+  verify_insurance_button:
+    kind: button
+    selector: '[data-testid="verify-insurance"]'
+    page: chart
+    actions:
+      click:
+        preconditions:
+          - {op: not_one_of, path: selected_patient_id, values: [""]}
+          - {op: not_one_of, path: insurance_code, values: [""]}
+        effects:
+          - {op: changed_by, path: service_call_count, by: 1}
+          - {op: changed_by, path: insurance_call_count, by: 1}
+          - {op: one_of, path: insurance_status, values: [approved, self_pay, needs_review]}
+          - {op: equals, path: last_action, value: verify_insurance}
+
+  temperature_input:
+    kind: input
+    selector: '[data-testid="temperature"]'
+    page: chart
+    actions:
+      fill:
+        effects:
+          - {op: equals_normalized, path: temperature, value_from: input.value, normalizers: [trim]}
+          - {op: removed_object_fields, path: validation_errors, fields: [vitals]}
+
+  systolic_input:
+    kind: input
+    selector: '[data-testid="systolic"]'
+    page: chart
+    actions:
+      fill:
+        effects:
+          - {op: equals_normalized, path: systolic, value_from: input.value, normalizers: [trim]}
+          - {op: removed_object_fields, path: validation_errors, fields: [vitals]}
+
+  save_vitals_button:
+    kind: button
+    selector: '[data-testid="save-vitals"]'
+    page: chart
+    actions:
+      click:
+        allowed_roles: [clinician]
+        rejected_when:
+          - {op: one_of, path: temperature, values: [""]}
+          - {op: one_of, path: systolic, values: [""]}
+        rejected_effects:
+          - {op: equals, path: vitals_status, value: incomplete}
+          - {op: updated_object_fields, path: validation_errors, updates: {vitals: "Temperature and systolic pressure are required"}}
+          - {op: equals, path: last_action, value: reject_vitals}
+        effects:
+          - {op: equals, path: vitals_status, value: recorded}
+          - {op: equals, path: selected_patient_status, value: assessed}
+          - {op: equals, path: last_action, value: save_vitals}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_clinical}
+
+  chart_note_input:
+    kind: input
+    selector: '[data-testid="chart-note"]'
+    page: chart
+    actions:
+      fill:
+        effects:
+          - {op: equals_normalized, path: chart_note, value_from: input.value, normalizers: [trim]}
+
+  create_handoff_button:
+    kind: button
+    selector: '[data-testid="create-handoff"]'
+    page: chart
+    actions:
+      click:
+        allowed_roles: [clinician]
+        preconditions:
+          - {op: not_one_of, path: selected_patient_id, values: [""]}
+          - {op: not_one_of, path: chart_note, values: [""]}
+        effects:
+          - {op: changed_by, path: handoff_count, by: 1}
+          - {op: appended_object, path: handoff_tasks, value: {id: H-1, patient: {from_path: selected_patient_name}, note: {from_path: chart_note}, status: open}}
+          - {op: equals, path: last_action, value: create_handoff}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_clinical}
+
+  discharge_button:
+    kind: button
+    selector: '[data-testid="discharge"]'
+    page: chart
+    actions:
+      click:
+        allowed_roles: [clinician]
+        preconditions:
+          - {op: one_of, path: vitals_status, values: [recorded]}
+          - {op: one_of, path: insurance_status, values: [approved, self_pay]}
+        effects:
+          - {op: equals, path: discharge_status, value: complete}
+          - {op: equals, path: selected_patient_status, value: discharged}
+          - {op: equals, path: last_action, value: discharge_patient}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_clinical}

@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Campus Registrar Command Tier A</title>
+  <style>
+    :root{--bg:#f4f8f4;--ink:#172522;--muted:#64736f;--line:#cbdcd4;--paper:#fffef9;--panel:#ffffff;--green:#16664f;--blue:#235c94;--gold:#c98719;--red:#b84c3e;--soft:#e6f0ea}
+    *{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#f7fbf8,#edf5f0);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:0}
+    button,input{font:inherit}button{border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink);padding:9px 12px;cursor:pointer}button.primary{background:var(--green);border-color:var(--green);color:#fff}button.blue{background:var(--blue);border-color:var(--blue);color:#fff}button.warn{background:#fff5df;border-color:#e1b45f;color:#6d4708}
+    input{width:100%;border:1px solid var(--line);border-radius:7px;padding:10px;background:#fff;color:var(--ink)}h1,h2,h3,p{margin-top:0}h1{font-size:22px;margin-bottom:2px}h2{font-size:24px}h3{font-size:16px}small,label{color:var(--muted)}label{display:grid;gap:6px;font-size:12px;font-weight:800;text-transform:uppercase}
+    header{height:82px;display:grid;grid-template-columns:330px 1fr auto;align-items:center;padding:0 28px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.92);backdrop-filter:blur(14px)}
+    nav,.toolbar,.rolebar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.rolebar span{font-size:12px;text-transform:uppercase;color:var(--muted)}
+    main{display:grid;grid-template-columns:minmax(620px,1fr) 410px;gap:18px;padding:22px 28px}.page{display:none}.page.active{display:block}.stack{display:grid;gap:12px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .hero{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}.metric,.panel,.course-card,.paper-card,.schedule,.audit-card{border:1px solid var(--line);border-radius:8px;background:var(--panel);padding:14px}.metric span{display:block;text-transform:uppercase;font-size:11px;font-weight:800;color:var(--muted)}.metric b{font-size:26px}.metric.green{background:#eaf5ef}.metric.blue{background:#e8f0f9}.metric.gold{background:#fff5df}
+    .catalog-layout{display:grid;grid-template-columns:1fr;gap:12px}.course-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.course-card{display:grid;gap:8px}.course-card header{height:auto;display:flex;justify-content:space-between;padding:0;border:0;background:transparent}.badge{display:inline-flex;align-items:center;border-radius:999px;padding:3px 8px;background:var(--soft);color:var(--green);font-size:12px}.badge.full{background:#fff0de;color:#7b4f0a}.code{font-weight:900;color:var(--blue)}
+    .planner-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.summary-line{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}.meter{height:14px;border-radius:999px;background:#dfe8e2;overflow:hidden}.meter i{display:block;height:100%;background:linear-gradient(90deg,var(--green),var(--gold));width:0}.schedule{min-height:260px;background:linear-gradient(90deg,#d9e6df 1px,transparent 1px),linear-gradient(#d9e6df 1px,transparent 1px),#fbfdfb;background-size:82px 42px;position:relative}.slot{position:absolute;border-radius:7px;padding:8px;background:var(--green);color:#fff;font-size:12px;box-shadow:0 8px 20px rgba(22,102,79,.18)}.slot.one{left:92px;top:58px;width:142px;height:70px}.slot.two{left:248px;top:142px;width:126px;height:70px;background:var(--blue)}.slot.three{left:84px;top:170px;width:118px;height:58px;background:var(--gold)}
+    table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;border-bottom:1px solid var(--line);padding:9px}th{font-size:11px;text-transform:uppercase;color:var(--muted)}.right-rail{display:grid;align-content:start;gap:12px}.degree-list{display:grid;gap:8px}.degree-list div{display:flex;justify-content:space-between;border:1px solid var(--line);border-radius:7px;padding:10px;background:var(--paper)}.advisor-box{border-left:5px solid var(--blue)}.audit-card{background:var(--paper)}
+    @media(max-width:980px){header{height:auto;grid-template-columns:1fr;padding:16px;gap:12px}main{grid-template-columns:1fr;padding:16px}.hero,.planner-grid{grid-template-columns:1fr}.course-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <header>
+    <div><h1>Campus Registrar</h1><small>Course planning and degree audit</small></div>
+    <nav>
+      <button data-testid="go-catalog">Catalog</button>
+      <button data-testid="go-planner">Planner</button>
+      <button data-testid="go-audit">Audit</button>
+      <button data-testid="reset" class="warn">Reset</button>
+    </nav>
+    <div class="rolebar">
+      <span id="roleLabel"></span>
+      <button data-testid="role-student">Student</button>
+      <button data-testid="role-advisor">Advisor</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="metric green"><span>Selected Course</span><b id="selectedMetric">None</b></div>
+      <div class="metric blue"><span>Credit Load</span><b id="creditMetric">0</b></div>
+      <div class="metric gold"><span>Eligibility</span><b id="eligibilityMetric">unchecked</b></div>
+    </section>
+
+    <section class="stack">
+      <div id="catalog" class="page">
+        <h2>Course Catalog</h2>
+        <div class="toolbar">
+          <button data-testid="filter-all">All</button>
+          <button data-testid="filter-cs">Computer Science</button>
+          <button data-testid="filter-full">Full Courses</button>
+        </div>
+        <div data-testid="course-grid" class="course-grid"></div>
+      </div>
+
+      <div id="planner" class="page">
+        <h2>Student Planner</h2>
+        <div class="planner-grid">
+          <div class="panel">
+            <h3>Profile and Actions</h3>
+            <div class="grid">
+              <label>Student Name<input data-testid="student-name"></label>
+              <label>Student ID<input data-testid="student-id"></label>
+            </div>
+            <div class="toolbar" style="margin-top:12px">
+              <button data-testid="add-to-plan">Add to Plan</button>
+              <button data-testid="check-eligibility" class="blue">Check Eligibility</button>
+              <button data-testid="mark-math-review">Math Review</button>
+              <button data-testid="mark-design-full">Mark Full</button>
+              <button data-testid="enroll" class="primary">Enroll</button>
+            </div>
+            <div id="plannerSummary"></div>
+          </div>
+          <div class="schedule" aria-label="weekly schedule preview">
+            <div class="slot one">CS 201<br>Mon Wed 10:00</div>
+            <div class="slot two">HIST 110<br>Tue 13:00</div>
+            <div class="slot three">MATH 240<br>Thu 09:00</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="audit" class="page">
+        <h2>Degree Audit</h2>
+        <div class="planner-grid">
+          <div class="audit-card">
+            <h3>Advisor Override</h3>
+            <label>Advisor Note<input data-testid="advisor-note"></label>
+            <div class="toolbar" style="margin-top:12px">
+              <button data-testid="advisor-override" class="blue">Advisor Override</button>
+              <button data-testid="join-waitlist">Join Waitlist</button>
+            </div>
+          </div>
+          <div class="audit-card advisor-box">
+            <h3>Audit Status</h3>
+            <div class="degree-list" id="degreeList"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Enrollment Ledger</h3>
+        <table data-testid="enrollment-grid"></table>
+      </div>
+      <div class="panel">
+        <h3>Waitlist Lane</h3>
+        <table data-testid="waitlist-grid"></table>
+      </div>
+    </section>
+
+    <aside class="right-rail">
+      <div class="paper-card">
+        <h2>Registrar Packet</h2>
+        <div id="packetRows"></div>
+      </div>
+      <div class="paper-card">
+        <h3>Credit Meter</h3>
+        <div class="meter"><i id="creditBar"></i></div>
+      </div>
+      <div class="paper-card">
+        <h3>Advising Notes</h3>
+        <p id="notePreview">No note recorded.</p>
+      </div>
+    </aside>
+  </main>
+
+  <script>
+    const KEY='campus-registrar-tier-a-state';
+    const baseCourses=[
+      {id:'CS-201',code:'CS 201',title:'Data Structures',department:'cs',credits:4,seats:'open',requirement:'core'},
+      {id:'DES-150',code:'DES 150',title:'Studio Foundations',department:'design',credits:3,seats:'full',requirement:'arts'},
+      {id:'HIST-110',code:'HIST 110',title:'City Archives',department:'humanities',credits:3,seats:'open',requirement:'elective'},
+      {id:'MATH-240',code:'MATH 240',title:'Linear Models',department:'math',credits:4,seats:'open',requirement:'quantitative'}
+    ];
+    const initial={
+      current_page:'catalog',active_role:'student',courses:baseCourses,visible_courses:baseCourses,
+      selected_department:'all',selected_course_id:'',selected_course_code:'',selected_course_title:'',selected_course_credits:0,
+      planned_courses:[],plan_count:0,student_name:'',student_id:'',eligibility_status:'unchecked',enrollment_status:'idle',
+      enrolled_courses:[],enrolled_count:0,credit_total:0,waitlist_rows:[],waitlist_count:0,approval_status:'none',
+      advisor_note:'',validation_errors:{},denied_count:0,service_call_count:0,last_action:'ready','__services.calls':[]
+    };
+    let S=load();
+    function clone(x){return JSON.parse(JSON.stringify(x))}
+    function load(){try{return {...clone(initial),...JSON.parse(localStorage.getItem(KEY)||'{}')}}catch{return clone(initial)}}
+    function save(){localStorage.setItem(KEY,JSON.stringify(S))}
+    function setPage(page){if(!['catalog','planner','audit'].includes(page))return;S.current_page=page;location.hash='#/'+page;save();render()}
+    function reset(){localStorage.removeItem(KEY);S=clone(initial);S.last_action='reset';location.hash='#/catalog';render()}
+    function norm(v){return String(v||'').trim().replace(/\s+/g,' ')}
+    function selected(){return S.courses.find(c=>c.id===S.selected_course_id)}
+    function selectCourse(id){const c=S.courses.find(x=>x.id===id);if(!c)return;S.selected_course_id=c.id;S.selected_course_code=c.code;S.selected_course_title=c.title;S.selected_course_credits=c.credits;S.eligibility_status='unchecked';S.last_action='select_course';render()}
+    function filter(kind){S.selected_department=kind;if(kind==='all'){S.visible_courses=clone(baseCourses)}else if(kind==='cs'){S.visible_courses=S.courses.filter(c=>c.department==='cs').sort((a,b)=>b.credits-a.credits)}else if(kind==='full'){S.visible_courses=S.courses.filter(c=>c.seats==='full').sort((a,b)=>b.credits-a.credits)}render()}
+    function addPlan(){if(!S.selected_course_id){S.enrollment_status='blocked';S.last_action='plan_blocked';return render()}S.enrollment_status='planned';S.plan_count++;S.planned_courses.push({id:'PLAN-001',code:S.selected_course_code,title:S.selected_course_title,credits:S.selected_course_credits,status:'planned'});S.last_action='add_to_plan';render()}
+    function checkEligibility(){if(!S.selected_course_id)return;S.service_call_count++;S.eligibility_status='eligible';S.last_action='check_eligibility';render()}
+    function markMathReview(){if(S.selected_course_id==='MATH-240'){S.eligibility_status='advisor_required';S.last_action='advisor_required'}render()}
+    function markDesignFull(){if(S.selected_course_id==='DES-150'){S.eligibility_status='waitlist';S.last_action='course_full'}render()}
+    function enroll(){if(S.eligibility_status!=='eligible'){S.enrollment_status='blocked';S.last_action='enrollment_blocked';return render()}S.enrollment_status='enrolled';S.enrolled_count++;S.credit_total+=Number(S.selected_course_credits||0);S.enrolled_courses.push({id:'ENR-001',code:S.selected_course_code,title:S.selected_course_title,credits:S.selected_course_credits,status:'enrolled'});S.last_action='enroll';render()}
+    function joinWaitlist(){if(S.selected_course_id!=='DES-150')return;S.enrollment_status='waitlisted';S.waitlist_count++;S.waitlist_rows.push({id:'WAIT-001',code:S.selected_course_code,title:S.selected_course_title,position:3,status:'active'});S.last_action='join_waitlist';render()}
+    function advisorOverride(){if(S.active_role!=='advisor'){S.denied_count++;S.last_action='unauthorized_advisor';return render()}if(S.eligibility_status==='advisor_required'){S.eligibility_status='eligible';S.approval_status='advisor_approved';S.last_action='advisor_override'}render()}
+    function table(root, rows, rowTest, attr, cols){const el=document.querySelector('[data-testid="'+root+'"]');el.innerHTML='<thead><tr>'+cols.map(c=>'<th>'+c+'</th>').join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr data-testid="'+rowTest+'" '+attr+'="'+r.id+'">'+cols.map(c=>'<td data-col="'+c+'">'+(r[c]??'')+'</td>').join('')+'</tr>').join('')+'</tbody>'}
+    function renderCourses(){const root=document.querySelector('[data-testid="course-grid"]');root.innerHTML=S.visible_courses.map(c=>'<div class="course-card" data-testid="course-row" data-course-id="'+c.id+'"><header><span class="code" data-col="code">'+c.code+'</span><span class="badge '+(c.seats==='full'?'full':'')+'" data-col="seats">'+c.seats+'</span></header><h3 data-col="title">'+c.title+'</h3><div><span data-col="department">'+c.department+'</span> · <span data-col="credits">'+c.credits+'</span> credits</div><button data-testid="select-'+c.id+'" class="primary">Select</button></div>').join('')}
+    function renderSummary(){document.getElementById('selectedMetric').textContent=S.selected_course_code||'None';document.getElementById('creditMetric').textContent=String(S.credit_total);document.getElementById('eligibilityMetric').textContent=S.eligibility_status;document.getElementById('roleLabel').textContent='Role '+S.active_role;document.getElementById('creditBar').style.width=Math.min(100,S.credit_total/18*100)+'%';document.getElementById('notePreview').textContent=S.advisor_note||'No note recorded.';document.getElementById('plannerSummary').innerHTML=[['Course',S.selected_course_title||'none'],['Student',S.student_name||'unassigned'],['Eligibility',S.eligibility_status],['Plan count',S.plan_count]].map(([a,b])=>'<div class="summary-line"><span>'+a+'</span><b>'+b+'</b></div>').join('');document.getElementById('packetRows').innerHTML=[['Enrollment',S.enrollment_status],['Approval',S.approval_status],['Waitlist',S.waitlist_count],['Service calls',S.service_call_count],['Denied',S.denied_count]].map(([a,b])=>'<div class="summary-line"><span>'+a+'</span><b>'+b+'</b></div>').join('');document.getElementById('degreeList').innerHTML=[['Core course',S.enrolled_courses.some(c=>c.code==='CS 201')?'complete':'open'],['Quantitative',S.enrolled_courses.some(c=>c.code==='MATH 240')?'complete':'open'],['Elective credits',S.credit_total>=3?'started':'open'],['Advisor override',S.approval_status]].map(([a,b])=>'<div><span>'+a+'</span><b>'+b+'</b></div>').join('')}
+    function render(){document.querySelectorAll('.page').forEach(el=>el.classList.toggle('active',el.id===S.current_page));renderCourses();table('enrollment-grid',S.enrolled_courses,'enrollment-row','data-enrollment-id',['code','title','credits','status']);table('waitlist-grid',S.waitlist_rows,'waitlist-row','data-waitlist-id',['code','title','position','status']);renderSummary();window.__DETOX_STATE__=S;save()}
+    document.addEventListener('click',e=>{const id=e.target.dataset.testid;if(!id)return;if(id==='reset')return reset();if(id==='go-catalog')return setPage('catalog');if(id==='go-planner')return setPage('planner');if(id==='go-audit')return setPage('audit');if(id==='role-student'){S.active_role='student';S.last_action='role_student';return render()}if(id==='role-advisor'){S.active_role='advisor';S.last_action='role_advisor';return render()}if(id==='filter-all')return filter('all');if(id==='filter-cs')return filter('cs');if(id==='filter-full')return filter('full');if(id.startsWith('select-'))return selectCourse(id.replace('select-',''));if(id==='add-to-plan')return addPlan();if(id==='check-eligibility')return checkEligibility();if(id==='mark-math-review')return markMathReview();if(id==='mark-design-full')return markDesignFull();if(id==='enroll')return enroll();if(id==='join-waitlist')return joinWaitlist();if(id==='advisor-override')return advisorOverride()});
+    document.addEventListener('input',e=>{const id=e.target.dataset.testid;if(id==='student-name'){S.student_name=norm(e.target.value);render()}if(id==='student-id'){S.student_id=norm(e.target.value).toUpperCase();render()}if(id==='advisor-note'){S.advisor_note=norm(e.target.value);render()}});
+    window.addEventListener('hashchange',()=>{const page=(location.hash.replace('#/','')||'catalog');if(['catalog','planner','audit'].includes(page)){S.current_page=page;render()}});
+    const start=(location.hash.replace('#/','')||S.current_page||'catalog');if(['catalog','planner','audit'].includes(start))S.current_page=start;location.hash='#/'+S.current_page;render();
+  </script>
+</body>
+</html>

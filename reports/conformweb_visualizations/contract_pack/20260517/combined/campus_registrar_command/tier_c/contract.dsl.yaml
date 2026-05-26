@@ -1,0 +1,967 @@
+dsl_version: "3.0.0"
+
+app:
+  id: campus_registrar_command_tier_c
+  name: Campus Registrar Command Tier C
+  capability: graduation_clearance_reconciliation_control
+  ui_ux_brief: |
+    Campus Registrar Command Tier C should look like an institutional graduation
+    clearance war room, not a course planner or a simple registrar table.
+    A screenshot should immediately read as harder than Tier B: candidate risk
+    queue, degree audit graph, catalog-version lock, schedule collision matrix,
+    transfer articulation upload, equivalency staging, residency credit counter,
+    advisor exception packet, bursar clearance rail, worksheet reconciliation
+    mismatch board, dean vote, registrar seal, release manifest, blockers, and
+    audit trail should all feel coordinated. Use a serious academic operations
+    palette with ivory parchment, ink navy, registrar green, oxblood blockers,
+    brass seal accents, transcript grids, graph-like rails, compact gauges, and
+    high information density. Avoid travel cards, media switchers, clinical
+    floor maps, grocery checkout, or a bare test harness.
+
+runtime:
+  target: web
+  start_url: /#/command
+  state_probe:
+    kind: javascript
+    expression: window.__DETOX_STATE__
+  pages:
+    command:
+      path: /#/command
+      purpose: Candidate risk queue, readiness overview, and role console.
+    audit:
+      path: /#/audit
+      purpose: Degree audit graph, catalog lock, completion plan, and collision resolution.
+    articulation:
+      path: /#/articulation
+      purpose: Transfer CSV intake, equivalency staging, and advisor exception packet.
+    reconcile:
+      path: /#/reconcile
+      purpose: Bursar clearance, graduation worksheet upload, mismatch board, and reconciliation lock.
+    clearance:
+      path: /#/clearance
+      purpose: Dean vote, registrar seal, release manifest, blockers, and audit trail.
+  session:
+    role_path: active_role
+    roles: [analyst, advisor, bursar, registrar, dean]
+  persistence:
+    reload:
+      scope: local_storage
+      paths:
+        - current_page
+        - active_role
+        - candidates
+        - visible_candidates
+        - current_filter
+        - selected_candidate_id
+        - selected_candidate_name
+        - selected_program
+        - selected_cohort
+        - selected_risk
+        - selected_gpa
+        - selected_aid_status
+        - selected_catalog_version
+        - catalog_version_input
+        - catalog_lock_status
+        - requirement_rows
+        - requirement_count
+        - deficiency_count
+        - audit_status
+        - schedule_rows
+        - schedule_count
+        - schedule_status
+        - schedule_credit_total
+        - collision_count
+        - transfer_rows
+        - transfer_count
+        - transfer_credit_total
+        - last_transfer_file
+        - equivalency_rows
+        - equivalency_count
+        - equivalency_status
+        - transfer_applied_credits
+        - residency_credit_total
+        - exception_rows
+        - exception_count
+        - exception_packet_status
+        - finance_status
+        - sap_status
+        - balance_status
+        - finance_trace_id
+        - service_call_count
+        - bursar_call_count
+        - reconciliation_rows
+        - reconciliation_count
+        - mismatch_count
+        - reconciliation_status
+        - dean_vote_status
+        - dean_packet_hash
+        - registrar_seal_status
+        - seal_manifest_hash
+        - release_status
+        - release_hold_reason
+        - release_rows
+        - release_count
+        - blocker_rows
+        - open_blockers
+        - readiness_score
+        - audit_log
+        - audit_count
+        - hold_notice_count
+        - denied_count
+        - validation_errors
+        - last_action
+  services:
+    bursar_clearance:
+      endpoint: /api/bursar-clearance
+      method: GET
+      responses:
+        - id: nova_clearance
+          match:
+            query:
+              candidate: CAND-NOVA
+          status: 200
+          json: {finance: cleared, sap: clear, balance: zero_balance, trace: BUR-NOVA-042}
+        - id: orion_hold
+          match:
+            query:
+              candidate: CAND-ORION
+          status: 200
+          json: {finance: blocked, sap: clear, balance: studio_fee_hold, trace: BUR-ORION-017}
+  events:
+    senate_hold_notice:
+      payload: {reason: ethics_review}
+      preconditions:
+        - {op: one_of, path: release_status, values: [published]}
+      effects:
+        - {op: equals, path: release_status, value: on_hold}
+        - {op: equals, path: release_hold_reason, value: ethics_review}
+        - {op: changed_by, path: hold_notice_count, by: 1}
+        - {op: equals, path: readiness_score, value: 86}
+        - {op: updated_object_fields, path: validation_errors, updates: {senate: "Senate hold: ethics_review"}}
+        - {op: equals, path: audit_log, value: [
+            {id: AUD-DEAN, event: dean_vote, role: dean, status: approved},
+            {id: AUD-SEAL, event: registrar_seal, role: registrar, status: sealed},
+            {id: AUD-REL, event: release_manifest, role: registrar, status: published},
+            {id: AUD-HOLD, event: senate_hold_notice, role: senate, status: ethics_review}
+          ]}
+        - {op: equals_length, path: audit_count, source_path: audit_log}
+        - {op: equals, path: last_action, value: senate_hold_notice}
+  tables:
+    candidate_queue:
+      selector: '[data-testid="candidate-queue"]'
+      row_selector: '[data-testid="candidate-row"]'
+      row_id_attribute: data-candidate-id
+      source_path: visible_candidates
+      row_id_field: id
+      columns:
+        name: {selector: '[data-col="name"]', state_field: name}
+        program: {selector: '[data-col="program"]', state_field: program}
+        cohort: {selector: '[data-col="cohort"]', state_field: cohort}
+        risk: {selector: '[data-col="risk"]', state_field: risk}
+        gpa: {selector: '[data-col="gpa"]', state_field: gpa}
+        aid: {selector: '[data-col="aid"]', state_field: aid}
+    requirement_grid:
+      selector: '[data-testid="requirement-grid"]'
+      row_selector: '[data-testid="requirement-row"]'
+      row_id_attribute: data-requirement-id
+      source_path: requirement_rows
+      row_id_field: id
+      columns:
+        area: {selector: '[data-col="area"]', state_field: area}
+        needed: {selector: '[data-col="needed"]', state_field: needed}
+        earned: {selector: '[data-col="earned"]', state_field: earned}
+        source: {selector: '[data-col="source"]', state_field: source}
+        status: {selector: '[data-col="status"]', state_field: status}
+    schedule_grid:
+      selector: '[data-testid="schedule-grid"]'
+      row_selector: '[data-testid="schedule-row"]'
+      row_id_attribute: data-schedule-id
+      source_path: schedule_rows
+      row_id_field: id
+      columns:
+        code: {selector: '[data-col="code"]', state_field: code}
+        title: {selector: '[data-col="title"]', state_field: title}
+        slot: {selector: '[data-col="slot"]', state_field: slot}
+        credits: {selector: '[data-col="credits"]', state_field: credits}
+        status: {selector: '[data-col="status"]', state_field: status}
+    transfer_grid:
+      selector: '[data-testid="transfer-grid"]'
+      row_selector: '[data-testid="transfer-row"]'
+      row_id_attribute: data-transfer-id
+      source_path: transfer_rows
+      row_id_field: id
+      columns:
+        course: {selector: '[data-col="course"]', state_field: course}
+        credits: {selector: '[data-col="credits"]', state_field: credits}
+        residency: {selector: '[data-col="residency"]', state_field: residency}
+        status: {selector: '[data-col="status"]', state_field: status}
+    equivalency_grid:
+      selector: '[data-testid="equivalency-grid"]'
+      row_selector: '[data-testid="equivalency-row"]'
+      row_id_attribute: data-equivalency-id
+      source_path: equivalency_rows
+      row_id_field: id
+      columns:
+        requirement: {selector: '[data-col="requirement"]', state_field: requirement}
+        source_course: {selector: '[data-col="source_course"]', state_field: source_course}
+        credits: {selector: '[data-col="credits"]', state_field: credits}
+        residency_credits: {selector: '[data-col="residency_credits"]', state_field: residency_credits}
+        status: {selector: '[data-col="status"]', state_field: status}
+    exception_grid:
+      selector: '[data-testid="exception-grid"]'
+      row_selector: '[data-testid="exception-row"]'
+      row_id_attribute: data-exception-id
+      source_path: exception_rows
+      row_id_field: id
+      columns:
+        type: {selector: '[data-col="type"]', state_field: type}
+        owner: {selector: '[data-col="owner"]', state_field: owner}
+        evidence: {selector: '[data-col="evidence"]', state_field: evidence}
+        status: {selector: '[data-col="status"]', state_field: status}
+    reconciliation_grid:
+      selector: '[data-testid="reconciliation-grid"]'
+      row_selector: '[data-testid="reconciliation-row"]'
+      row_id_attribute: data-reconciliation-id
+      source_path: reconciliation_rows
+      row_id_field: id
+      columns:
+        requirement: {selector: '[data-col="requirement"]', state_field: requirement}
+        manifest_status: {selector: '[data-col="manifest_status"]', state_field: manifest_status}
+        registrar_status: {selector: '[data-col="registrar_status"]', state_field: registrar_status}
+        status: {selector: '[data-col="status"]', state_field: status}
+    blocker_grid:
+      selector: '[data-testid="blocker-grid"]'
+      row_selector: '[data-testid="blocker-row"]'
+      row_id_attribute: data-blocker-id
+      source_path: blocker_rows
+      row_id_field: id
+      columns:
+        label: {selector: '[data-col="label"]', state_field: label}
+        status: {selector: '[data-col="status"]', state_field: status}
+    release_grid:
+      selector: '[data-testid="release-grid"]'
+      row_selector: '[data-testid="release-row"]'
+      row_id_attribute: data-release-id
+      source_path: release_rows
+      row_id_field: id
+      columns:
+        candidate: {selector: '[data-col="candidate"]', state_field: candidate}
+        channel: {selector: '[data-col="channel"]', state_field: channel}
+        batch: {selector: '[data-col="batch"]', state_field: batch}
+        status: {selector: '[data-col="status"]', state_field: status}
+    audit_grid:
+      selector: '[data-testid="audit-grid"]'
+      row_selector: '[data-testid="audit-row"]'
+      row_id_attribute: data-audit-id
+      source_path: audit_log
+      row_id_field: id
+      columns:
+        event: {selector: '[data-col="event"]', state_field: event}
+        role: {selector: '[data-col="role"]', state_field: role}
+        status: {selector: '[data-col="status"]', state_field: status}
+
+state:
+  initial:
+    current_page: command
+    active_role: analyst
+    candidates:
+      - {id: CAND-NOVA, name: "Nova Chen", program: "Data Science BS", cohort: "May 2026", risk: red, gpa: "3.41", aid: sap_hold}
+      - {id: CAND-ORION, name: "Orion Patel", program: "Architecture BA", cohort: "May 2026", risk: amber, gpa: "3.18", aid: clear}
+      - {id: CAND-LENA, name: "Lena Brooks", program: "Biology BS", cohort: "Aug 2026", risk: amber, gpa: "3.66", aid: review}
+      - {id: CAND-MIRA, name: "Mira Soto", program: "History BA", cohort: "May 2026", risk: green, gpa: "3.82", aid: clear}
+    visible_candidates:
+      - {id: CAND-NOVA, name: "Nova Chen", program: "Data Science BS", cohort: "May 2026", risk: red, gpa: "3.41", aid: sap_hold}
+      - {id: CAND-ORION, name: "Orion Patel", program: "Architecture BA", cohort: "May 2026", risk: amber, gpa: "3.18", aid: clear}
+      - {id: CAND-LENA, name: "Lena Brooks", program: "Biology BS", cohort: "Aug 2026", risk: amber, gpa: "3.66", aid: review}
+      - {id: CAND-MIRA, name: "Mira Soto", program: "History BA", cohort: "May 2026", risk: green, gpa: "3.82", aid: clear}
+    current_filter: all
+    selected_candidate_id: ""
+    selected_candidate_name: ""
+    selected_program: ""
+    selected_cohort: ""
+    selected_risk: ""
+    selected_gpa: ""
+    selected_aid_status: ""
+    selected_catalog_version: CAT-2026A
+    catalog_version_input: ""
+    catalog_lock_status: draft
+    requirement_rows: []
+    requirement_count: 0
+    deficiency_count: 0
+    audit_status: idle
+    schedule_rows: []
+    schedule_count: 0
+    schedule_status: idle
+    schedule_credit_total: 0
+    collision_count: 0
+    transfer_rows: []
+    transfer_count: 0
+    transfer_credit_total: 0
+    last_transfer_file: ""
+    equivalency_rows: []
+    equivalency_count: 0
+    equivalency_status: idle
+    transfer_applied_credits: 0
+    residency_credit_total: 0
+    exception_rows: []
+    exception_count: 0
+    exception_packet_status: idle
+    finance_status: idle
+    sap_status: idle
+    balance_status: idle
+    finance_trace_id: ""
+    service_call_count: 0
+    bursar_call_count: 0
+    reconciliation_rows: []
+    reconciliation_count: 0
+    mismatch_count: 0
+    reconciliation_status: idle
+    dean_vote_status: idle
+    dean_packet_hash: ""
+    registrar_seal_status: idle
+    seal_manifest_hash: ""
+    release_status: idle
+    release_hold_reason: ""
+    release_rows: []
+    release_count: 0
+    blocker_rows:
+      - {id: BLK-CATALOG, label: Catalog version locked, status: open}
+      - {id: BLK-SCHEDULE, label: Collision-free completion schedule, status: open}
+      - {id: BLK-EQUIV, label: Transfer equivalencies finalized, status: open}
+      - {id: BLK-EXCEPTION, label: Advisor exception packet assembled, status: open}
+      - {id: BLK-FINANCE, label: Aid and balance cleared, status: open}
+      - {id: BLK-RECON, label: Worksheet reconciliation locked, status: open}
+      - {id: BLK-DEAN, label: Dean vote recorded, status: open}
+      - {id: BLK-SEAL, label: Registrar seal applied, status: open}
+    open_blockers: 8
+    readiness_score: 0
+    audit_log: []
+    audit_count: 0
+    hold_notice_count: 0
+    denied_count: 0
+    validation_errors: {}
+    last_action: ready
+    __services.calls: []
+  schema:
+    current_page: {type: string, purpose: Active route page.}
+    active_role: {type: string, purpose: Current registrar operations role.}
+    candidates: {type: array, purpose: Master candidate queue.}
+    visible_candidates: {type: array, purpose: Filtered candidate queue.}
+    current_filter: {type: string, purpose: Active queue filter.}
+    selected_candidate_id: {type: string, purpose: Selected candidate id.}
+    selected_candidate_name: {type: string, purpose: Selected candidate name.}
+    selected_program: {type: string, purpose: Selected program.}
+    selected_cohort: {type: string, purpose: Selected graduation cohort.}
+    selected_risk: {type: string, purpose: Selected risk band.}
+    selected_gpa: {type: string, purpose: Selected GPA.}
+    selected_aid_status: {type: string, purpose: Selected aid status.}
+    selected_catalog_version: {type: string, purpose: Candidate degree catalog version.}
+    catalog_version_input: {type: string, purpose: Normalized catalog version entry.}
+    catalog_lock_status: {type: string, purpose: draft, stale, or locked.}
+    requirement_rows: {type: array, purpose: Degree requirement rows.}
+    requirement_count: {type: number, purpose: Requirement row count.}
+    deficiency_count: {type: number, purpose: Open requirement deficiencies.}
+    audit_status: {type: string, purpose: idle, gaps_found, or satisfied.}
+    schedule_rows: {type: array, purpose: Completion schedule rows.}
+    schedule_count: {type: number, purpose: Schedule row count.}
+    schedule_status: {type: string, purpose: idle, conflict, or resolved.}
+    schedule_credit_total: {type: number, purpose: Planned completion credits.}
+    collision_count: {type: number, purpose: Count of conflicting schedule rows.}
+    transfer_rows: {type: array, purpose: Uploaded transfer articulation rows.}
+    transfer_count: {type: number, purpose: Transfer row count.}
+    transfer_credit_total: {type: number, purpose: Uploaded transfer credits.}
+    last_transfer_file: {type: string, purpose: Last transfer upload file.}
+    equivalency_rows: {type: array, purpose: Staged equivalency mapping rows.}
+    equivalency_count: {type: number, purpose: Equivalency row count.}
+    equivalency_status: {type: string, purpose: idle, staged, or locked.}
+    transfer_applied_credits: {type: number, purpose: Applied transfer credits.}
+    residency_credit_total: {type: number, purpose: Transfer credits counted toward residency.}
+    exception_rows: {type: array, purpose: Advisor exception packet rows.}
+    exception_count: {type: number, purpose: Exception packet row count.}
+    exception_packet_status: {type: string, purpose: idle, blocked, or assembled.}
+    finance_status: {type: string, purpose: idle, blocked, or cleared.}
+    sap_status: {type: string, purpose: idle or clear.}
+    balance_status: {type: string, purpose: idle or zero_balance.}
+    finance_trace_id: {type: string, purpose: Trace id returned from the deterministic bursar clearance service.}
+    service_call_count: {type: number, purpose: Deterministic service call count.}
+    bursar_call_count: {type: number, purpose: Bursar service call count.}
+    reconciliation_rows: {type: array, purpose: Uploaded worksheet reconciliation rows.}
+    reconciliation_count: {type: number, purpose: Reconciliation row count.}
+    mismatch_count: {type: number, purpose: Count of mismatch rows.}
+    reconciliation_status: {type: string, purpose: idle, uploaded, blocked, or locked.}
+    dean_vote_status: {type: string, purpose: idle, blocked, or approved.}
+    dean_packet_hash: {type: string, purpose: Public dean vote packet checksum derived from selected candidate, reconciliation rows, and bursar calls.}
+    registrar_seal_status: {type: string, purpose: idle, blocked, or sealed.}
+    seal_manifest_hash: {type: string, purpose: Public registrar seal checksum derived from the dean packet.}
+    release_status: {type: string, purpose: idle, on_hold, or published.}
+    release_hold_reason: {type: string, purpose: Senate hold reason after deterministic hold notice event.}
+    release_rows: {type: array, purpose: Final release manifest rows.}
+    release_count: {type: number, purpose: Release manifest row count.}
+    blocker_rows: {type: array, purpose: Clearance blocker ledger.}
+    open_blockers: {type: number, purpose: Open blocker count.}
+    readiness_score: {type: number, purpose: Clearance readiness score.}
+    audit_log: {type: array, purpose: Audit event rows.}
+    audit_count: {type: number, purpose: Audit row count.}
+    hold_notice_count: {type: number, purpose: Count of deterministic senate hold notice events applied.}
+    denied_count: {type: number, purpose: Unauthorized action count.}
+    validation_errors: {type: object, purpose: Field-level validation errors.}
+    last_action: {type: string, purpose: Last public action marker.}
+    __services.calls: {type: array, purpose: Evaluator-provided service call ledger.}
+
+x-derived:
+  requirement_count: &derive_requirement_count {op: equals_length, path: requirement_count, source_path: requirement_rows}
+  schedule_count: &derive_schedule_count {op: equals_length, path: schedule_count, source_path: schedule_rows}
+  transfer_count: &derive_transfer_count {op: equals_length, path: transfer_count, source_path: transfer_rows}
+  transfer_credit_total: &derive_transfer_credit_total {op: equals_sum, path: transfer_credit_total, source_path: transfer_rows, field: credits}
+  equivalency_count: &derive_equivalency_count {op: equals_length, path: equivalency_count, source_path: equivalency_rows}
+  exception_count: &derive_exception_count {op: equals_length, path: exception_count, source_path: exception_rows}
+  reconciliation_count: &derive_reconciliation_count {op: equals_length, path: reconciliation_count, source_path: reconciliation_rows}
+  mismatch_count: &derive_mismatch_count {op: equals_count_where, path: mismatch_count, source_path: reconciliation_rows, where: [{op: equals, field: status, value: mismatch}]}
+  release_count: &derive_release_count {op: equals_length, path: release_count, source_path: release_rows}
+  audit_count: &derive_audit_count {op: equals_length, path: audit_count, source_path: audit_log}
+  service_call_count: &derive_service_call_count {op: equals_length, path: service_call_count, source_path: __services.calls}
+  bursar_call_count: &derive_bursar_call_count {op: equals_count_where, path: bursar_call_count, source_path: __services.calls, where: [{op: equals, field: service, value: bursar_clearance}]}
+
+components:
+  reset_button:
+    kind: button
+    selector: '[data-testid="reset"]'
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_page, value: command}
+          - {op: equals, path: active_role, value: analyst}
+          - {op: equals, path: candidates, value: [
+              {id: CAND-NOVA, name: "Nova Chen", program: "Data Science BS", cohort: "May 2026", risk: red, gpa: "3.41", aid: sap_hold},
+              {id: CAND-ORION, name: "Orion Patel", program: "Architecture BA", cohort: "May 2026", risk: amber, gpa: "3.18", aid: clear},
+              {id: CAND-LENA, name: "Lena Brooks", program: "Biology BS", cohort: "Aug 2026", risk: amber, gpa: "3.66", aid: review},
+              {id: CAND-MIRA, name: "Mira Soto", program: "History BA", cohort: "May 2026", risk: green, gpa: "3.82", aid: clear}
+            ]}
+          - {op: equals, path: visible_candidates, value: [
+              {id: CAND-NOVA, name: "Nova Chen", program: "Data Science BS", cohort: "May 2026", risk: red, gpa: "3.41", aid: sap_hold},
+              {id: CAND-ORION, name: "Orion Patel", program: "Architecture BA", cohort: "May 2026", risk: amber, gpa: "3.18", aid: clear},
+              {id: CAND-LENA, name: "Lena Brooks", program: "Biology BS", cohort: "Aug 2026", risk: amber, gpa: "3.66", aid: review},
+              {id: CAND-MIRA, name: "Mira Soto", program: "History BA", cohort: "May 2026", risk: green, gpa: "3.82", aid: clear}
+            ]}
+          - {op: equals, path: current_filter, value: all}
+          - {op: equals, path: selected_candidate_id, value: ""}
+          - {op: equals, path: selected_candidate_name, value: ""}
+          - {op: equals, path: selected_program, value: ""}
+          - {op: equals, path: selected_cohort, value: ""}
+          - {op: equals, path: selected_risk, value: ""}
+          - {op: equals, path: selected_gpa, value: ""}
+          - {op: equals, path: selected_aid_status, value: ""}
+          - {op: equals, path: selected_catalog_version, value: CAT-2026A}
+          - {op: equals, path: catalog_version_input, value: ""}
+          - {op: equals, path: catalog_lock_status, value: draft}
+          - {op: equals, path: requirement_rows, value: []}
+          - {op: equals, path: requirement_count, value: 0}
+          - {op: equals, path: deficiency_count, value: 0}
+          - {op: equals, path: audit_status, value: idle}
+          - {op: equals, path: schedule_rows, value: []}
+          - {op: equals, path: schedule_count, value: 0}
+          - {op: equals, path: schedule_status, value: idle}
+          - {op: equals, path: schedule_credit_total, value: 0}
+          - {op: equals, path: collision_count, value: 0}
+          - {op: equals, path: transfer_rows, value: []}
+          - {op: equals, path: transfer_count, value: 0}
+          - {op: equals, path: transfer_credit_total, value: 0}
+          - {op: equals, path: last_transfer_file, value: ""}
+          - {op: equals, path: equivalency_rows, value: []}
+          - {op: equals, path: equivalency_count, value: 0}
+          - {op: equals, path: equivalency_status, value: idle}
+          - {op: equals, path: transfer_applied_credits, value: 0}
+          - {op: equals, path: residency_credit_total, value: 0}
+          - {op: equals, path: exception_rows, value: []}
+          - {op: equals, path: exception_count, value: 0}
+          - {op: equals, path: exception_packet_status, value: idle}
+          - {op: equals, path: finance_status, value: idle}
+          - {op: equals, path: sap_status, value: idle}
+          - {op: equals, path: balance_status, value: idle}
+          - {op: equals, path: finance_trace_id, value: ""}
+          - {op: equals, path: service_call_count, value: 0}
+          - {op: equals, path: bursar_call_count, value: 0}
+          - {op: equals, path: reconciliation_rows, value: []}
+          - {op: equals, path: reconciliation_count, value: 0}
+          - {op: equals, path: mismatch_count, value: 0}
+          - {op: equals, path: reconciliation_status, value: idle}
+          - {op: equals, path: dean_vote_status, value: idle}
+          - {op: equals, path: dean_packet_hash, value: ""}
+          - {op: equals, path: registrar_seal_status, value: idle}
+          - {op: equals, path: seal_manifest_hash, value: ""}
+          - {op: equals, path: release_status, value: idle}
+          - {op: equals, path: release_hold_reason, value: ""}
+          - {op: equals, path: release_rows, value: []}
+          - {op: equals, path: release_count, value: 0}
+          - {op: equals, path: blocker_rows, value: [
+              {id: BLK-CATALOG, label: Catalog version locked, status: open},
+              {id: BLK-SCHEDULE, label: Collision-free completion schedule, status: open},
+              {id: BLK-EQUIV, label: Transfer equivalencies finalized, status: open},
+              {id: BLK-EXCEPTION, label: Advisor exception packet assembled, status: open},
+              {id: BLK-FINANCE, label: Aid and balance cleared, status: open},
+              {id: BLK-RECON, label: Worksheet reconciliation locked, status: open},
+              {id: BLK-DEAN, label: Dean vote recorded, status: open},
+              {id: BLK-SEAL, label: Registrar seal applied, status: open}
+            ]}
+          - {op: equals, path: open_blockers, value: 8}
+          - {op: equals, path: readiness_score, value: 0}
+          - {op: equals, path: audit_log, value: []}
+          - {op: equals, path: audit_count, value: 0}
+          - {op: equals, path: hold_notice_count, value: 0}
+          - {op: equals, path: denied_count, value: 0}
+          - {op: equals, path: validation_errors, value: {}}
+          - {op: equals, path: last_action, value: reset}
+  go_command_button:
+    kind: button
+    selector: '[data-testid="go-command"]'
+    actions: {click: {navigate_to: command, effects: [{op: equals, path: current_page, value: command}, {op: equals, path: last_action, value: nav_command}]}}
+  go_audit_button:
+    kind: button
+    selector: '[data-testid="go-audit"]'
+    actions: {click: {navigate_to: audit, effects: [{op: equals, path: current_page, value: audit}, {op: equals, path: last_action, value: nav_audit}]}}
+  go_articulation_button:
+    kind: button
+    selector: '[data-testid="go-articulation"]'
+    actions: {click: {navigate_to: articulation, effects: [{op: equals, path: current_page, value: articulation}, {op: equals, path: last_action, value: nav_articulation}]}}
+  go_reconcile_button:
+    kind: button
+    selector: '[data-testid="go-reconcile"]'
+    actions: {click: {navigate_to: reconcile, effects: [{op: equals, path: current_page, value: reconcile}, {op: equals, path: last_action, value: nav_reconcile}]}}
+  go_clearance_button:
+    kind: button
+    selector: '[data-testid="go-clearance"]'
+    actions: {click: {navigate_to: clearance, effects: [{op: equals, path: current_page, value: clearance}, {op: equals, path: last_action, value: nav_clearance}]}}
+  role_analyst_button:
+    kind: button
+    selector: '[data-testid="role-analyst"]'
+    actions: {click: {effects: [{op: equals, path: active_role, value: analyst}, {op: equals, path: last_action, value: role_analyst}]}}
+  role_advisor_button:
+    kind: button
+    selector: '[data-testid="role-advisor"]'
+    actions: {click: {effects: [{op: equals, path: active_role, value: advisor}, {op: equals, path: last_action, value: role_advisor}]}}
+  role_bursar_button:
+    kind: button
+    selector: '[data-testid="role-bursar"]'
+    actions: {click: {effects: [{op: equals, path: active_role, value: bursar}, {op: equals, path: last_action, value: role_bursar}]}}
+  role_registrar_button:
+    kind: button
+    selector: '[data-testid="role-registrar"]'
+    actions: {click: {effects: [{op: equals, path: active_role, value: registrar}, {op: equals, path: last_action, value: role_registrar}]}}
+  role_dean_button:
+    kind: button
+    selector: '[data-testid="role-dean"]'
+    actions: {click: {effects: [{op: equals, path: active_role, value: dean}, {op: equals, path: last_action, value: role_dean}]}}
+  filter_clearance_risk_button:
+    kind: button
+    selector: '[data-testid="filter-clearance-risk"]'
+    page: command
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_filter, value: clearance_risk}
+          - {op: equals, path: visible_candidates, value: [
+              {id: CAND-NOVA, name: "Nova Chen", program: "Data Science BS", cohort: "May 2026", risk: red, gpa: "3.41", aid: sap_hold},
+              {id: CAND-ORION, name: "Orion Patel", program: "Architecture BA", cohort: "May 2026", risk: amber, gpa: "3.18", aid: clear},
+              {id: CAND-LENA, name: "Lena Brooks", program: "Biology BS", cohort: "Aug 2026", risk: amber, gpa: "3.66", aid: review}
+            ]}
+          - {op: equals, path: last_action, value: filter_clearance_risk}
+  select_nova_button:
+    kind: button
+    selector: '[data-testid="select-CAND-NOVA"]'
+    page: command
+    actions:
+      click:
+        navigate_to: audit
+        effects:
+          - {op: equals, path: selected_candidate_id, value: CAND-NOVA}
+          - {op: equals, path: selected_candidate_name, value: "Nova Chen"}
+          - {op: equals, path: selected_program, value: "Data Science BS"}
+          - {op: equals, path: selected_cohort, value: "May 2026"}
+          - {op: equals, path: selected_risk, value: red}
+          - {op: equals, path: selected_gpa, value: "3.41"}
+          - {op: equals, path: selected_aid_status, value: sap_hold}
+          - {op: equals, path: selected_catalog_version, value: CAT-2026A}
+          - {op: equals, path: current_page, value: audit}
+          - {op: equals, path: last_action, value: select_candidate}
+  select_orion_button:
+    kind: button
+    selector: '[data-testid="select-CAND-ORION"]'
+    page: command
+    actions:
+      click:
+        navigate_to: audit
+        effects:
+          - {op: equals, path: selected_candidate_id, value: CAND-ORION}
+          - {op: equals, path: selected_candidate_name, value: "Orion Patel"}
+          - {op: equals, path: selected_program, value: "Architecture BA"}
+          - {op: equals, path: selected_cohort, value: "May 2026"}
+          - {op: equals, path: selected_risk, value: amber}
+          - {op: equals, path: selected_gpa, value: "3.18"}
+          - {op: equals, path: selected_aid_status, value: clear}
+          - {op: equals, path: current_page, value: audit}
+          - {op: equals, path: last_action, value: select_candidate}
+  run_degree_audit_button:
+    kind: button
+    selector: '[data-testid="run-degree-audit"]'
+    page: audit
+    actions:
+      click:
+        preconditions: [{op: not_one_of, path: selected_candidate_id, values: [""]}]
+        effects:
+          - {op: equals, path: audit_status, value: gaps_found}
+          - {op: equals, path: requirement_rows, value: [
+              {id: REQ-CAPSTONE, area: Capstone, needed: 4, earned: 0, source: none, status: missing},
+              {id: REQ-RESIDENCY, area: Residency, needed: 30, earned: 24, source: institutional, status: short},
+              {id: REQ-ETHICS, area: Ethics, needed: 3, earned: 0, source: none, status: missing},
+              {id: REQ-GPA, area: Program GPA, needed: 3.0, earned: 3.41, source: transcript, status: met}
+            ]}
+          - *derive_requirement_count
+          - {op: equals, path: deficiency_count, value: 3}
+          - {op: equals, path: readiness_score, value: 18}
+          - {op: equals, path: last_action, value: run_degree_audit}
+  plan_completion_button:
+    kind: button
+    selector: '[data-testid="plan-completion"]'
+    page: audit
+    actions:
+      click:
+        effects:
+          - {op: equals, path: schedule_rows, value: [
+              {id: SCH-DS498, code: DS 498, title: Applied ML Capstone, slot: "MW 09:00", credits: 4, status: conflict},
+              {id: SCH-STAT421, code: STAT 421, title: Model Risk Lab, slot: "MW 09:00", credits: 3, status: conflict},
+              {id: SCH-ETH310, code: ETH 310, title: Data Ethics, slot: "TR 13:00", credits: 3, status: planned},
+              {id: SCH-RES299, code: RES 299, title: Residency Colloquium, slot: "F 10:00", credits: 3, status: planned}
+            ]}
+          - *derive_schedule_count
+          - {op: equals, path: schedule_credit_total, value: 13}
+          - {op: equals, path: schedule_status, value: conflict}
+          - {op: equals, path: collision_count, value: 2}
+          - {op: equals, path: last_action, value: plan_completion}
+  resolve_schedule_button:
+    kind: button
+    selector: '[data-testid="resolve-schedule"]'
+    page: audit
+    actions:
+      click:
+        effects:
+          - {op: equals, path: schedule_rows, value: [
+              {id: SCH-DS498, code: DS 498, title: Applied ML Capstone, slot: "MW 09:00", credits: 4, status: planned},
+              {id: SCH-STAT421, code: STAT 421, title: Model Risk Lab, slot: "TR 15:00", credits: 3, status: planned},
+              {id: SCH-ETH310, code: ETH 310, title: Data Ethics, slot: "TR 13:00", credits: 3, status: planned},
+              {id: SCH-RES299, code: RES 299, title: Residency Colloquium, slot: "F 10:00", credits: 3, status: planned}
+            ]}
+          - *derive_schedule_count
+          - {op: equals, path: schedule_credit_total, value: 13}
+          - {op: equals, path: schedule_status, value: resolved}
+          - {op: equals, path: collision_count, value: 0}
+          - {op: equals, path: last_action, value: resolve_schedule}
+  catalog_version_input:
+    kind: input
+    selector: '[data-testid="catalog-version"]'
+    page: audit
+    actions:
+      fill:
+        effects:
+          - {op: equals_normalized, path: catalog_version_input, value_from: input.value, normalizers: [trim, uppercase]}
+          - {op: equals, path: last_action, value: edit_catalog_version}
+  lock_catalog_button:
+    kind: button
+    selector: '[data-testid="lock-catalog"]'
+    page: audit
+    actions:
+      click:
+        allowed_roles: [registrar]
+        preconditions: [{op: relation, path: catalog_version_input, operator: "!=", value: ""}]
+        rejected_when:
+          - {op: not_one_of, path: catalog_version_input, values: [CAT-2026A]}
+        rejected_effects:
+          - {op: equals, path: catalog_lock_status, value: stale}
+          - {op: updated_object_fields, path: validation_errors, updates: {catalog: "Catalog version mismatch"}}
+          - {op: equals, path: last_action, value: catalog_mismatch}
+        effects:
+          - {op: equals, path: catalog_lock_status, value: locked}
+          - {op: equals, path: selected_catalog_version, value: CAT-2026A}
+          - {op: removed_object_fields, path: validation_errors, fields: [catalog]}
+          - {op: equals, path: last_action, value: lock_catalog}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_registrar}
+  transfer_upload_input:
+    kind: input
+    selector: '[data-testid="transfer-upload"]'
+    page: articulation
+    actions:
+      upload:
+        file_schema:
+          format: csv
+          columns:
+            - {name: id, type: string}
+            - {name: course, type: string}
+            - {name: credits, type: number}
+            - {name: residency, type: number}
+            - {name: status, type: string}
+        effects:
+          - {op: equals, path: transfer_rows, value_from: input.rows}
+          - *derive_transfer_count
+          - *derive_transfer_credit_total
+          - {op: equals, path: last_transfer_file, value_from: input.file.name}
+          - {op: equals, path: equivalency_status, value: idle}
+          - {op: equals, path: equivalency_rows, value: []}
+          - {op: equals, path: last_action, value: upload_transfer}
+  stage_equivalencies_button:
+    kind: button
+    selector: '[data-testid="stage-equivalencies"]'
+    page: articulation
+    actions:
+      click:
+        allowed_roles: [advisor]
+        preconditions: [{op: relation, path: transfer_count, operator: ">", value: 0}]
+        effects:
+          - {op: equals, path: equivalency_rows, value: [
+              {id: EQ-CAPSTONE, requirement: REQ-CAPSTONE, source_course: DSX 498, credits: 4, residency_credits: 4, status: staged},
+              {id: EQ-ETHICS, requirement: REQ-ETHICS, source_course: PHIL 340, credits: 3, residency_credits: 0, status: staged},
+              {id: EQ-RESIDENCY, requirement: REQ-RESIDENCY, source_course: RES 200, credits: 2, residency_credits: 2, status: review}
+            ]}
+          - *derive_equivalency_count
+          - {op: equals, path: transfer_applied_credits, value: 9}
+          - {op: equals, path: residency_credit_total, value: 6}
+          - {op: equals, path: equivalency_status, value: staged}
+          - {op: equals, path: readiness_score, value: 42}
+          - {op: equals, path: last_action, value: stage_equivalencies}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_advisor}
+  finalize_equivalencies_button:
+    kind: button
+    selector: '[data-testid="finalize-equivalencies"]'
+    page: articulation
+    actions:
+      click:
+        allowed_roles: [advisor]
+        preconditions:
+          - {op: one_of, path: equivalency_status, values: [staged]}
+          - {op: one_of, path: catalog_lock_status, values: [locked]}
+        rejected_when:
+          - {op: not_one_of, path: catalog_lock_status, values: [locked]}
+        rejected_effects:
+          - {op: equals, path: equivalency_status, value: blocked}
+          - {op: updated_object_fields, path: validation_errors, updates: {equivalency: "Catalog lock required"}}
+          - {op: equals, path: last_action, value: equivalency_requires_catalog}
+        effects:
+          - {op: equals, path: equivalency_status, value: locked}
+          - {op: equals, path: requirement_rows, value: [
+              {id: REQ-CAPSTONE, area: Capstone, needed: 4, earned: 4, source: transfer, status: met},
+              {id: REQ-RESIDENCY, area: Residency, needed: 30, earned: 30, source: mixed, status: met},
+              {id: REQ-ETHICS, area: Ethics, needed: 3, earned: 3, source: transfer, status: met},
+              {id: REQ-GPA, area: Program GPA, needed: 3.0, earned: 3.41, source: transcript, status: met}
+            ]}
+          - *derive_requirement_count
+          - {op: equals, path: deficiency_count, value: 0}
+          - {op: equals, path: audit_status, value: satisfied}
+          - {op: equals, path: readiness_score, value: 58}
+          - {op: removed_object_fields, path: validation_errors, fields: [equivalency]}
+          - {op: equals, path: last_action, value: finalize_equivalencies}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_advisor}
+  assemble_exception_packet_button:
+    kind: button
+    selector: '[data-testid="assemble-exception-packet"]'
+    page: articulation
+    actions:
+      click:
+        allowed_roles: [advisor]
+        preconditions:
+          - {op: one_of, path: audit_status, values: [satisfied]}
+          - {op: one_of, path: schedule_status, values: [resolved]}
+          - {op: one_of, path: equivalency_status, values: [locked]}
+        rejected_when:
+          - {op: not_one_of, path: schedule_status, values: [resolved]}
+        rejected_effects:
+          - {op: equals, path: exception_packet_status, value: blocked}
+          - {op: updated_object_fields, path: validation_errors, updates: {packet: "Resolved schedule required"}}
+          - {op: equals, path: last_action, value: packet_requires_schedule}
+        effects:
+          - {op: equals, path: exception_packet_status, value: assembled}
+          - {op: equals, path: exception_rows, value: [
+              {id: EX-CAT, type: catalog_lock, owner: advisor, evidence: CAT-2026A, status: attached},
+              {id: EX-RES, type: residency_credit, owner: advisor, evidence: "6 transfer residency credits", status: attached}
+            ]}
+          - *derive_exception_count
+          - {op: equals, path: readiness_score, value: 68}
+          - {op: removed_object_fields, path: validation_errors, fields: [packet]}
+          - {op: equals, path: last_action, value: assemble_exception_packet}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_advisor}
+  run_bursar_clearance_button:
+    kind: button
+    selector: '[data-testid="run-bursar-clearance"]'
+    page: reconcile
+    actions:
+      click:
+        allowed_roles: [bursar]
+        preconditions:
+          - {op: one_of, path: exception_packet_status, values: [assembled]}
+        rejected_when:
+          - {op: not_one_of, path: exception_packet_status, values: [assembled]}
+        rejected_effects:
+          - {op: equals, path: finance_status, value: blocked}
+          - {op: updated_object_fields, path: validation_errors, updates: {finance: "Exception packet required"}}
+          - {op: equals, path: last_action, value: finance_requires_packet}
+        effects:
+          - *derive_service_call_count
+          - *derive_bursar_call_count
+          - {op: equals, path: finance_status, value: cleared}
+          - {op: equals, path: sap_status, value: clear}
+          - {op: equals, path: balance_status, value: zero_balance}
+          - {op: equals, path: finance_trace_id, value: BUR-NOVA-042}
+          - {op: equals, path: readiness_score, value: 74}
+          - {op: removed_object_fields, path: validation_errors, fields: [finance]}
+          - {op: equals, path: last_action, value: run_bursar_clearance}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_bursar}
+  reconciliation_upload_input:
+    kind: input
+    selector: '[data-testid="reconciliation-upload"]'
+    page: reconcile
+    actions:
+      upload:
+        file_schema:
+          format: csv
+          columns:
+            - {name: id, type: string}
+            - {name: requirement, type: string}
+            - {name: manifest_status, type: string}
+            - {name: registrar_status, type: string}
+            - {name: status, type: string}
+        effects:
+          - {op: equals, path: reconciliation_rows, value_from: input.rows}
+          - *derive_reconciliation_count
+          - *derive_mismatch_count
+          - {op: equals, path: reconciliation_status, value: uploaded}
+          - {op: equals, path: last_action, value: upload_reconciliation}
+  lock_reconciliation_button:
+    kind: button
+    selector: '[data-testid="lock-reconciliation"]'
+    page: reconcile
+    actions:
+      click:
+        allowed_roles: [registrar]
+        preconditions: [{op: relation, path: reconciliation_count, operator: ">", value: 0}]
+        rejected_when:
+          - {op: relation, path: mismatch_count, operator: ">", value: 0}
+        rejected_effects:
+          - {op: equals, path: reconciliation_status, value: blocked}
+          - {op: updated_object_fields, path: validation_errors, updates: {reconciliation: "Resolve worksheet mismatches"}}
+          - {op: equals, path: last_action, value: reconciliation_mismatch}
+        effects:
+          - {op: equals, path: reconciliation_status, value: locked}
+          - {op: equals, path: mismatch_count, value: 0}
+          - {op: equals, path: readiness_score, value: 82}
+          - {op: removed_object_fields, path: validation_errors, fields: [reconciliation]}
+          - {op: equals, path: last_action, value: lock_reconciliation}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_registrar}
+  dean_vote_button:
+    kind: button
+    selector: '[data-testid="dean-vote"]'
+    page: clearance
+    actions:
+      click:
+        allowed_roles: [dean]
+        preconditions:
+          - {op: one_of, path: finance_status, values: [cleared]}
+          - {op: one_of, path: reconciliation_status, values: [locked]}
+          - {op: one_of, path: exception_packet_status, values: [assembled]}
+        rejected_when:
+          - {op: not_one_of, path: finance_status, values: [cleared]}
+        rejected_effects:
+          - {op: equals, path: dean_vote_status, value: blocked}
+          - {op: updated_object_fields, path: validation_errors, updates: {dean: "Finance, packet, and reconciliation gates required"}}
+          - {op: equals, path: last_action, value: dean_requires_clearance_gates}
+        effects:
+          - {op: equals, path: dean_vote_status, value: approved}
+          - {op: equals_template, path: dean_packet_hash, template: "DEAN-{selected_candidate_id}-RC{reconciliation_count}-B{bursar_call_count}"}
+          - {op: equals, path: readiness_score, value: 90}
+          - {op: equals, path: audit_log, value: [
+              {id: AUD-DEAN, event: dean_vote, role: dean, status: approved}
+            ]}
+          - *derive_audit_count
+          - {op: removed_object_fields, path: validation_errors, fields: [dean]}
+          - {op: equals, path: last_action, value: dean_vote}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_dean}
+  registrar_seal_button:
+    kind: button
+    selector: '[data-testid="registrar-seal"]'
+    page: clearance
+    actions:
+      click:
+        allowed_roles: [registrar]
+        preconditions:
+          - {op: one_of, path: dean_vote_status, values: [approved]}
+          - {op: relation, path: dean_packet_hash, operator: "!=", value: ""}
+          - {op: one_of, path: catalog_lock_status, values: [locked]}
+          - {op: one_of, path: reconciliation_status, values: [locked]}
+          - {op: one_of, path: finance_status, values: [cleared]}
+        rejected_when:
+          - {op: not_one_of, path: dean_vote_status, values: [approved]}
+        rejected_effects:
+          - {op: equals, path: registrar_seal_status, value: blocked}
+          - {op: equals, path: last_action, value: seal_requires_dean}
+        effects:
+          - {op: equals, path: registrar_seal_status, value: sealed}
+          - {op: equals_template, path: seal_manifest_hash, template: "SEAL-{selected_candidate_id}-{dean_packet_hash}"}
+          - {op: equals, path: blocker_rows, value: [
+              {id: BLK-CATALOG, label: Catalog version locked, status: cleared},
+              {id: BLK-SCHEDULE, label: Collision-free completion schedule, status: cleared},
+              {id: BLK-EQUIV, label: Transfer equivalencies finalized, status: cleared},
+              {id: BLK-EXCEPTION, label: Advisor exception packet assembled, status: cleared},
+              {id: BLK-FINANCE, label: Aid and balance cleared, status: cleared},
+              {id: BLK-RECON, label: Worksheet reconciliation locked, status: cleared},
+              {id: BLK-DEAN, label: Dean vote recorded, status: cleared},
+              {id: BLK-SEAL, label: Registrar seal applied, status: cleared}
+            ]}
+          - {op: equals, path: open_blockers, value: 0}
+          - {op: equals, path: readiness_score, value: 100}
+          - {op: equals, path: audit_log, value: [
+              {id: AUD-DEAN, event: dean_vote, role: dean, status: approved},
+              {id: AUD-SEAL, event: registrar_seal, role: registrar, status: sealed}
+            ]}
+          - *derive_audit_count
+          - {op: equals, path: last_action, value: registrar_seal}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_registrar}
+  publish_release_button:
+    kind: button
+    selector: '[data-testid="publish-release"]'
+    page: clearance
+    actions:
+      click:
+        allowed_roles: [registrar]
+        preconditions:
+          - {op: one_of, path: registrar_seal_status, values: [sealed]}
+          - {op: relation, path: seal_manifest_hash, operator: "!=", value: ""}
+        effects:
+          - {op: equals, path: release_status, value: published}
+          - {op: equals, path: release_hold_reason, value: ""}
+          - {op: equals, path: release_rows, value: [
+              {id: REL-NOVA-COMM, candidate: "Nova Chen", channel: commencement, batch: BATCH-MAY26-NOVA, status: published},
+              {id: REL-NOVA-ARCHIVE, candidate: "Nova Chen", channel: transcript_archive, batch: BATCH-MAY26-NOVA, status: queued}
+            ]}
+          - *derive_release_count
+          - {op: equals, path: audit_log, value: [
+              {id: AUD-DEAN, event: dean_vote, role: dean, status: approved},
+              {id: AUD-SEAL, event: registrar_seal, role: registrar, status: sealed},
+              {id: AUD-REL, event: release_manifest, role: registrar, status: published}
+            ]}
+          - *derive_audit_count
+          - {op: equals, path: last_action, value: publish_release}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_registrar}

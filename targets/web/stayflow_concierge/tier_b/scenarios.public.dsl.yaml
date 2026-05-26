@@ -1,0 +1,259 @@
+dsl_version: "3.0.0"
+visibility: public
+tier_weights:
+  smoke: 1
+  core: 2
+  validation: 3
+  service: 4
+  upload: 4
+  permission: 4
+  persistence: 5
+  journey: 6
+scenarios:
+  - id: public_01_filter_seoul_catalog
+    tier: smoke
+    difficulty: A
+    steps:
+      - do: reset_button.click
+      - do: filter_seoul_button.click
+        expect:
+          - {op: equals, path: current_city_filter, value: Seoul}
+      - table: stay_grid
+        expect_order: [ST-SEOUL-LOFT]
+        expect_row_count: 1
+        expect_rows:
+          - id: ST-SEOUL-LOFT
+            cells: {city: Seoul, base: 480}
+
+  - id: public_02_build_two_city_itinerary
+    tier: core
+    difficulty: A
+    steps:
+      - do: reset_button.click
+      - do: add_busan_leg_button.click
+      - do: add_seoul_leg_button.click
+        expect:
+          - {op: equals, path: leg_count, value: 2}
+          - {op: equals, path: trip_route_key, value: BUSAN_SEOUL}
+          - {op: equals, path: trip_subtotal, value: 800}
+          - {op: equals, path: service_fee, value: 78}
+          - {op: equals, path: total_due, value: 878}
+      - table: itinerary_grid
+        expect_order: [LEG-BUSAN, LEG-SEOUL]
+        expect_rows:
+          - id: LEG-BUSAN
+            cells: {city: Busan, leg_total: 320}
+          - id: LEG-SEOUL
+            cells: {city: Seoul, leg_total: 480}
+
+  - id: public_03_two_city_addons_and_quote
+    tier: service
+    difficulty: B
+    steps:
+      - do: reset_button.click
+      - do: add_busan_leg_button.click
+      - do: add_seoul_leg_button.click
+      - do: add_busan_breakfast_button.click
+      - do: add_seoul_pickup_button.click
+        expect:
+          - {op: equals, path: addon_total, value: 97}
+          - {op: equals, path: total_due, value: 975}
+      - do: go_quote_button.click
+      - do: request_quote_button.click
+        expect:
+          - {op: equals, path: quote_status, value: ready}
+          - {op: equals, path: quote_id, value: Q-BS-884}
+          - {op: equals, path: quote_risk, value: balanced}
+          - {op: equals, path: quote_call_count, value: 1}
+          - {op: equals, path: service_call_count, value: 1}
+
+  - id: public_04_manifest_upload_counts
+    tier: upload
+    difficulty: B
+    steps:
+      - do: reset_button.click
+      - do: go_travelers_button.click
+      - do: traveler_upload_input.upload
+        input:
+          file:
+            name: travelers-public.csv
+            mime_type: text/csv
+            content: |
+              id,name,type,meal,mobility
+              T-01,Mina Park,adult,standard,no
+              T-02,Juno Park,child,vegetarian,no
+              T-03,Alex Kim,adult,halal,yes
+          rows:
+            - {id: T-01, name: Mina Park, type: adult, meal: standard, mobility: "no"}
+            - {id: T-02, name: Juno Park, type: child, meal: vegetarian, mobility: "no"}
+            - {id: T-03, name: Alex Kim, type: adult, meal: halal, mobility: "yes"}
+        expect:
+          - {op: equals, path: traveler_count, value: 3}
+          - {op: equals, path: child_count, value: 1}
+          - {op: equals, path: mobility_count, value: 1}
+      - table: traveler_grid
+        expect_order: [T-01, T-02, T-03]
+        expect_row_count: 3
+
+  - id: public_05_missing_arrival_rejected
+    tier: validation
+    difficulty: B
+    steps:
+      - do: reset_button.click
+      - do: add_busan_leg_button.click
+      - do: go_travelers_button.click
+      - do: primary_guest_name_input.fill
+        input: {value: "Mina Park"}
+      - do: primary_guest_email_input.fill
+        input: {value: "MINA@EXAMPLE.COM"}
+      - do: validate_trip_button.click
+        mode: rejected
+        expect:
+          - {op: equals, path: booking_status, value: validation_failed}
+          - {op: equals, path: error_count, value: 1}
+
+  - id: public_06_valid_trip_hold
+    tier: journey
+    difficulty: B
+    steps:
+      - do: reset_button.click
+      - do: add_busan_leg_button.click
+      - do: add_seoul_leg_button.click
+      - do: go_quote_button.click
+      - do: request_quote_button.click
+      - do: go_travelers_button.click
+      - do: traveler_upload_input.upload
+        input:
+          file:
+            name: solo.csv
+            mime_type: text/csv
+            content: |
+              id,name,type,meal,mobility
+              S-1,Mina Park,adult,standard,no
+          rows:
+            - {id: S-1, name: Mina Park, type: adult, meal: standard, mobility: "no"}
+      - do: primary_guest_name_input.fill
+        input: {value: "Mina Park"}
+      - do: primary_guest_email_input.fill
+        input: {value: "mina@example.com"}
+      - do: arrival_time_input.fill
+        input: {value: "  18:30   KTX 17  "}
+      - do: validate_trip_button.click
+      - do: go_quote_button.click
+      - do: hold_booking_button.click
+        expect:
+          - {op: equals, path: booking_status, value: held}
+          - {op: equals, path: audit_count, value: 1}
+
+  - id: public_07_guest_cannot_confirm_held_trip
+    tier: permission
+    difficulty: B
+    steps:
+      - do: reset_button.click
+      - do: add_busan_leg_button.click
+      - do: go_quote_button.click
+      - do: request_quote_button.click
+      - do: go_travelers_button.click
+      - do: traveler_upload_input.upload
+        input:
+          file:
+            name: guest-deny.csv
+            mime_type: text/csv
+            content: |
+              id,name,type,meal,mobility
+              D-1,Jin Rao,adult,standard,no
+          rows:
+            - {id: D-1, name: Jin Rao, type: adult, meal: standard, mobility: "no"}
+      - do: primary_guest_name_input.fill
+        input: {value: "Jin Rao"}
+      - do: primary_guest_email_input.fill
+        input: {value: "jin@example.com"}
+      - do: arrival_time_input.fill
+        input: {value: "20:10 ferry pier"}
+      - do: validate_trip_button.click
+      - do: go_quote_button.click
+      - do: hold_booking_button.click
+      - do: go_ops_button.click
+      - do: confirm_booking_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: booking_status, value: held}
+          - {op: equals, path: denied_count, value: 1}
+
+  - id: public_08_agent_checks_and_confirms
+    tier: permission
+    difficulty: B
+    steps:
+      - do: reset_button.click
+      - do: add_busan_leg_button.click
+      - do: add_seoul_leg_button.click
+      - do: go_quote_button.click
+      - do: request_quote_button.click
+      - do: go_travelers_button.click
+      - do: traveler_upload_input.upload
+        input:
+          file:
+            name: team-public.csv
+            mime_type: text/csv
+            content: |
+              id,name,type,meal,mobility
+              P-1,Team Lead,adult,standard,no
+              P-2,Team Child,child,vegetarian,no
+          rows:
+            - {id: P-1, name: Team Lead, type: adult, meal: standard, mobility: "no"}
+            - {id: P-2, name: Team Child, type: child, meal: vegetarian, mobility: "no"}
+      - do: primary_guest_name_input.fill
+        input: {value: "Team Lead"}
+      - do: primary_guest_email_input.fill
+        input: {value: "lead@example.com"}
+      - do: arrival_time_input.fill
+        input: {value: "19:05 airport transfer"}
+      - do: validate_trip_button.click
+      - do: go_quote_button.click
+      - do: hold_booking_button.click
+      - do: go_ops_button.click
+      - do: role_agent_button.click
+      - do: check_itinerary_button.click
+      - do: check_manifest_button.click
+      - do: check_deposit_button.click
+      - do: confirm_booking_button.click
+        expect:
+          - {op: equals, path: booking_status, value: confirmed}
+          - {op: equals, path: checklist_completed_count, value: 3}
+          - {op: equals, path: audit_count, value: 2}
+
+  - id: public_09_promo_normalizes_and_applies
+    tier: service
+    difficulty: B
+    steps:
+      - do: reset_button.click
+      - do: add_busan_leg_button.click
+      - do: add_seoul_leg_button.click
+      - do: go_quote_button.click
+      - do: request_quote_button.click
+      - do: promo_code_input.fill
+        input: {value: " multi120 "}
+      - do: apply_promo_button.click
+        expect:
+          - {op: equals, path: promo_code, value: MULTI120}
+          - {op: equals, path: promo_credit, value: 120}
+          - {op: equals, path: promo_status, value: applied}
+          - {op: equals, path: total_due, value: 758}
+          - {op: equals, path: service_call_count, value: 2}
+
+  - id: public_10_browser_history_between_workspaces
+    tier: persistence
+    difficulty: B
+    steps:
+      - do: reset_button.click
+      - do: go_travelers_button.click
+      - do: go_quote_button.click
+      - do: go_ops_button.click
+      - browser: back
+        expect_page: quote
+        expect:
+          - {op: equals, path: current_page, value: quote}
+      - browser: back
+        expect_page: travelers
+        expect:
+          - {op: equals, path: current_page, value: travelers}

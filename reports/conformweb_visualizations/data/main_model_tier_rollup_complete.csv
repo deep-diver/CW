@@ -1,0 +1,37 @@
+model_group,model,tier,tier_name,planned_runs,reportable_runs,missing_or_excluded_runs,full_pass_count,full_pass_rate_reportable,full_pass_rate_planned,S_scen,S_step,source_notes
+Mini,GPT-5.4 nano,A,Consumer,60,60,0,0,0.0,0.0,0.2533581277373877,0.42817544623707054,raw_current;report_per_model
+Mini,GPT-5.4 nano,B,Operational,60,60,0,2,0.03333333333333333,0.03333333333333333,0.1682001787797242,0.32257836389014083,raw_current;report_per_model
+Mini,GPT-5.4 nano,C,Regulated,60,60,0,3,0.05,0.05,0.17989282203392495,0.28143002905488707,raw_current
+Mini,GPT-5.4 nano,D,Release-stage,60,60,0,0,0.0,0.0,0.0998521076404488,0.24786413125516393,raw_current
+Mini,Claude Haiku 4.5,A,Consumer,60,60,0,1,0.016666666666666666,0.016666666666666666,0.21200367442843587,0.40302036900546184,raw_current;report_per_model
+Mini,Claude Haiku 4.5,B,Operational,60,60,0,0,0.0,0.0,0.11937730942276395,0.29332943598902356,raw_current;report_per_model
+Mini,Claude Haiku 4.5,C,Regulated,60,60,0,0,0.0,0.0,0.14164489094675212,0.3243994446919319,raw_current
+Mini,Claude Haiku 4.5,D,Release-stage,60,60,0,0,0.0,0.0,0.09984868619214825,0.24008112812032997,raw_current
+Mini,Gemini 3.1 Flash Lite,A,Consumer,60,60,0,0,0.0,0.0,0.021694410444716438,0.1705637137177455,raw_current;report_per_model
+Mini,Gemini 3.1 Flash Lite,B,Operational,60,60,0,0,0.0,0.0,0.015476190476190477,0.1039105961784095,raw_current;report_per_model
+Mini,Gemini 3.1 Flash Lite,C,Regulated,60,60,0,0,0.0,0.0,0.0,0.08676087640214476,raw_current
+Mini,Gemini 3.1 Flash Lite,D,Release-stage,60,60,0,0,0.0,0.0,0.0,0.07559931560184092,raw_current
+Turbo,GPT-5.4 mini,A,Consumer,60,60,0,3,0.05,0.05,0.13468041074948506,0.2374774175847432,raw_current;report_per_model
+Turbo,GPT-5.4 mini,B,Operational,60,60,0,0,0.0,0.0,0.021265840220385676,0.12944989412362745,raw_current;report_per_model
+Turbo,GPT-5.4 mini,C,Regulated,60,60,0,0,0.0,0.0,0.007661195319249192,0.09476658260584783,raw_current
+Turbo,GPT-5.4 mini,D,Release-stage,60,60,0,0,0.0,0.0,0.006587073807246005,0.07796286294656014,raw_current
+Turbo,Claude Sonnet 4.6,A,Consumer,60,60,0,19,0.31666666666666665,0.31666666666666665,0.6087924697566275,0.7079390698053888,raw_current;report_per_model
+Turbo,Claude Sonnet 4.6,B,Operational,60,60,0,14,0.23333333333333334,0.23333333333333334,0.5713329357988448,0.6827396893876281,raw_current;report_per_model
+Turbo,Claude Sonnet 4.6,C,Regulated,60,60,0,10,0.16666666666666666,0.16666666666666666,0.5839703377453795,0.7009448916127305,raw_current
+Turbo,Claude Sonnet 4.6,D,Release-stage,60,60,0,3,0.05,0.05,0.43492651804398974,0.6051323557931013,raw_current
+Turbo,Gemini 3.1 Flash,A,Consumer,60,60,0,13,0.21666666666666667,0.21666666666666667,0.49747196620017403,0.5989372494970492,raw_current;report_per_model
+Turbo,Gemini 3.1 Flash,B,Operational,60,60,0,8,0.13333333333333333,0.13333333333333333,0.3931674129855948,0.530116476701752,raw_current;report_per_model
+Turbo,Gemini 3.1 Flash,C,Regulated,60,60,0,2,0.03333333333333333,0.03333333333333333,0.33655344882456356,0.5077855793132688,raw_current
+Turbo,Gemini 3.1 Flash,D,Release-stage,60,60,0,0,0.0,0.0,0.23437839629712895,0.3973105104793479,raw_current
+Frontier,GPT-5.4,A,Consumer,60,60,0,23,0.38333333333333336,0.38333333333333336,0.741002624942856,0.8272308489218155,raw_current;report_per_model
+Frontier,GPT-5.4,B,Operational,60,60,0,17,0.2833333333333333,0.2833333333333333,0.753143170472716,0.8580919185467469,raw_current;report_per_model
+Frontier,GPT-5.4,C,Regulated,60,60,0,3,0.05,0.05,0.6411375957016896,0.7832561855177053,raw_current;report_per_model
+Frontier,GPT-5.4,D,Release-stage,60,60,0,4,0.06666666666666667,0.06666666666666667,0.5998919406521338,0.7731248180949204,raw_current;report_per_model
+Frontier,Claude Opus 4.6,A,Consumer,60,60,0,32,0.5333333333333333,0.5333333333333333,0.7780750910619221,0.8476837833511226,raw_current;report_per_model
+Frontier,Claude Opus 4.6,B,Operational,60,60,0,22,0.36666666666666664,0.36666666666666664,0.750432604830332,0.8532105699291331,raw_current;report_per_model
+Frontier,Claude Opus 4.6,C,Regulated,60,60,0,15,0.25,0.25,0.6903844016551667,0.8243391198534052,raw_current;report_per_model
+Frontier,Claude Opus 4.6,D,Release-stage,60,60,0,0,0.0,0.0,0.6146453372392177,0.7669325488983091,raw_current;report_per_model
+Frontier,Gemini 3.1 Pro Preview,A,Consumer,60,60,0,25,0.4166666666666667,0.4166666666666667,0.7541364724503891,0.8370277429102999,raw_current;report_per_model
+Frontier,Gemini 3.1 Pro Preview,B,Operational,60,60,0,19,0.31666666666666665,0.31666666666666665,0.6582220808470809,0.7530038593896441,raw_current;report_per_model
+Frontier,Gemini 3.1 Pro Preview,C,Regulated,60,60,0,11,0.18333333333333332,0.18333333333333332,0.6067903442765048,0.7566717042406068,raw_current;report_per_model
+Frontier,Gemini 3.1 Pro Preview,D,Release-stage,60,60,0,3,0.05,0.05,0.4738236192943633,0.6395745320750806,raw_current;report_per_model

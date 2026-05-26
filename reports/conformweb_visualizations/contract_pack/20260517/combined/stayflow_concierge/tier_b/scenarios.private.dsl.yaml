@@ -1,0 +1,399 @@
+dsl_version: "3.0.0"
+visibility: private
+tier_weights:
+  smoke: 1
+  core: 2
+  validation: 3
+  service: 4
+  upload: 4
+  permission: 4
+  persistence: 5
+  journey: 6
+scenarios:
+  - id: private_01_show_all_catalog_order
+    tier: smoke
+    difficulty: A
+    steps:
+      - do: reset_button.click
+      - do: filter_busan_button.click
+      - do: filter_all_button.click
+      - table: stay_grid
+        expect_order: [ST-BUSAN-HARBOR, ST-SEOUL-LOFT, ST-KYOTO-MACHIYA]
+        expect_row_count: 3
+
+  - id: private_02_single_city_quote
+    tier: service
+    difficulty: A
+    steps:
+      - do: reset_button.click
+      - do: add_busan_leg_button.click
+      - do: go_quote_button.click
+      - do: request_quote_button.click
+        expect:
+          - {op: equals, path: trip_route_key, value: BUSAN}
+          - {op: equals, path: total_due, value: 364}
+          - {op: equals, path: quote_id, value: Q-B-320}
+          - {op: equals, path: quote_risk, value: simple}
+
+  - id: private_03_three_city_itinerary_prices
+    tier: core
+    difficulty: B
+    steps:
+      - do: reset_button.click
+      - do: add_busan_leg_button.click
+      - do: add_seoul_leg_button.click
+      - do: add_kyoto_leg_button.click
+        expect:
+          - {op: equals, path: leg_count, value: 3}
+          - {op: equals, path: trip_route_key, value: BUSAN_SEOUL_KYOTO}
+          - {op: equals, path: trip_subtotal, value: 1420}
+          - {op: equals, path: service_fee, value: 112}
+          - {op: equals, path: total_due, value: 1532}
+      - table: itinerary_grid
+        expect_order: [LEG-BUSAN, LEG-SEOUL, LEG-KYOTO]
+        expect_rows:
+          - id: LEG-KYOTO
+            cells: {city: Kyoto, leg_total: 620}
+
+  - id: private_04_three_city_all_addons
+    tier: core
+    difficulty: B
+    steps:
+      - do: reset_button.click
+      - do: add_busan_leg_button.click
+      - do: add_seoul_leg_button.click
+      - do: add_busan_breakfast_button.click
+      - do: add_seoul_pickup_button.click
+      - do: add_kyoto_leg_button.click
+      - do: add_kyoto_flexible_button.click
+        expect:
+          - {op: equals, path: addon_total, value: 167}
+          - {op: equals, path: total_due, value: 1699}
+      - table: itinerary_grid
+        expect_order: [LEG-BUSAN, LEG-SEOUL, LEG-KYOTO]
+        expect_rows:
+          - id: LEG-BUSAN
+            cells: {addon: 42, leg_total: 362}
+          - id: LEG-SEOUL
+            cells: {addon: 55, leg_total: 535}
+          - id: LEG-KYOTO
+            cells: {addon: 70, leg_total: 690}
+
+  - id: private_05_remove_middle_leg_reprices_route
+    tier: core
+    difficulty: B
+    steps:
+      - do: reset_button.click
+      - do: add_busan_leg_button.click
+      - do: add_seoul_leg_button.click
+      - do: add_kyoto_leg_button.click
+      - do: remove_seoul_leg_button.click
+        expect:
+          - {op: equals, path: leg_count, value: 2}
+          - {op: equals, path: trip_route_key, value: BUSAN_KYOTO}
+          - {op: equals, path: trip_subtotal, value: 940}
+          - {op: equals, path: service_fee, value: 78}
+          - {op: equals, path: total_due, value: 1018}
+      - table: itinerary_grid
+        expect_order: [LEG-BUSAN, LEG-KYOTO]
+
+  - id: private_06_multi120_two_city_with_addons
+    tier: service
+    difficulty: B
+    steps:
+      - do: reset_button.click
+      - do: add_busan_leg_button.click
+      - do: add_seoul_leg_button.click
+      - do: add_busan_breakfast_button.click
+      - do: add_seoul_pickup_button.click
+      - do: go_quote_button.click
+      - do: request_quote_button.click
+      - do: promo_code_input.fill
+        input: {value: "MULTI120"}
+      - do: apply_promo_button.click
+        expect:
+          - {op: equals, path: promo_credit, value: 120}
+          - {op: equals, path: promo_status, value: applied}
+          - {op: equals, path: total_due, value: 855}
+          - {op: equals, path: promo_call_count, value: 1}
+          - {op: equals, path: service_call_count, value: 2}
+
+  - id: private_07_grand200_three_city_with_addons
+    tier: service
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: add_busan_leg_button.click
+      - do: add_seoul_leg_button.click
+      - do: add_busan_breakfast_button.click
+      - do: add_seoul_pickup_button.click
+      - do: add_kyoto_leg_button.click
+      - do: add_kyoto_flexible_button.click
+      - do: go_quote_button.click
+      - do: request_quote_button.click
+      - do: promo_code_input.fill
+        input: {value: " grand200 "}
+      - do: apply_promo_button.click
+        expect:
+          - {op: equals, path: promo_code, value: GRAND200}
+          - {op: equals, path: promo_credit, value: 200}
+          - {op: equals, path: promo_status, value: applied}
+          - {op: equals, path: quote_id, value: Q-BSK-991}
+          - {op: equals, path: total_due, value: 1499}
+
+  - id: private_08_bad_promo_rejected_without_credit
+    tier: service
+    difficulty: B
+    steps:
+      - do: reset_button.click
+      - do: add_busan_leg_button.click
+      - do: add_seoul_leg_button.click
+      - do: add_kyoto_leg_button.click
+      - do: go_quote_button.click
+      - do: request_quote_button.click
+      - do: promo_code_input.fill
+        input: {value: "BADCODE"}
+      - do: apply_promo_button.click
+        expect:
+          - {op: equals, path: promo_credit, value: 0}
+          - {op: equals, path: promo_status, value: rejected}
+          - {op: equals, path: total_due, value: 1532}
+          - {op: equals, path: service_call_count, value: 2}
+
+  - id: private_09_requote_after_route_expansion
+    tier: service
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: add_busan_leg_button.click
+      - do: add_seoul_leg_button.click
+      - do: go_quote_button.click
+      - do: request_quote_button.click
+      - do: go_builder_button.click
+      - do: add_kyoto_leg_button.click
+      - do: go_quote_button.click
+      - do: request_quote_button.click
+        expect:
+          - {op: equals, path: quote_id, value: Q-BSK-991}
+          - {op: equals, path: quote_call_count, value: 2}
+          - {op: equals, path: service_call_count, value: 2}
+          - {op: equals, path: trip_route_key, value: BUSAN_SEOUL_KYOTO}
+
+  - id: private_10_guest_email_normalizes
+    tier: validation
+    difficulty: A
+    steps:
+      - do: reset_button.click
+      - do: go_travelers_button.click
+      - do: primary_guest_email_input.fill
+        input: {value: "  VIP.GUEST@EXAMPLE.COM  "}
+        expect:
+          - {op: equals, path: primary_guest_email, value: vip.guest@example.com}
+
+  - id: private_11_arrival_whitespace_collapses
+    tier: validation
+    difficulty: A
+    steps:
+      - do: reset_button.click
+      - do: go_travelers_button.click
+      - do: arrival_time_input.fill
+        input: {value: "  19:40    ICN    rail pickup  "}
+        expect:
+          - {op: equals, path: arrival_time, value: "19:40 ICN rail pickup"}
+
+  - id: private_12_manifest_upload_replaces_previous_rows
+    tier: upload
+    difficulty: B
+    steps:
+      - do: reset_button.click
+      - do: go_travelers_button.click
+      - do: traveler_upload_input.upload
+        input:
+          file:
+            name: travelers-a.csv
+            mime_type: text/csv
+            content: |
+              id,name,type,meal,mobility
+              A-1,Ivy Cho,adult,standard,no
+          rows:
+            - {id: A-1, name: Ivy Cho, type: adult, meal: standard, mobility: "no"}
+      - do: traveler_upload_input.upload
+        input:
+          file:
+            name: travelers-b.csv
+            mime_type: text/csv
+            content: |
+              id,name,type,meal,mobility
+              B-1,Leo Moon,adult,vegan,no
+              B-2,Ari Choi,child,vegetarian,yes
+          rows:
+            - {id: B-1, name: Leo Moon, type: adult, meal: vegan, mobility: "no"}
+            - {id: B-2, name: Ari Choi, type: child, meal: vegetarian, mobility: "yes"}
+        expect:
+          - {op: equals, path: traveler_count, value: 2}
+          - {op: equals, path: child_count, value: 1}
+          - {op: equals, path: mobility_count, value: 1}
+      - table: traveler_grid
+        expect_order: [B-1, B-2]
+
+  - id: private_13_reload_preserves_quote_and_itinerary
+    tier: persistence
+    difficulty: B
+    steps:
+      - do: reset_button.click
+      - do: add_busan_leg_button.click
+      - do: add_seoul_leg_button.click
+      - do: add_busan_breakfast_button.click
+      - do: go_quote_button.click
+      - do: request_quote_button.click
+      - browser: reload
+        expect:
+          - {op: unchanged, path: current_page}
+          - {op: unchanged, path: itinerary_legs}
+          - {op: unchanged, path: total_due}
+          - {op: unchanged, path: quote_id}
+          - {op: unchanged, path: quote_call_count}
+
+  - id: private_14_reload_preserves_travelers
+    tier: persistence
+    difficulty: B
+    steps:
+      - do: reset_button.click
+      - do: go_travelers_button.click
+      - do: traveler_upload_input.upload
+        input:
+          file:
+            name: travelers-c.csv
+            mime_type: text/csv
+            content: |
+              id,name,type,meal,mobility
+              C-1,Ren Ito,adult,standard,no
+              C-2,Nia Yang,adult,halal,yes
+          rows:
+            - {id: C-1, name: Ren Ito, type: adult, meal: standard, mobility: "no"}
+            - {id: C-2, name: Nia Yang, type: adult, meal: halal, mobility: "yes"}
+      - browser: reload
+        expect:
+          - {op: unchanged, path: travelers}
+          - {op: unchanged, path: traveler_count}
+          - {op: unchanged, path: last_file}
+      - table: traveler_grid
+        expect_order: [C-1, C-2]
+
+  - id: private_15_browser_back_forward_routes
+    tier: persistence
+    difficulty: B
+    steps:
+      - do: reset_button.click
+      - do: go_travelers_button.click
+      - do: go_quote_button.click
+      - do: go_ops_button.click
+      - browser: back
+        expect_page: quote
+        expect:
+          - {op: equals, path: current_page, value: quote}
+      - browser: forward
+        expect_page: ops
+        expect:
+          - {op: equals, path: current_page, value: ops}
+
+  - id: private_16_agent_role_persists_across_reload
+    tier: persistence
+    difficulty: B
+    steps:
+      - do: reset_button.click
+      - do: role_agent_button.click
+      - do: go_ops_button.click
+      - browser: reload
+        expect:
+          - {op: unchanged, path: active_role}
+          - {op: unchanged, path: current_page}
+
+  - id: private_17_guest_cannot_check_manifest
+    tier: permission
+    difficulty: B
+    steps:
+      - do: reset_button.click
+      - do: go_ops_button.click
+      - do: check_manifest_button.click
+        mode: unauthorized
+        expect:
+          - {op: equals, path: manifest_checked, value: false}
+          - {op: equals, path: denied_count, value: 1}
+
+  - id: private_18_reset_clears_long_flow
+    tier: journey
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: add_busan_leg_button.click
+      - do: add_seoul_leg_button.click
+      - do: add_busan_breakfast_button.click
+      - do: add_seoul_pickup_button.click
+      - do: add_kyoto_leg_button.click
+      - do: add_kyoto_flexible_button.click
+      - do: go_quote_button.click
+      - do: request_quote_button.click
+      - do: promo_code_input.fill
+        input: {value: GRAND200}
+      - do: apply_promo_button.click
+      - do: reset_button.click
+        expect:
+          - {op: equals, path: itinerary_legs, value: []}
+          - {op: equals, path: trip_route_key, value: ""}
+          - {op: equals, path: total_due, value: 0}
+          - {op: equals, path: promo_credit, value: 0}
+          - {op: equals, path: quote_call_count, value: 0}
+
+  - id: private_19_full_three_city_confirmed_journey
+    tier: journey
+    difficulty: C
+    steps:
+      - do: reset_button.click
+      - do: add_busan_leg_button.click
+      - do: add_seoul_leg_button.click
+      - do: add_busan_breakfast_button.click
+      - do: add_seoul_pickup_button.click
+      - do: add_kyoto_leg_button.click
+      - do: add_kyoto_flexible_button.click
+      - do: go_quote_button.click
+      - do: request_quote_button.click
+      - do: promo_code_input.fill
+        input: {value: GRAND200}
+      - do: apply_promo_button.click
+      - do: go_travelers_button.click
+      - do: traveler_upload_input.upload
+        input:
+          file:
+            name: family-long.csv
+            mime_type: text/csv
+            content: |
+              id,name,type,meal,mobility
+              F-1,Sora Han,adult,standard,no
+              F-2,Min Han,child,vegetarian,no
+              F-3,Tae Han,adult,halal,yes
+          rows:
+            - {id: F-1, name: Sora Han, type: adult, meal: standard, mobility: "no"}
+            - {id: F-2, name: Min Han, type: child, meal: vegetarian, mobility: "no"}
+            - {id: F-3, name: Tae Han, type: adult, meal: halal, mobility: "yes"}
+      - do: primary_guest_name_input.fill
+        input: {value: "Sora Han"}
+      - do: primary_guest_email_input.fill
+        input: {value: "sora@example.com"}
+      - do: arrival_time_input.fill
+        input: {value: "21:20 Seoul transfer, Kyoto rail pass"}
+      - do: validate_trip_button.click
+      - do: go_quote_button.click
+      - do: hold_booking_button.click
+      - do: go_ops_button.click
+      - do: role_agent_button.click
+      - do: check_itinerary_button.click
+      - do: check_manifest_button.click
+      - do: check_deposit_button.click
+      - do: confirm_booking_button.click
+        expect:
+          - {op: equals, path: booking_status, value: confirmed}
+          - {op: equals, path: total_due, value: 1499}
+          - {op: equals, path: traveler_count, value: 3}
+          - {op: equals, path: checklist_completed_count, value: 3}
+          - {op: equals, path: audit_count, value: 2}

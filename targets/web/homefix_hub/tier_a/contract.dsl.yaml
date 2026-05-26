@@ -1,0 +1,415 @@
+dsl_version: "3.0.0"
+
+app:
+  id: homefix_hub_tier_a
+  name: HomeFix Hub Tier A
+  capability: home_repair_booking
+  ui_ux_brief: |
+    A consumer-first repair booking product. It should feel like a friendly homeowner marketplace with a warm scheduling concierge, clean service cards, quote clarity, and an appointment timeline. It must not resemble an operations dashboard.
+
+runtime:
+  target: web
+  start_url: /#/jobs
+
+  state_probe:
+    kind: javascript
+    expression: window.__DETOX_STATE__
+
+  pages:
+    jobs:
+      path: /#/jobs
+      purpose: Service catalog and repair intake.
+
+    booking:
+      path: /#/booking
+      purpose: Quote, schedule, and homeowner approval workspace.
+
+    visits:
+      path: /#/visits
+      purpose: Visit timeline and history.
+
+
+  session:
+    role_path: active_role
+    roles: [homeowner, pro]
+
+  persistence:
+    reload:
+      scope: local_storage
+      paths:
+        - current_page
+        - active_role
+        - services
+        - visible_services
+        - selected_service_id
+        - selected_service_name
+        - selected_category
+        - urgency_level
+        - address
+        - customer_name
+        - selected_slot
+        - quote_status
+        - quote_amount
+        - diagnostic_fee
+        - booking_status
+        - visit_history
+        - visit_count
+        - last_action
+
+  services:
+    quote_estimate:
+      endpoint: /api/quote
+      method: GET
+      responses:
+        - id: leak_emergency
+          match: {query: {service: HF-LEAK, urgency: emergency}}
+          status: 200
+          json: {amount: 26800, diagnostic: 4900, status: ready}
+        - id: standard
+          match: {query: {service: HF-AC, urgency: standard}}
+          status: 200
+          json: {amount: 18900, diagnostic: 3900, status: ready}
+
+
+  tables:
+    service_grid:
+      selector: '[data-testid="service_grid"]'
+      row_selector: '[data-testid="service-row"]'
+      row_id_attribute: data-service-id
+      source_path: visible_services
+      row_id_field: id
+      columns:
+        name:
+          selector: '[data-col="name"]'
+          state_field: name
+        category:
+          selector: '[data-col="category"]'
+          state_field: category
+        base_price:
+          selector: '[data-col="base_price"]'
+          state_field: base_price
+        urgency:
+          selector: '[data-col="urgency"]'
+          state_field: urgency
+    visit_grid:
+      selector: '[data-testid="visit_grid"]'
+      row_selector: '[data-testid="visit-row"]'
+      row_id_attribute: data-visit-id
+      source_path: visit_history
+      row_id_field: id
+      columns:
+        service:
+          selector: '[data-col="service"]'
+          state_field: service
+        slot:
+          selector: '[data-col="slot"]'
+          state_field: slot
+        status:
+          selector: '[data-col="status"]'
+          state_field: status
+        total:
+          selector: '[data-col="total"]'
+          state_field: total
+
+state:
+  initial:
+    current_page: jobs
+    active_role: homeowner
+    services:
+      - {id: HF-LEAK, name: "Burst pipe repair", category: plumbing, base_price: 21900, urgency: same_day}
+      - {id: HF-AC, name: "Air conditioner tune-up", category: hvac, base_price: 15000, urgency: scheduled}
+      - {id: HF-LIGHT, name: "Panel and light fix", category: electrical, base_price: 17600, urgency: scheduled}
+      - {id: HF-ROOF, name: "Storm roof patch", category: exterior, base_price: 34200, urgency: emergency}
+    visible_services:
+      - {id: HF-AC, name: "Air conditioner tune-up", category: hvac, base_price: 15000, urgency: scheduled}
+      - {id: HF-LIGHT, name: "Panel and light fix", category: electrical, base_price: 17600, urgency: scheduled}
+      - {id: HF-LEAK, name: "Burst pipe repair", category: plumbing, base_price: 21900, urgency: same_day}
+      - {id: HF-ROOF, name: "Storm roof patch", category: exterior, base_price: 34200, urgency: emergency}
+    selected_service_id: ""
+    selected_service_name: ""
+    selected_category: all
+    urgency_level: standard
+    address: ""
+    customer_name: ""
+    selected_slot: ""
+    quote_status: idle
+    quote_amount: 0
+    diagnostic_fee: 0
+    booking_status: idle
+    visit_history: []
+    visit_count: 0
+    validation_errors: {}
+    service_call_count: 0
+    denied_count: 0
+    technicians:
+      - {id: TECH-MINA, name: "Mina Cho", trade: plumbing, status: available}
+      - {id: TECH-RAUL, name: "Raul Diaz", trade: electrical, status: available}
+      - {id: TECH-JUNE, name: "June Kim", trade: hvac, status: on_call}
+    assigned_technician: ""
+    assigned_technician_name: ""
+    technician_status: idle
+    parts_rows:
+      - {id: P-VALVE, name: "Shutoff valve", required: "yes", status: needed}
+      - {id: P-SEAL, name: "Compression seal kit", required: "yes", status: needed}
+    parts_ready_count: 0
+    dispatch_status: idle
+    dispatch_count: 0
+    permit_rows: []
+    permit_count: 0
+    last_permit_file: ""
+    permit_status: idle
+    homeowner_approval_status: idle
+    qa_rows:
+      - {id: Q-PHOTO, label: "Before photos attached", status: open}
+      - {id: Q-PERMIT, label: "Permit dossier reviewed", status: open}
+      - {id: Q-PARTS, label: "Materials ready", status: open}
+    qa_ready_count: 0
+    qa_status: idle
+    invoice_status: idle
+    invoice_total: 0
+    claim_status: idle
+    claim_reference: ""
+    materials_rows: []
+    material_mismatch_count: 0
+    materials_status: idle
+    warranty_status: open
+    warranty_score: 0
+    open_warranty_blockers: 5
+    warranty_rows:
+      - {id: W-CLAIM, label: "Insurance preauth complete", status: open}
+      - {id: W-DISPATCH, label: "Crew dispatched", status: open}
+      - {id: W-MATERIALS, label: "Materials reconciled", status: open}
+      - {id: W-QA, label: "QA passed", status: open}
+      - {id: W-INVOICE, label: "Invoice issued", status: open}
+    warranty_count: 0
+    last_action: ready
+    __services.calls: []
+
+  schema:
+    current_page: {type: string, purpose: Active route page.}
+    active_role: {type: string, purpose: Current role.}
+    services: {type: array, purpose: Home repair service catalog.}
+    visible_services: {type: array, purpose: Filtered service catalog.}
+    selected_service_id: {type: string, purpose: Selected service id.}
+    selected_service_name: {type: string, purpose: Selected service name.}
+    selected_category: {type: string, purpose: Active service category filter.}
+    urgency_level: {type: string, purpose: standard or emergency urgency.}
+    address: {type: string, purpose: Homeowner service address.}
+    customer_name: {type: string, purpose: Homeowner name.}
+    selected_slot: {type: string, purpose: Visit slot.}
+    quote_status: {type: string, purpose: idle, ready, approved, or blocked.}
+    quote_amount: {type: number, purpose: Repair quote amount.}
+    diagnostic_fee: {type: number, purpose: Diagnostic fee.}
+    booking_status: {type: string, purpose: idle, scheduled, dispatched, complete, or blocked.}
+    visit_history: {type: array, purpose: Booked visit records.}
+    visit_count: {type: number, purpose: Number of visit records.}
+    validation_errors: {type: object, purpose: Field and workflow validation errors.}
+    service_call_count: {type: number, purpose: Number of service calls.}
+    denied_count: {type: number, purpose: Unauthorized action count.}
+    technicians: {type: array, purpose: Technician roster.}
+    assigned_technician: {type: string, purpose: Assigned technician id.}
+    assigned_technician_name: {type: string, purpose: Assigned technician name.}
+    technician_status: {type: string, purpose: Technician assignment state.}
+    parts_rows: {type: array, purpose: Required parts checklist.}
+    parts_ready_count: {type: number, purpose: Count of ready parts.}
+    dispatch_status: {type: string, purpose: Dispatch workflow status.}
+    dispatch_count: {type: number, purpose: Dispatch action count.}
+    permit_rows: {type: array, purpose: Uploaded permit and photo dossier rows.}
+    permit_count: {type: number, purpose: Count of permit dossier rows.}
+    last_permit_file: {type: string, purpose: Last permit upload file.}
+    permit_status: {type: string, purpose: Permit review status.}
+    homeowner_approval_status: {type: string, purpose: Homeowner approval status.}
+    qa_rows: {type: array, purpose: QA checklist rows.}
+    qa_ready_count: {type: number, purpose: Count of cleared QA rows.}
+    qa_status: {type: string, purpose: QA workflow status.}
+    invoice_status: {type: string, purpose: Invoice workflow status.}
+    invoice_total: {type: number, purpose: Invoice total.}
+    claim_status: {type: string, purpose: Insurance claim status.}
+    claim_reference: {type: string, purpose: Insurance claim reference.}
+    materials_rows: {type: array, purpose: Materials reconciliation rows.}
+    material_mismatch_count: {type: number, purpose: Count of material mismatches.}
+    materials_status: {type: string, purpose: Materials reconciliation status.}
+    warranty_status: {type: string, purpose: Warranty seal status.}
+    warranty_score: {type: number, purpose: Warranty seal readiness score.}
+    open_warranty_blockers: {type: number, purpose: Count of open warranty blockers.}
+    warranty_rows: {type: array, purpose: Warranty readiness ledger rows.}
+    warranty_count: {type: number, purpose: Number of warranty seals.}
+    last_action: {type: string, purpose: Last action marker.}
+    __services.calls: {type: array, purpose: Evaluator service call ledger.}
+
+components:
+
+  reset_button:
+    kind: button
+    selector: '[data-testid="reset"]'
+    actions:
+      click:
+        effects:
+          - {op: equals, path: current_page, value: jobs}
+          - {op: equals, path: active_role, value: homeowner}
+          - {op: equals, path: selected_category, value: all}
+          - {op: equals, path: selected_service_id, value: ""}
+          - {op: equals, path: selected_service_name, value: ""}
+          - {op: equals, path: urgency_level, value: standard}
+          - {op: equals, path: address, value: ""}
+          - {op: equals, path: customer_name, value: ""}
+          - {op: equals, path: selected_slot, value: ""}
+          - {op: equals, path: quote_status, value: idle}
+          - {op: equals, path: quote_amount, value: 0}
+          - {op: equals, path: diagnostic_fee, value: 0}
+          - {op: equals, path: booking_status, value: idle}
+          - {op: equals, path: visit_history, value: []}
+          - {op: equals, path: visit_count, value: 0}
+          - {op: equals, path: validation_errors, value: {}}
+          - {op: equals, path: service_call_count, value: 0}
+          - {op: equals, path: last_action, value: reset}
+  go_jobs_button:
+    kind: button
+    selector: '[data-testid="go-jobs"]'
+    actions: {click: {navigate_to: jobs}}
+  go_booking_button:
+    kind: button
+    selector: '[data-testid="go-booking"]'
+    actions: {click: {navigate_to: booking}}
+  go_visits_button:
+    kind: button
+    selector: '[data-testid="go-visits"]'
+    actions: {click: {navigate_to: visits}}
+  role_homeowner_button:
+    kind: button
+    selector: '[data-testid="role-homeowner"]'
+    actions: {click: {effects: [{op: equals, path: active_role, value: homeowner}, {op: equals, path: last_action, value: role_homeowner}]}}
+  role_pro_button:
+    kind: button
+    selector: '[data-testid="role-pro"]'
+    actions: {click: {effects: [{op: equals, path: active_role, value: pro}, {op: equals, path: last_action, value: role_pro}]}}
+  filter_plumbing_button:
+    kind: button
+    selector: '[data-testid="filter-plumbing"]'
+    page: jobs
+    actions:
+      click:
+        effects:
+          - {op: equals, path: selected_category, value: plumbing}
+          - {op: equals_filter, path: visible_services, source_path: services, where: [{op: equals, field: category, value: plumbing}], order_by: [{field: base_price, direction: asc}]}
+  filter_all_button:
+    kind: button
+    selector: '[data-testid="filter-all"]'
+    page: jobs
+    actions:
+      click:
+        effects:
+          - {op: equals, path: selected_category, value: all}
+  select_leak_button:
+    kind: button
+    selector: '[data-testid="select-HF-LEAK"]'
+    page: jobs
+    actions:
+      click:
+        effects:
+          - {op: equals, path: selected_service_id, value: HF-LEAK}
+          - {op: equals, path: selected_service_name, value: "Burst pipe repair"}
+          - {op: equals, path: last_action, value: select_service}
+  select_ac_button:
+    kind: button
+    selector: '[data-testid="select-HF-AC"]'
+    page: jobs
+    actions:
+      click:
+        effects:
+          - {op: equals, path: selected_service_id, value: HF-AC}
+          - {op: equals, path: selected_service_name, value: "Air conditioner tune-up"}
+          - {op: equals, path: last_action, value: select_service}
+  urgency_emergency_button:
+    kind: button
+    selector: '[data-testid="urgency-emergency"]'
+    page: booking
+    actions:
+      click:
+        effects:
+          - {op: equals, path: urgency_level, value: emergency}
+          - {op: equals, path: last_action, value: set_urgency}
+  slot_today_button:
+    kind: button
+    selector: '[data-testid="slot-today"]'
+    page: booking
+    actions:
+      click:
+        effects:
+          - {op: equals, path: selected_slot, value: today_4pm}
+          - {op: equals, path: last_action, value: select_slot}
+  address_input:
+    kind: input
+    selector: '[data-testid="address"]'
+    page: booking
+    actions:
+      fill:
+        effects:
+          - {op: equals_normalized, path: address, value_from: input.value, normalizers: [trim]}
+  customer_name_input:
+    kind: input
+    selector: '[data-testid="customer-name"]'
+    page: booking
+    actions:
+      fill:
+        effects:
+          - {op: equals_normalized, path: customer_name, value_from: input.value, normalizers: [trim]}
+  get_quote_button:
+    kind: button
+    selector: '[data-testid="get-quote"]'
+    page: booking
+    actions:
+      click:
+        preconditions:
+          - {op: one_of, path: selected_service_id, values: [HF-LEAK, HF-AC]}
+        effects:
+          - {op: equals, path: quote_status, value: ready}
+          - {op: equals_piecewise_linear, path: quote_amount, cases: [{when: [{op: one_of, path: selected_service_id, values: [HF-LEAK]}], formula: {constant: 26800}}, {when: [{op: one_of, path: selected_service_id, values: [HF-AC]}], formula: {constant: 18900}}], default: {constant: 18900}}
+          - {op: equals, path: diagnostic_fee, value: 4900}
+          - {op: changed_by, path: service_call_count, by: 1}
+          - {op: equals, path: last_action, value: get_quote}
+  approve_quote_button:
+    kind: button
+    selector: '[data-testid="approve-quote"]'
+    page: booking
+    actions:
+      click:
+        preconditions:
+          - {op: one_of, path: quote_status, values: [ready]}
+        effects:
+          - {op: equals, path: quote_status, value: approved}
+          - {op: equals, path: last_action, value: approve_quote}
+  book_visit_button:
+    kind: button
+    selector: '[data-testid="book-visit"]'
+    page: booking
+    actions:
+      click:
+        preconditions:
+          - {op: one_of, path: quote_status, values: [approved]}
+          - {op: one_of, path: selected_slot, values: [today_4pm]}
+        rejected_when:
+          - {op: not_one_of, path: selected_slot, values: [today_4pm]}
+        rejected_effects:
+          - {op: equals, path: booking_status, value: blocked}
+          - {op: equals, path: last_action, value: booking_blocked}
+        effects:
+          - {op: equals, path: booking_status, value: scheduled}
+          - {op: changed_by, path: visit_count, by: 1}
+          - {op: appended_object, path: visit_history, value: {id: VIS-001, service: {from_path: selected_service_name}, slot: today_4pm, status: scheduled, total: {from_path: quote_amount}}}
+          - {op: equals, path: last_action, value: book_visit}
+  pro_accept_button:
+    kind: button
+    selector: '[data-testid="pro-accept"]'
+    page: visits
+    actions:
+      click:
+        allowed_roles: [pro]
+        preconditions:
+          - {op: one_of, path: booking_status, values: [scheduled]}
+        effects:
+          - {op: equals, path: booking_status, value: accepted}
+          - {op: equals, path: last_action, value: pro_accept}
+        unauthorized_effects:
+          - {op: changed_by, path: denied_count, by: 1}
+          - {op: equals, path: last_action, value: unauthorized_pro}

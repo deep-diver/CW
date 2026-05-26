@@ -1,0 +1,129 @@
+{
+  "batch_id": "rerun_missing_nongemini_20260525T171016Z",
+  "created_at": "2026-05-25T23:14:14+00:00",
+  "target": "freshcart_market_tier_d",
+  "evaluated": 69,
+  "generated": 69,
+  "generation_total": 70,
+  "model_summaries": [
+    {
+      "n": 10,
+      "formal_mean": 0.026050420168067228,
+      "formal_std": 0.0823786617354788,
+      "stepwise_mean": 0.130673381014937,
+      "stepwise_std": 0.19734525509991574,
+      "contract_mean": 0.9,
+      "contract_std": 0.31622776601683794,
+      "full_pass_count": 0,
+      "model_tier": "M",
+      "slug": "claude_haiku45",
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5"
+    },
+    {
+      "n": 19,
+      "formal_mean": 0.5462184873949579,
+      "formal_std": 0.0,
+      "stepwise_mean": 0.8381546151290311,
+      "stepwise_std": 0.0,
+      "contract_mean": 1.0,
+      "contract_std": 0.0,
+      "full_pass_count": 0,
+      "model_tier": "F",
+      "slug": "claude_opus46",
+      "provider": "anthropic",
+      "model": "claude-opus-4-6"
+    },
+    {
+      "n": 10,
+      "formal_mean": 0.21680672268907564,
+      "formal_std": 0.07720123749819059,
+      "stepwise_mean": 0.5031050759639714,
+      "stepwise_std": 0.15435685600898713,
+      "contract_mean": 0.5294117647058824,
+      "contract_std": 0.2480217772681082,
+      "full_pass_count": 0,
+      "model_tier": "T",
+      "slug": "claude_sonnet46",
+      "provider": "anthropic",
+      "model": "claude-sonnet-4-6"
+    },
+    {
+      "n": 10,
+      "formal_mean": 0.4310924369747899,
+      "formal_std": 0.18660802896330536,
+      "stepwise_mean": 0.7213023321631625,
+      "stepwise_std": 0.23769995727409152,
+      "contract_mean": 0.9882352941176471,
+      "contract_std": 0.037203266590216236,
+      "full_pass_count": 0,
+      "model_tier": "F",
+      "slug": "gpt54",
+      "provider": "openai",
+      "model": "gpt-5.4"
+    },
+    {
+      "n": 10,
+      "formal_mean": 0.014285714285714287,
+      "formal_std": 0.03315513888834802,
+      "stepwise_mean": 0.12168219594596709,
+      "stepwise_std": 0.1572721436383169,
+      "contract_mean": 0.4147058823529412,
+      "contract_std": 0.500374715413042,
+      "full_pass_count": 0,
+      "model_tier": "T",
+      "slug": "gpt54_mini",
+      "provider": "openai",
+      "model": "gpt-5.4-mini"
+    },
+    {
+      "n": 10,
+      "formal_mean": 0.06386554621848739,
+      "formal_std": 0.14284066472768528,
+      "stepwise_mean": 0.20078703572408063,
+      "stepwise_std": 0.25600253007499707,
+      "contract_mean": 0.40588235294117647,
+      "contract_std": 0.49503494065008863,
+      "full_pass_count": 0,
+      "model_tier": "M",
+      "slug": "gpt54_nano",
+      "provider": "openai",
+      "model": "gpt-5.4-nano"
+    }
+  ],
+  "tier_summaries": [
+    {
+      "n": 29,
+      "formal_mean": 0.5065198493190379,
+      "formal_std": 0.11955865401971945,
+      "stepwise_mean": 0.7978607244511454,
+      "stepwise_std": 0.14613736888668163,
+      "contract_mean": 0.9959432048681541,
+      "contract_std": 0.021846510373770812,
+      "full_pass_count": 0,
+      "model_tier": "F"
+    },
+    {
+      "n": 20,
+      "formal_mean": 0.04495798319327731,
+      "formal_std": 0.11513315254261608,
+      "stepwise_mean": 0.16573020836950883,
+      "stepwise_std": 0.2253560491545744,
+      "contract_mean": 0.6529411764705882,
+      "contract_std": 0.47717907803954157,
+      "full_pass_count": 0,
+      "model_tier": "M"
+    },
+    {
+      "n": 20,
+      "formal_mean": 0.11554621848739495,
+      "formal_std": 0.1189001002560754,
+      "stepwise_mean": 0.3123936359549693,
+      "stepwise_std": 0.24756308738330027,
+      "contract_mean": 0.47205882352941175,
+      "contract_std": 0.38884404380480975,
+      "full_pass_count": 0,
+      "model_tier": "T"
+    }
+  ]
+}

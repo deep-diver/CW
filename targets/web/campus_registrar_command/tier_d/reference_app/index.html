@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Campus Registrar Command Tier D</title>
+  <style>
+    :root{
+      --ink:#17212b;--muted:#637181;--paper:#f7f1e3;--sheet:#fffaf0;--line:#d9cdae;
+      --garnet:#9b1c31;--amber:#b7791f;--emerald:#0f766e;--violet:#5b3f93;
+      --brass:#aa7a21;--blue:#1e5a8a;--shadow:0 18px 45px rgba(23,33,43,.14);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:linear-gradient(180deg,#fbf7eb,#efe6ce);color:var(--ink);font:13px/1.45 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:0}
+    button,input{font:inherit;letter-spacing:0}
+    button{border:1px solid #b9a87c;background:#fffaf0;color:var(--ink);border-radius:6px;padding:7px 9px;cursor:pointer;min-height:32px}
+    button:hover{background:#f3ead4}
+    input[type=text]{width:100%;border:1px solid #b9a87c;border-radius:6px;background:#fffdf7;padding:8px;color:var(--ink)}
+    input[type=file]{width:100%;font-size:12px}
+    .shell{min-height:100vh;display:grid;grid-template-rows:auto 1fr}
+    .top{background:#17212b;color:#fff;padding:14px 18px 12px;border-bottom:5px solid var(--brass);display:grid;grid-template-columns:1.2fr 2fr 1.2fr;gap:16px;align-items:center}
+    .brand h1{margin:0;font-size:22px;font-weight:800}
+    .brand p{margin:3px 0 0;color:#d8caa8;font-size:12px}
+    .nav,.roles{display:flex;flex-wrap:wrap;gap:6px}
+    .nav button,.roles button{background:#213140;color:#f7f1e3;border-color:#455565}
+    .roles button.active,.nav button.active{background:#aa7a21;color:#111;border-color:#d8af58}
+    .status-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+    .stat{border:1px solid rgba(255,255,255,.18);border-radius:8px;padding:8px;background:rgba(255,255,255,.06)}
+    .stat b{display:block;font-size:18px}
+    .work{display:grid;grid-template-columns:300px 1fr 330px;gap:14px;padding:14px;max-width:1720px;width:100%;margin:0 auto}
+    .rail,.side,.page{min-width:0}
+    .panel{background:rgba(255,250,240,.92);border:1px solid var(--line);border-radius:8px;box-shadow:var(--shadow);margin-bottom:12px;overflow:hidden}
+    .panel header{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid var(--line);background:#fbf4df}
+    .panel header h2{margin:0;font-size:13px;text-transform:uppercase;letter-spacing:.04em}
+    .panel .body{padding:10px 12px}
+    .candidate{width:100%;display:grid;grid-template-columns:1fr auto;gap:7px;align-items:center;text-align:left;margin-bottom:7px;border-color:#d8cdae}
+    .candidate strong{display:block}
+    .tag{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:2px 7px;font-size:11px;background:#eee1c5;color:#3c3325}
+    .scarlet{background:#f3d4d8;color:#781225}.amber{background:#f6e4bd;color:#78510f}.green{background:#d5eadf;color:#0f5b3d}
+    .meter{height:11px;background:#eadfca;border-radius:999px;overflow:hidden;border:1px solid #d6c69d}
+    .meter span{display:block;height:100%;background:linear-gradient(90deg,var(--garnet),var(--amber),var(--emerald));width:0%}
+    .pages{min-width:0}
+    .page{display:none}
+    .page.active{display:block}
+    .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:12px;margin-bottom:12px}
+    .matrix{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+    .cell{border:1px solid var(--line);border-radius:6px;background:#fffdf7;padding:9px;min-height:58px}
+    .cell b{display:block;font-size:16px}
+    .actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+    .actions.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .actions.one{grid-template-columns:1fr}
+    .form-grid{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end}
+    table{width:100%;border-collapse:collapse;font-size:12px;background:#fffdf7}
+    th,td{border-bottom:1px solid #e6dcc4;padding:7px 8px;text-align:left;vertical-align:top}
+    th{font-size:11px;text-transform:uppercase;color:#6f6046;background:#f4ecd6}
+    tr:last-child td{border-bottom:0}
+    .empty{color:#81755f;font-style:italic;padding:12px}
+    .ledger{display:grid;gap:7px}
+    .blocker{display:grid;grid-template-columns:1fr auto;gap:8px;border:1px solid #e1d4b5;background:#fffdf7;border-radius:6px;padding:8px}
+    .blocker small{color:var(--muted)}
+    .cleared{color:var(--emerald);font-weight:800}.open{color:var(--garnet);font-weight:800}
+    .timeline{display:grid;gap:6px}
+    .event-row{display:grid;grid-template-columns:74px 1fr auto;gap:8px;border-bottom:1px solid #e6dcc4;padding:7px 0}
+    .error{color:#781225;font-weight:700}
+    .seal{border:1px solid #b68b32;background:linear-gradient(135deg,#fff8dc,#f3df99);border-radius:50%;width:86px;height:86px;display:grid;place-items:center;text-align:center;font-weight:900;color:#705016;margin:auto}
+    .docstack{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+    .doc{border-left:5px solid var(--brass);background:#fffdf7;border-radius:6px;padding:9px;border-top:1px solid var(--line);border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+    .doc small{display:block;color:#6f6046;font-size:11px;margin-bottom:3px}
+    .doc b{display:block;font-size:12px;line-height:1.25;word-break:break-word}
+    #errors{white-space:pre-wrap;word-break:break-word;overflow:auto;max-height:110px;margin:0}
+    @media(max-width:1180px){.top{grid-template-columns:1fr}.work{grid-template-columns:1fr}.hero-grid{grid-template-columns:1fr}.matrix{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:720px){.actions,.actions.two,.matrix,.docstack{grid-template-columns:1fr}.top{padding:12px}.work{padding:10px}}
+  </style>
+</head>
+<body>
+<div class="shell">
+  <section class="top">
+    <div class="brand">
+      <h1>Graduation Wave Command</h1>
+      <p>Tier D registrar certification floor</p>
+    </div>
+    <div>
+      <div class="nav">
+        <button data-testid="go-cockpit">Cockpit</button>
+        <button data-testid="go-curriculum">Curriculum</button>
+        <button data-testid="go-dossier">Dossier</button>
+        <button data-testid="go-finance">Finance</button>
+        <button data-testid="go-senate">Senate</button>
+        <button data-testid="go-release">Release</button>
+        <button data-testid="reset">Reset</button>
+      </div>
+      <div class="roles" style="margin-top:8px">
+        <button data-testid="role-analyst">Analyst</button>
+        <button data-testid="role-advisor">Advisor</button>
+        <button data-testid="role-bursar">Bursar</button>
+        <button data-testid="role-registrar">Registrar</button>
+        <button data-testid="role-dean">Dean</button>
+        <button data-testid="role-provost">Provost</button>
+      </div>
+    </div>
+    <div class="status-strip">
+      <div class="stat"><span>Ready</span><b data-bind="readiness_score">0</b></div>
+      <div class="stat"><span>Open</span><b data-bind="open_blockers">11</b></div>
+      <div class="stat"><span>Calls</span><b data-bind="service_call_count">0</b></div>
+      <div class="stat"><span>Role</span><b data-bind="active_role">analyst</b></div>
+    </div>
+  </section>
+
+  <main class="work">
+    <aside class="rail">
+      <section class="panel">
+        <header><h2>Wave Stack</h2><button data-testid="filter-wave-risk">Risk</button></header>
+        <div class="body">
+          <div data-testid="candidate-queue"></div>
+        </div>
+      </section>
+      <section class="panel">
+        <header><h2>Selected Dossier</h2><span class="tag" data-bind="selected_candidate_id">none</span></header>
+        <div class="body">
+          <div class="docstack">
+            <div class="doc"><small>Name</small><b data-bind="selected_candidate_name">-</b></div>
+            <div class="doc"><small>Program</small><b data-bind="selected_program">-</b></div>
+            <div class="doc"><small>Variance</small><b data-bind="selected_name_variance">-</b></div>
+          </div>
+          <div style="margin-top:10px" class="meter"><span id="readyBar"></span></div>
+        </div>
+      </section>
+      <section class="panel">
+        <header><h2>Validation Errors</h2><span class="tag" data-bind="denied_count">0</span></header>
+        <div class="body"><pre id="errors" class="error">{}</pre></div>
+      </section>
+    </aside>
+
+    <section class="pages">
+      <section id="cockpit" class="page">
+        <div class="hero-grid">
+          <div class="panel">
+            <header><h2>Command Telemetry</h2><span class="tag" data-bind="current_filter">all</span></header>
+            <div class="body matrix">
+              <div class="cell"><small>Policy</small><b data-bind="policy_epoch_status">draft</b></div>
+              <div class="cell"><small>Crosswalk</small><b data-bind="crosswalk_status">idle</b></div>
+              <div class="cell"><small>Finance</small><b data-bind="finance_status">idle</b></div>
+              <div class="cell"><small>Release</small><b data-bind="release_wave_status">idle</b></div>
+            </div>
+          </div>
+          <div class="panel">
+            <header><h2>Wave Seal</h2><span class="tag" data-bind="release_hash">none</span></header>
+            <div class="body"><div class="seal">REGISTRAR<br>WAVE</div></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="curriculum" class="page">
+        <div class="hero-grid">
+          <div class="panel">
+            <header><h2>Degree Graph</h2><span class="tag" data-bind="audit_status">idle</span></header>
+            <div class="body actions">
+              <button data-testid="run-degree-graph">Run Graph</button>
+              <button data-testid="plan-capstone-seats">Plan Seats</button>
+              <button data-testid="resolve-seat-matrix">Resolve Matrix</button>
+            </div>
+          </div>
+          <div class="panel">
+            <header><h2>Policy Epoch</h2><span class="tag" data-bind="policy_epoch_status">draft</span></header>
+            <div class="body form-grid">
+              <input data-testid="policy-epoch" type="text" placeholder="POLICY-2026-MAY">
+              <button data-testid="lock-policy-epoch">Lock</button>
+            </div>
+          </div>
+        </div>
+        <div class="panel"><header><h2>Audit Grid</h2><span class="tag" data-bind="deficiency_count">0</span></header><div class="body"><table data-testid="audit-grid"></table></div></div>
+        <div class="panel"><header><h2>Seat Matrix</h2><span class="tag" data-bind="collision_count">0</span></header><div class="body"><table data-testid="plan-grid"></table></div></div>
+      </section>
+
+      <section id="dossier" class="page">
+        <div class="hero-grid">
+          <div class="panel">
+            <header><h2>Transcript Bundle</h2><span class="tag" data-bind="transcript_count">0</span></header>
+            <div class="body"><input data-testid="transcript-upload" type="file"></div>
+          </div>
+          <div class="panel">
+            <header><h2>Crosswalk</h2><span class="tag" data-bind="crosswalk_status">idle</span></header>
+            <div class="body actions">
+              <input data-testid="crosswalk-upload" type="file">
+              <button data-testid="stage-crosswalk">Stage</button>
+              <button data-testid="certify-crosswalk">Certify</button>
+            </div>
+          </div>
+        </div>
+        <div class="panel"><header><h2>Transcript Rows</h2><span class="tag" data-bind="transcript_credit_total">0</span></header><div class="body"><table data-testid="transcript-grid"></table></div></div>
+        <div class="panel"><header><h2>Crosswalk Rows</h2><button data-testid="assemble-exception-dossier">Assemble Dossier</button></header><div class="body"><table data-testid="crosswalk-grid"></table></div></div>
+        <div class="panel"><header><h2>Exception Dossier</h2><span class="tag" data-bind="exception_status">idle</span></header><div class="body"><table data-testid="exception-grid"></table></div></div>
+      </section>
+
+      <section id="finance" class="page">
+        <div class="hero-grid">
+          <div class="panel">
+            <header><h2>Identity And Services</h2><span class="tag" data-bind="identity_status">idle</span></header>
+            <div class="body actions">
+              <button data-testid="verify-identity">Verify Identity</button>
+              <button data-testid="resolve-name-variance">Resolve Variance</button>
+              <button data-testid="quote-diploma-lane">Diploma Lane</button>
+            </div>
+          </div>
+          <div class="panel">
+            <header><h2>Bursar Bundle</h2><span class="tag" data-bind="finance_status">idle</span></header>
+            <div class="body actions.two">
+              <button data-testid="run-bursar-bundle">Run Bundle</button>
+              <button data-testid="lock-wave-reconciliation">Lock Recon</button>
+            </div>
+          </div>
+        </div>
+        <div class="panel"><header><h2>Reconciliation Upload</h2><span class="tag" data-bind="mismatch_count">0</span></header><div class="body"><input data-testid="reconciliation-upload" type="file"></div></div>
+        <div class="panel"><header><h2>Reconciliation Grid</h2><span class="tag" data-bind="reconciliation_status">idle</span></header><div class="body"><table data-testid="reconciliation-grid"></table></div></div>
+      </section>
+
+      <section id="senate" class="page">
+        <div class="hero-grid">
+          <div class="panel">
+            <header><h2>Committee Votes</h2><span class="tag" data-bind="vote_status">idle</span></header>
+            <div class="body"><input data-testid="committee-upload" type="file"></div>
+          </div>
+          <div class="panel">
+            <header><h2>Senate Packet</h2><span class="tag" data-bind="senate_docket_status">idle</span></header>
+            <div class="body actions">
+              <button data-testid="certify-committee-quorum">Certify Quorum</button>
+              <button data-testid="prepare-senate-docket">Prepare Docket</button>
+              <button data-testid="provost-counterseal">Provost Seal</button>
+            </div>
+          </div>
+        </div>
+        <div class="panel"><header><h2>Committee Grid</h2><span class="tag" data-bind="affirm_vote_count">0</span></header><div class="body"><table data-testid="committee-grid"></table></div></div>
+      </section>
+
+      <section id="release" class="page">
+        <div class="hero-grid">
+          <div class="panel">
+            <header><h2>Release Wave</h2><span class="tag" data-bind="release_wave_status">idle</span></header>
+            <div class="body actions.two">
+              <button data-testid="seal-commencement-wave">Seal Wave</button>
+              <button data-testid="publish-diploma-manifest">Publish Manifest</button>
+            </div>
+          </div>
+          <div class="panel">
+            <header><h2>Accreditation</h2><span class="tag" data-bind="freeze_reason">none</span></header>
+            <div class="body matrix">
+              <div class="cell"><small>Packet</small><b data-bind="senate_packet_hash">-</b></div>
+              <div class="cell"><small>Provost</small><b data-bind="provost_counterseal_status">idle</b></div>
+              <div class="cell"><small>Manifest</small><b data-bind="diploma_manifest_status">idle</b></div>
+              <div class="cell"><small>Events</small><b data-bind="event_notice_count">0</b></div>
+            </div>
+          </div>
+        </div>
+        <div class="panel"><header><h2>Release Grid</h2><span class="tag" data-bind="release_count">0</span></header><div class="body"><table data-testid="release-grid"></table></div></div>
+      </section>
+    </section>
+
+    <aside class="side">
+      <section class="panel">
+        <header><h2>Blocker Ledger</h2><span class="tag" data-bind="open_blockers">11</span></header>
+        <div class="body"><table data-testid="blocker-grid"></table></div>
+      </section>
+      <section class="panel">
+        <header><h2>Audit Timeline</h2><span class="tag" data-bind="audit_log_count">0</span></header>
+        <div class="body"><table data-testid="audit-log-grid"></table></div>
+      </section>
+      <section class="panel">
+        <header><h2>Service Ledger</h2><span class="tag" data-bind="diploma_lane">none</span></header>
+        <div class="body matrix">
+          <div class="cell"><small>ID</small><b data-bind="identity_call_count">0</b></div>
+          <div class="cell"><small>Bursar</small><b data-bind="bursar_call_count">0</b></div>
+          <div class="cell"><small>Diploma</small><b data-bind="diploma_call_count">0</b></div>
+          <div class="cell"><small>Trace</small><b data-bind="diploma_trace_id">-</b></div>
+        </div>
+      </section>
+    </aside>
+  </main>
+</div>
+
+<script>
+const candidates=[
+  {id:'CAND-IONA',name:'Iona Rivera',program:'Computational Design BS',cohort:'May 2026',risk:'scarlet',catalog:'CAT-2026D',variance:'alias_review'},
+  {id:'CAND-MAREK',name:'Marek Holt',program:'Robotics Engineering BS',cohort:'May 2026',risk:'amber',catalog:'CAT-2026D',variance:'clear'},
+  {id:'CAND-SANA',name:'Sana Okafor',program:'Public Policy BA',cohort:'Aug 2026',risk:'amber',catalog:'CAT-2025F',variance:'suffix_review'},
+  {id:'CAND-LUCIEN',name:'Lucien Park',program:'Mathematics BS',cohort:'May 2026',risk:'green',catalog:'CAT-2026D',variance:'clear'},
+  {id:'CAND-PRIYA',name:'Priya Shah',program:'Bioinformatics BS',cohort:'Dec 2026',risk:'scarlet',catalog:'CAT-2026D',variance:'court_order'}
+];
+const honorsByCandidate={'CAND-IONA':'Thesis + Studio','CAND-MAREK':'Controls Lab','CAND-SANA':'Policy Clinic','CAND-LUCIEN':'Proof Track','CAND-PRIYA':'Lab Thesis'};
+const baseBlockers=[
+  {id:'BLK-POLICY',label:'Policy epoch locked',owner:'registrar',status:'open'},
+  {id:'BLK-SEATS',label:'Seat collisions resolved',owner:'analyst',status:'open'},
+  {id:'BLK-CROSSWALK',label:'Articulation crosswalk certified',owner:'advisor',status:'open'},
+  {id:'BLK-EXCEPTION',label:'Exception dossier assembled',owner:'advisor',status:'open'},
+  {id:'BLK-IDENTITY',label:'Identity variance resolved',owner:'registrar',status:'open'},
+  {id:'BLK-FINANCE',label:'Bursar bundle cleared',owner:'bursar',status:'open'},
+  {id:'BLK-RECON',label:'Worksheet reconciliation locked',owner:'registrar',status:'open'},
+  {id:'BLK-COMMITTEE',label:'Committee quorum certified',owner:'dean',status:'open'},
+  {id:'BLK-SENATE',label:'Senate docket prepared',owner:'dean',status:'open'},
+  {id:'BLK-PROVOST',label:'Provost counterseal applied',owner:'provost',status:'open'},
+  {id:'BLK-WAVE',label:'Commencement wave sealed',owner:'registrar',status:'open'}
+];
+const clone=o=>JSON.parse(JSON.stringify(o));
+function initialState(){
+  return {current_page:'cockpit',active_role:'analyst',candidates:clone(candidates),visible_candidates:clone(candidates),current_filter:'all',
+    selected_candidate_id:'',selected_candidate_name:'',selected_program:'',selected_cohort:'',selected_risk:'',selected_catalog_version:'CAT-2026D',selected_honors_track:'',selected_name_variance:'',
+    policy_epoch_input:'',policy_epoch_status:'draft',audit_rows:[],audit_count:0,deficiency_count:0,shadow_gap_count:0,audit_status:'idle',
+    plan_rows:[],plan_count:0,plan_credit_total:0,collision_count:0,seat_waitlist_count:0,plan_status:'idle',
+    transcript_rows:[],transcript_count:0,transcript_credit_total:0,transcript_residency_total:0,last_transcript_file:'',
+    crosswalk_rows:[],crosswalk_count:0,crosswalk_status:'idle',exception_rows:[],exception_count:0,exception_status:'idle',
+    identity_status:'idle',name_match_status:'idle',identity_trace_id:'',finance_status:'idle',sap_status:'idle',balance_status:'idle',bursar_trace_id:'',
+    diploma_quote_status:'idle',diploma_lane:'',diploma_trace_id:'',reconciliation_rows:[],reconciliation_count:0,mismatch_count:0,reconciliation_status:'idle',last_reconciliation_file:'',
+    committee_rows:[],committee_count:0,affirm_vote_count:0,oppose_vote_count:0,abstain_vote_count:0,quorum_status:'idle',vote_status:'idle',
+    senate_docket_status:'idle',senate_packet_hash:'',provost_counterseal_status:'idle',provost_token:'',release_wave_status:'idle',release_hash:'',
+    diploma_manifest_status:'idle',diploma_manifest_hash:'',release_rows:[],release_count:0,freeze_reason:'',event_notice_count:0,
+    blocker_rows:clone(baseBlockers),open_blockers:11,readiness_score:0,audit_log:[],audit_log_count:0,service_call_count:0,identity_call_count:0,bursar_call_count:0,diploma_call_count:0,
+    denied_count:0,validation_errors:{},last_action:'ready',__services:{calls:[]}};
+}
+let S=loadState();
+function loadState(){try{return JSON.parse(localStorage.getItem('campus_tier_d_state'))||initialState()}catch{return initialState()}}
+function saveState(){localStorage.setItem('campus_tier_d_state',JSON.stringify(S))}
+function resetState(){S=initialState();S.last_action='reset';location.hash='#/cockpit';render()}
+function setPage(page){S.current_page=page;S.last_action='nav_'+page;location.hash='#/'+page;render()}
+function setRole(role){S.active_role=role;S.last_action='role_'+role;render()}
+function deny(action){S.denied_count+=1;S.last_action=action;render()}
+function clearErr(key){delete S.validation_errors[key]}
+function recalc(){
+  S.audit_count=S.audit_rows.length;S.plan_count=S.plan_rows.length;S.transcript_count=S.transcript_rows.length;S.crosswalk_count=S.crosswalk_rows.length;
+  S.exception_count=S.exception_rows.length;S.reconciliation_count=S.reconciliation_rows.length;S.committee_count=S.committee_rows.length;S.release_count=S.release_rows.length;S.audit_log_count=S.audit_log.length;
+  S.transcript_credit_total=S.transcript_rows.reduce((a,r)=>a+Number(r.credits||0),0);S.transcript_residency_total=S.transcript_rows.reduce((a,r)=>a+Number(r.residency||0),0);
+  S.mismatch_count=S.reconciliation_rows.filter(r=>r.status==='mismatch').length;
+  S.affirm_vote_count=S.committee_rows.filter(r=>r.vote==='affirm').length;S.oppose_vote_count=S.committee_rows.filter(r=>r.vote==='oppose').length;S.abstain_vote_count=S.committee_rows.filter(r=>r.vote==='abstain').length;
+  S.open_blockers=S.blocker_rows.filter(r=>r.status==='open').length;
+}
+function renderCandidates(){
+  const host=document.querySelector('[data-testid="candidate-queue"]');host.innerHTML='';
+  S.visible_candidates.forEach(c=>{
+    const row=document.createElement('div');row.className='candidate';row.dataset.testid='candidate-row';row.setAttribute('data-candidate-id',c.id);
+    row.innerHTML=`<span><strong data-col="name">${c.name}</strong><small data-col="program">${c.program}</small><span hidden data-col="cohort">${c.cohort}</span><span hidden data-col="catalog">${c.catalog}</span><span hidden data-col="variance">${c.variance}</span></span><button data-testid="select-${c.id}" class="tag ${c.risk}" data-col="risk">${c.risk}</button>`;
+    host.appendChild(row);
+  });
+}
+const columns={
+  'audit-grid':['area','required','earned','shadow','status'],
+  'plan-grid':['code','slot','seat','credits','status'],
+  'transcript-grid':['course','credits','residency','grade','status'],
+  'crosswalk-grid':['requirement','transcript','credits','confidence','status'],
+  'exception-grid':['gate','owner','evidence','status'],
+  'reconciliation-grid':['source','registrar','senate','status'],
+  'committee-grid':['member','role','vote','note'],
+  'blocker-grid':['label','owner','status'],
+  'release-grid':['channel','batch','hash','status'],
+  'audit-log-grid':['event','role','status']
+};
+const sources={
+  'audit-grid':['audit_rows','audit-row','data-audit-id'],
+  'plan-grid':['plan_rows','plan-row','data-plan-id'],
+  'transcript-grid':['transcript_rows','transcript-row','data-transcript-id'],
+  'crosswalk-grid':['crosswalk_rows','crosswalk-row','data-crosswalk-id'],
+  'exception-grid':['exception_rows','exception-row','data-exception-id'],
+  'reconciliation-grid':['reconciliation_rows','reconciliation-row','data-reconciliation-id'],
+  'committee-grid':['committee_rows','committee-row','data-committee-id'],
+  'blocker-grid':['blocker_rows','blocker-row','data-blocker-id'],
+  'release-grid':['release_rows','release-row','data-release-id'],
+  'audit-log-grid':['audit_log','audit-log-row','data-audit-log-id']
+};
+function renderTable(testid){
+  const table=document.querySelector(`[data-testid="${testid}"]`);if(!table)return;
+  const [path,rowTest,attr]=sources[testid];const rows=S[path]||[];const cols=columns[testid];
+  table.innerHTML='<thead><tr>'+cols.map(c=>`<th>${c}</th>`).join('')+'</tr></thead>';
+  const body=document.createElement('tbody');
+  if(!rows.length){const tr=document.createElement('tr');tr.innerHTML=`<td class="empty" colspan="${cols.length}">No rows yet.</td>`;body.appendChild(tr)}
+  rows.forEach(row=>{const tr=document.createElement('tr');tr.dataset.testid=rowTest;tr.setAttribute(attr,row.id);cols.forEach(col=>{const td=document.createElement('td');td.dataset.col=col;td.textContent=row[col]??'';tr.appendChild(td)});body.appendChild(tr)});
+  table.appendChild(body);
+}
+function render(){
+  recalc();
+  document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===S.current_page));
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.testid==='go-'+S.current_page));
+  document.querySelectorAll('.roles button').forEach(b=>b.classList.toggle('active',b.dataset.testid==='role-'+S.active_role));
+  document.querySelectorAll('[data-bind]').forEach(el=>{let v=S[el.dataset.bind];el.textContent=(v===''||v==null)?'-':v});
+  document.querySelector('[data-testid="policy-epoch"]').value=S.policy_epoch_input||'';
+  document.getElementById('readyBar').style.width=Math.max(0,Math.min(100,S.readiness_score))+'%';
+  document.getElementById('errors').textContent=JSON.stringify(S.validation_errors,null,2);
+  renderCandidates();Object.keys(columns).forEach(renderTable);
+  window.__DETOX_STATE__=clone(S);saveState();
+}
+function filterWaveRisk(){S.current_filter='wave_risk';S.visible_candidates=[candidates[0],candidates[4],candidates[1],candidates[2]].map(clone);S.last_action='filter_wave_risk';render()}
+function selectCandidate(id){const c=candidates.find(x=>x.id===id);if(!c)return;S.selected_candidate_id=c.id;S.selected_candidate_name=c.name;S.selected_program=c.program;S.selected_cohort=c.cohort;S.selected_risk=c.risk;S.selected_catalog_version=c.catalog;S.selected_honors_track=honorsByCandidate[c.id]||'';S.selected_name_variance=c.variance;S.current_page='curriculum';S.last_action='select_candidate';location.hash='#/curriculum';render()}
+function runDegreeGraph(){if(!S.selected_candidate_id)return;S.audit_status='gaps_found';S.audit_rows=[
+  {id:'AUD-CAPSTONE',area:'Capstone studio',required:6,earned:0,shadow:'seat-linked',status:'missing'},
+  {id:'AUD-RESIDENCY',area:'Residency',required:45,earned:39,shadow:'2 shadow gaps',status:'short'},
+  {id:'AUD-ETHICS',area:'AI ethics',required:3,earned:0,shadow:'policy locked',status:'missing'},
+  {id:'AUD-HONORS',area:'Honors thesis',required:3,earned:0,shadow:'committee vote',status:'missing'},
+  {id:'AUD-GPA',area:'Major GPA',required:3.2,earned:3.36,shadow:'clear',status:'met'}
+];S.deficiency_count=4;S.shadow_gap_count=2;S.readiness_score=12;S.last_action='run_degree_graph';render()}
+function planSeats(){S.plan_rows=[
+  {id:'PLN-CD498',code:'CD 498',slot:'MW 09:00',seat:'waitlist',credits:6,status:'collision'},
+  {id:'PLN-CS455',code:'CS 455',slot:'MW 09:00',seat:'studio-2',credits:4,status:'collision'},
+  {id:'PLN-ETH410',code:'ETH 410',slot:'TR 13:00',seat:'seminar',credits:3,status:'planned'},
+  {id:'PLN-HON399',code:'HON 399',slot:'F 10:00',seat:'committee',credits:3,status:'planned'},
+  {id:'PLN-RES440',code:'RES 440',slot:'TR 13:00',seat:'residency',credits:1,status:'collision'}
+];S.plan_credit_total=17;S.collision_count=3;S.seat_waitlist_count=1;S.plan_status='collision';S.readiness_score=18;S.last_action='plan_capstone_seats';render()}
+function resolveSeats(){S.plan_rows=[
+  {id:'PLN-CD498',code:'CD 498',slot:'MW 09:00',seat:'studio-1',credits:6,status:'planned'},
+  {id:'PLN-CS455',code:'CS 455',slot:'TR 15:00',seat:'studio-2',credits:4,status:'planned'},
+  {id:'PLN-ETH410',code:'ETH 410',slot:'TR 13:00',seat:'seminar',credits:3,status:'planned'},
+  {id:'PLN-HON399',code:'HON 399',slot:'F 10:00',seat:'committee',credits:3,status:'planned'},
+  {id:'PLN-RES440',code:'RES 440',slot:'W 17:00',seat:'residency',credits:1,status:'planned'}
+];S.plan_credit_total=17;S.collision_count=0;S.seat_waitlist_count=0;S.plan_status='resolved';S.readiness_score=25;S.last_action='resolve_seat_matrix';render()}
+function editPolicy(value){S.policy_epoch_input=(value||'').trim().toUpperCase();S.last_action='edit_policy_epoch';render()}
+function lockPolicy(){if(S.active_role!=='registrar'){deny('unauthorized_registrar');return}if(S.policy_epoch_input!=='POLICY-2026-MAY'){S.policy_epoch_status='stale';S.validation_errors={policy:'Policy epoch mismatch'};S.last_action='policy_epoch_mismatch';render();return}S.policy_epoch_status='locked';clearErr('policy');S.readiness_score=31;S.last_action='lock_policy_epoch';render()}
+function parseCSV(text){const lines=text.trim().split(/\r?\n/).filter(Boolean);const headers=lines.shift().split(',').map(s=>s.trim());return lines.map(line=>{const cells=line.split(',').map(s=>s.trim());const row={};headers.forEach((h,i)=>{let v=cells[i]??'';if(['credits','residency'].includes(h))v=Number(v);row[h]=v});return row})}
+async function readFileRows(input){const file=input.files[0];if(!file)return null;return {name:file.name,rows:parseCSV(await file.text())}}
+async function uploadTranscript(input){const out=await readFileRows(input);if(!out)return;S.transcript_rows=out.rows;S.last_transcript_file=out.name;S.crosswalk_status='idle';S.last_action='upload_transcript_bundle';render()}
+async function uploadCrosswalk(input){const out=await readFileRows(input);if(!out)return;S.crosswalk_rows=out.rows;S.crosswalk_status='uploaded';S.last_action='upload_crosswalk';render()}
+function stageCrosswalk(){if(S.active_role!=='advisor'){deny('unauthorized_advisor');return}if(S.transcript_rows.length&&S.crosswalk_rows.length){S.crosswalk_status='staged';S.readiness_score=39;S.last_action='stage_crosswalk'}render()}
+function certifyCrosswalk(){if(S.active_role!=='advisor'){deny('unauthorized_advisor');return}if(S.policy_epoch_status!=='locked'||S.plan_status!=='resolved'){S.crosswalk_status='blocked';S.validation_errors={crosswalk:'Policy epoch and resolved seats required'};S.last_action='crosswalk_requires_policy';render();return}S.crosswalk_status='certified';S.audit_status='satisfied';S.deficiency_count=0;S.shadow_gap_count=0;S.audit_rows=[
+  {id:'AUD-CAPSTONE',area:'Capstone studio',required:6,earned:6,shadow:'seat-linked',status:'met'},
+  {id:'AUD-RESIDENCY',area:'Residency',required:45,earned:45,shadow:'clear',status:'met'},
+  {id:'AUD-ETHICS',area:'AI ethics',required:3,earned:3,shadow:'clear',status:'met'},
+  {id:'AUD-HONORS',area:'Honors thesis',required:3,earned:3,shadow:'clear',status:'met'},
+  {id:'AUD-GPA',area:'Major GPA',required:3.2,earned:3.36,shadow:'clear',status:'met'}
+];clearErr('crosswalk');S.readiness_score=48;S.last_action='certify_crosswalk';render()}
+function assembleDossier(){if(S.active_role!=='advisor'){deny('unauthorized_advisor');return}if(S.crosswalk_status!=='certified'){S.exception_status='blocked';S.validation_errors={exception:'Certified crosswalk required'};S.last_action='exception_requires_crosswalk';render();return}S.exception_status='assembled';S.exception_rows=[
+  {id:'EX-POLICY',gate:'policy_epoch',owner:'registrar',evidence:'POLICY-2026-MAY',status:'attached'},
+  {id:'EX-SEAT',gate:'seat_arbitration',owner:'analyst',evidence:'5-row plan resolved',status:'attached'},
+  {id:'EX-CROSS',gate:'crosswalk_certification',owner:'advisor',evidence:'4 mappings certified',status:'attached'}
+];clearErr('exception');S.readiness_score=58;S.last_action='assemble_exception_dossier';render()}
+async function serviceJSON(url,fallback){try{const r=await fetch(url);return await r.json()}catch{return fallback}}
+async function verifyIdentity(){if(S.active_role!=='registrar'){deny('unauthorized_registrar');return}const d=await serviceJSON('/api/identity-verify?candidate='+encodeURIComponent(S.selected_candidate_id),{identity:'review',name_match:'variance',trace:'IDV-IONA-773'});S.service_call_count++;S.identity_call_count++;S.identity_status=d.identity||'review';S.name_match_status=d.name_match||'variance';S.identity_trace_id=d.trace||'IDV-IONA-773';S.readiness_score=62;S.last_action='verify_identity';render()}
+function resolveName(){if(S.active_role!=='registrar'){deny('unauthorized_registrar');return}S.identity_status='verified';S.name_match_status='resolved';clearErr('identity');S.readiness_score=66;S.last_action='resolve_name_variance';render()}
+async function runBursar(){if(S.active_role!=='bursar'){deny('unauthorized_bursar');return}if(S.exception_status!=='assembled'){S.finance_status='blocked';S.validation_errors={finance:'Exception dossier required'};S.last_action='finance_requires_exception';render();return}const d=await serviceJSON('/api/bursar-bundle?candidate='+encodeURIComponent(S.selected_candidate_id),{finance:'cleared',sap:'clear',balance:'zero_balance',trace:'BUR-IONA-551'});S.service_call_count++;S.bursar_call_count++;S.finance_status=d.finance||'cleared';S.sap_status=d.sap||'clear';S.balance_status=d.balance||'zero_balance';S.bursar_trace_id=d.trace||'BUR-IONA-551';clearErr('finance');S.readiness_score=70;S.last_action='run_bursar_bundle';render()}
+async function quoteDiploma(){if(S.active_role!=='registrar'){deny('unauthorized_registrar');return}if(S.identity_status!=='verified'){S.diploma_quote_status='blocked';S.validation_errors={diploma:'Identity and finance gates required'};S.last_action='diploma_requires_identity';render();return}const d=await serviceJSON('/api/diploma-lane?candidate='+encodeURIComponent(S.selected_candidate_id),{lane:'rush-audit',trace:'DPL-IONA-016'});S.service_call_count++;S.diploma_call_count++;S.diploma_quote_status='quoted';S.diploma_lane=d.lane||'rush-audit';S.diploma_trace_id=d.trace||'DPL-IONA-016';clearErr('diploma');S.readiness_score=73;S.last_action='quote_diploma_lane';render()}
+async function uploadRecon(input){const out=await readFileRows(input);if(!out)return;S.reconciliation_rows=out.rows;S.last_reconciliation_file=out.name;S.reconciliation_status='uploaded';S.last_action='upload_reconciliation';render()}
+function lockRecon(){if(S.active_role!=='registrar'){deny('unauthorized_registrar');return}if(S.mismatch_count>0){S.reconciliation_status='blocked';S.validation_errors={reconciliation:'Resolve senate worksheet mismatches'};S.last_action='reconciliation_mismatch';render();return}S.reconciliation_status='locked';clearErr('reconciliation');S.readiness_score=78;S.last_action='lock_wave_reconciliation';render()}
+async function uploadCommittee(input){const out=await readFileRows(input);if(!out)return;S.committee_rows=out.rows;S.vote_status='uploaded';S.last_action='upload_committee_votes';render()}
+function certifyQuorum(){if(S.active_role!=='dean'){deny('unauthorized_dean');return}if(S.affirm_vote_count<4){S.quorum_status='blocked';S.validation_errors={committee:'Four affirm votes required'};S.last_action='quorum_blocked';render();return}S.quorum_status='certified';S.vote_status='certified';clearErr('committee');S.readiness_score=84;S.last_action='certify_committee_quorum';render()}
+function prepareSenate(){if(S.active_role!=='dean'){deny('unauthorized_dean');return}if(S.quorum_status!=='certified'||S.reconciliation_status!=='locked'||S.finance_status!=='cleared'){S.senate_docket_status='blocked';S.validation_errors={senate:'Committee, reconciliation, and finance gates required'};S.last_action='senate_requires_gates';render();return}S.senate_docket_status='ready';S.senate_packet_hash=`SEN-${S.selected_candidate_id}-V${S.affirm_vote_count}-R${S.reconciliation_count}-S${S.service_call_count}`;S.audit_log=[{id:'AUD-SENATE',event:'senate_docket',role:'dean',status:'ready'}];clearErr('senate');S.readiness_score=90;S.last_action='prepare_senate_docket';render()}
+function provostSeal(){if(S.active_role!=='provost'){deny('unauthorized_provost');return}if(S.senate_docket_status!=='ready'){S.provost_counterseal_status='blocked';S.last_action='provost_requires_senate';render();return}S.provost_counterseal_status='sealed';S.provost_token=`PROV-${S.senate_packet_hash}-${S.diploma_lane}`;S.audit_log=[{id:'AUD-SENATE',event:'senate_docket',role:'dean',status:'ready'},{id:'AUD-PROVOST',event:'provost_counterseal',role:'provost',status:'sealed'}];S.readiness_score=94;S.last_action='provost_counterseal';render()}
+function sealWave(){if(S.active_role!=='registrar'){deny('unauthorized_registrar');return}if(S.provost_counterseal_status!=='sealed'){S.release_wave_status='blocked';S.validation_errors={release:'Provost counterseal required'};S.last_action='release_requires_counterseal';render();return}S.release_wave_status='sealed';S.release_hash=`WAVE-${S.selected_candidate_id}-${S.provost_token}-D${S.diploma_call_count}`;S.blocker_rows=S.blocker_rows.map(b=>({...b,status:'cleared'}));S.open_blockers=0;S.release_rows=[{id:'REL-COMM',channel:'commencement',batch:'WAVE-MAY26-IONA',hash:'pending',status:'sealed'},{id:'REL-TRANSCRIPT',channel:'transcript_archive',batch:'WAVE-MAY26-IONA',hash:'pending',status:'sealed'}];S.audit_log=[{id:'AUD-SENATE',event:'senate_docket',role:'dean',status:'ready'},{id:'AUD-PROVOST',event:'provost_counterseal',role:'provost',status:'sealed'},{id:'AUD-WAVE',event:'release_wave',role:'registrar',status:'sealed'}];clearErr('release');S.readiness_score=100;S.last_action='seal_commencement_wave';render()}
+function publishManifest(){if(S.active_role!=='registrar'){deny('unauthorized_registrar');return}if(S.release_wave_status!=='sealed'){S.diploma_manifest_status='blocked';S.last_action='manifest_requires_wave';render();return}S.diploma_manifest_status='queued';S.release_rows=[{id:'REL-COMM',channel:'commencement',batch:'WAVE-MAY26-IONA',hash:'WAVE-CAND-IONA',status:'sealed'},{id:'REL-TRANSCRIPT',channel:'transcript_archive',batch:'WAVE-MAY26-IONA',hash:'WAVE-CAND-IONA',status:'queued'},{id:'REL-DIPLOMA',channel:'diploma_print',batch:'rush-audit',hash:'DIP-CAND-IONA',status:'queued'}];S.diploma_manifest_hash=`DIP-${S.selected_candidate_id}-${S.release_hash}-${S.release_rows.length}`;S.last_action='publish_diploma_manifest';render()}
+function syncPage(){const p=(location.hash.replace('#/','')||'cockpit');if(['cockpit','curriculum','dossier','finance','senate','release'].includes(p)){S.current_page=p;render()}}
+document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const id=b.dataset.testid;
+  if(id==='reset')resetState();else if(id?.startsWith('go-'))setPage(id.replace('go-',''));else if(id?.startsWith('role-'))setRole(id.replace('role-',''));
+  else if(id==='filter-wave-risk')filterWaveRisk();else if(id?.startsWith('select-'))selectCandidate(id.replace('select-',''));
+  else if(id==='run-degree-graph')runDegreeGraph();else if(id==='plan-capstone-seats')planSeats();else if(id==='resolve-seat-matrix')resolveSeats();else if(id==='lock-policy-epoch')lockPolicy();
+  else if(id==='stage-crosswalk')stageCrosswalk();else if(id==='certify-crosswalk')certifyCrosswalk();else if(id==='assemble-exception-dossier')assembleDossier();
+  else if(id==='verify-identity')verifyIdentity();else if(id==='resolve-name-variance')resolveName();else if(id==='run-bursar-bundle')runBursar();else if(id==='quote-diploma-lane')quoteDiploma();
+  else if(id==='lock-wave-reconciliation')lockRecon();else if(id==='certify-committee-quorum')certifyQuorum();else if(id==='prepare-senate-docket')prepareSenate();else if(id==='provost-counterseal')provostSeal();else if(id==='seal-commencement-wave')sealWave();else if(id==='publish-diploma-manifest')publishManifest();
+});
+document.addEventListener('input',e=>{if(e.target.dataset.testid==='policy-epoch')editPolicy(e.target.value)});
+document.addEventListener('change',e=>{const id=e.target.dataset.testid;if(id==='transcript-upload')uploadTranscript(e.target);if(id==='crosswalk-upload')uploadCrosswalk(e.target);if(id==='reconciliation-upload')uploadRecon(e.target);if(id==='committee-upload')uploadCommittee(e.target)});
+window.addEventListener('hashchange',syncPage);
+window.addEventListener('detoxbench:event',e=>{const id=e.detail?.id;if(id==='accreditation_freeze'&&S.release_wave_status==='sealed'){S.release_wave_status='frozen';S.freeze_reason='accreditation_audit';S.event_notice_count+=1;S.readiness_score=91;S.validation_errors={accreditation:'Wave frozen for accreditation_audit'};S.audit_log=[{id:'AUD-SENATE',event:'senate_docket',role:'dean',status:'ready'},{id:'AUD-PROVOST',event:'provost_counterseal',role:'provost',status:'sealed'},{id:'AUD-WAVE',event:'release_wave',role:'registrar',status:'sealed'},{id:'AUD-FREEZE',event:'accreditation_freeze',role:'system',status:'accreditation_audit'}];S.last_action='accreditation_freeze';render()}if(id==='name_variance_escalation'&&S.identity_status==='verified'){S.identity_status='review';S.name_match_status='escalated';S.event_notice_count+=1;S.validation_errors={identity:'Late alias review required'};S.last_action='name_variance_escalation';render()}});
+if(!location.hash)location.hash='#/cockpit';syncPage();render();
+</script>
+</body>
+</html>
